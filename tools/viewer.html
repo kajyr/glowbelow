@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model viewer</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #042C53; overflow: hidden; }
+  canvas { display: block; }
+  p { position: absolute; left: 12px; bottom: 8px; margin: 0; color: #B5D4F4; font: 13px sans-serif; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<p>Drag to orbit. Add ?model=name to load models/name.glb, ?spin=1 to rotate, ?size=1.5 to enlarge.</p>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const params = new URLSearchParams(location.search);
+const name = params.get('model') || 'squid';
+const spin = params.get('spin') === '1';
+const tilt = Number(params.get('tilt') || 0);
+const size = Number(params.get('size') || 1);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#042C53');
+scene.add(new THREE.HemisphereLight('#cfe6ff', '#3a4a80', 2.4));
+const sun = new THREE.DirectionalLight('#ffffff', 3.0);
+sun.position.set(-4, 6, 8);
+scene.add(sun);
+const fill = new THREE.DirectionalLight('#ffd9c2', 1.6);
+fill.position.set(0, -6, 5);
+scene.add(fill);
+
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, -0.2, 0);
+
+const turns = [0, -40, -90, 180];
+const spacing = 6.2;
+const copies = [];
+
+new GLTFLoader().load(`../models/${name}.glb`, (gltf) => {
+  turns.forEach((deg, i) => {
+    const copy = gltf.scene.clone();
+    copy.scale.setScalar(size);
+    copy.position.x = (i - (turns.length - 1) / 2) * spacing;
+    copy.rotation.set(THREE.MathUtils.degToRad(tilt), THREE.MathUtils.degToRad(deg), 0);
+    scene.add(copy);
+    copies.push(copy);
+  });
+  fit();
+  document.title = `${name} loaded`;
+});
+
+function fit() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  const columns = camera.aspect < 1 ? 2 : turns.length;
+  const rows = Math.ceil(turns.length / columns);
+  copies.forEach((copy, i) => {
+    copy.position.x = ((i % columns) - (columns - 1) / 2) * spacing;
+    copy.position.y = ((rows - 1) / 2 - Math.floor(i / columns)) * spacing;
+  });
+  const halfWidth = (columns * spacing) / 2 + 0.5;
+  const halfHeight = (rows * spacing) / 2 + 0.3;
+  const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const distance = Math.max(halfHeight / tan, halfWidth / (tan * camera.aspect));
+  camera.position.set(0, 0, distance);
+  controls.target.set(0, 0, 0);
+  camera.updateProjectionMatrix();
+  controls.update();
+}
+window.addEventListener('resize', fit);
+fit();
+
+renderer.setAnimationLoop(() => {
+  if (spin) copies.forEach((c) => { c.rotation.y += 0.01; });
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
