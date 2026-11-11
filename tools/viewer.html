@@ -17,7 +17,8 @@
 </script>
 </head>
 <body>
-<p>Drag to orbit. Add ?model=name to load models/name.glb, ?spin=1 to rotate, ?size=1.5 to enlarge.</p>
+<p>Drag to orbit. Add ?model=name to load models/name.glb, ?spin=1 to rotate, ?size=1.5 to enlarge,
+?row=a,b,c to lay several models edge to edge (front view), ?hide=part1,part2 to hide named parts.</p>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -28,6 +29,8 @@ const name = params.get('model') || 'squid';
 const spin = params.get('spin') === '1';
 const tilt = Number(params.get('tilt') || 0);
 const size = Number(params.get('size') || 1);
+const row = params.get('row') ? params.get('row').split(',') : null;
+const hide = (params.get('hide') || '').split(',').filter(Boolean);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -51,7 +54,42 @@ const turns = [0, -40, -90, 180];
 const spacing = 6.2;
 const copies = [];
 
-new GLTFLoader().load(`../models/${name}.glb`, (gltf) => {
+function listNodes(label, root) {
+  const names = [];
+  root.traverse((node) => { if (node !== root) names.push(node.name || '(unnamed)'); });
+  console.log(`${label} nodes:`, names.join(', '));
+}
+
+function hideParts(root) {
+  root.traverse((node) => { if (hide.includes(node.name)) node.visible = false; });
+}
+
+const loader = new GLTFLoader();
+if (row) {
+  // Lay models edge to edge along x, all facing the camera, to check that
+  // tiling pieces (seabed segments) meet without a seam.
+  Promise.all(row.map((m) => loader.loadAsync(`../models/${m}.glb`))).then((loaded) => {
+    let x = 0;
+    const group = new THREE.Group();
+    loaded.forEach((gltf, i) => {
+      listNodes(row[i], gltf.scene);
+      hideParts(gltf.scene);
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      gltf.scene.position.x = x - box.min.x;
+      x += box.max.x - box.min.x;
+      group.add(gltf.scene);
+    });
+    group.position.x = -x / 2;
+    group.scale.setScalar(size);
+    scene.add(group);
+    const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    camera.position.set(0, 0, (x * size) / 2 / (tan * camera.aspect) + 2);
+    camera.updateProjectionMatrix();
+    document.title = `${row.join(' + ')} loaded`;
+  });
+} else loader.load(`../models/${name}.glb`, (gltf) => {
+  listNodes(name, gltf.scene);
+  hideParts(gltf.scene);
   turns.forEach((deg, i) => {
     const copy = gltf.scene.clone();
     copy.scale.setScalar(size);
@@ -68,6 +106,7 @@ function fit() {
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setSize(w, h);
   camera.aspect = w / h;
+  if (row) { camera.updateProjectionMatrix(); return; }
   const columns = camera.aspect < 1 ? 2 : turns.length;
   const rows = Math.ceil(turns.length / columns);
   copies.forEach((copy, i) => {

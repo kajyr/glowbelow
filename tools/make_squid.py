@@ -3,6 +3,8 @@
     python3 tools/make_squid.py
 
 Writes models/squid.glb and artwork/squid-model-preview.svg.
+Parts (one node each, for animation in the game): head, cape, lining, arms,
+ear-l, ear-r, collar, eye-l, eye-r. Cape, lining and arms pivot at the neck.
 """
 
 import math
@@ -63,14 +65,14 @@ def build():
         circle(10, 1.0, 0.5),
         circle(10, 0.85, -0.05),
     ]
-    model.add(*lathe(head), BODY)
+    model.add(*lathe(head), BODY, part="head")
 
     # Cape: dark outside, coral lining inside.
     rings = [[cape_point(k, t) for k in range(CAPE_POINTS)] for t in CAPE_STEPS]
     verts, faces = lathe(rings)
-    model.add(verts, faces, CAPE)
+    model.add(verts, faces, CAPE, part="cape")
     inner = [(x * 0.975, y * 0.975, z - 0.03) for x, y, z in verts]
-    model.add(inner, [tuple(reversed(f)) for f in faces], LINING)
+    model.add(inner, [tuple(reversed(f)) for f in faces], LINING, part="lining")
 
     # Arms with glowing tips.
     for k in range(0, CAPE_POINTS, 2):
@@ -79,8 +81,8 @@ def build():
         path = [cape_point(k, t) for t in CAPE_STEPS]
         parts, tip = ridge(path, side, (0.15, 0.13, 0.1, 0.06))
         for verts, faces in parts:
-            model.add(verts, faces, ARM)
-        model.add(*gem(tip, 0.13), GLOW, glow=True)
+            model.add(verts, faces, ARM, part="arms")
+        model.add(*gem(tip, 0.13), GLOW, glow=True, part="arms")
 
     for side in (-1, 1):
         # Small ear fins.
@@ -90,7 +92,9 @@ def build():
             (side * 0.75, 0.14, 1.45),
             (side * 0.35, 0.14, 1.85),
         ]
-        model.add(*pyramid(ear_base, (side * 1.05, 0.0, 2.2)), EAR)
+        ear = "ear-l" if side < 0 else "ear-r"
+        model.add(*pyramid(ear_base, (side * 1.05, 0.0, 2.2)), EAR, part=ear)
+        model.pivot(ear, (side * 0.55, 0.0, 1.65))
 
         # Cape collar points.
         collar_base = [
@@ -99,14 +103,15 @@ def build():
             (side * 0.95, 0.3, 0.4),
             (side * 0.95, -0.3, 0.4),
         ]
-        model.add(*pyramid(collar_base, (side * 1.4, 0.0, 0.8)), COLLAR)
+        model.add(*pyramid(collar_base, (side * 1.4, 0.0, 0.8)), COLLAR, part="collar")
 
         spread = math.radians(24)
         look = unit((side * math.sin(spread), -math.cos(spread), 0.04))
         eye_at = (side * math.sin(spread) * 0.9, -math.cos(spread) * 0.9, 0.85)
-        add_eye(model, eye_at, look, side, 0.33, EYE, PUPIL, SHINE)
+        add_eye(model, eye_at, look, side, 0.33, EYE, PUPIL, SHINE,
+                part="eye-l" if side < 0 else "eye-r")
 
-    add_smile(model, y=-0.945, z=0.37, half_width=0.16, palette=MOUTH)
+    add_smile(model, y=-0.945, z=0.37, half_width=0.16, palette=MOUTH, part="head")
     return model
 
 

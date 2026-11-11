@@ -84,27 +84,45 @@ def flat(hex_color):
 
 
 class Model:
+    """A flat-shaded mesh. Faces can be tagged with a `part` name; each part
+    becomes its own node in the .glb so the game can move it on its own.
+    `pivot(part, point)` sets the point a part turns and scales around."""
+
     def __init__(self, name):
         self.name = name
         self.verts = []
-        self.faces = []  # (vertex indices, hex color, is_glow)
+        self.faces = []  # (vertex indices, hex color, is_glow, part)
+        self.pivots = {}  # part name -> pivot point (modelling axes)
 
-    def add(self, verts, faces, palette, glow=False):
+    def add(self, verts, faces, palette, glow=False, part=None):
         base = len(self.verts)
         self.verts.extend(verts)
         for face in faces:
             idx = tuple(base + i for i in face)
             normal = face_normal([self.verts[i] for i in idx])
-            self.faces.append((idx, shade(normal, palette), glow))
+            self.faces.append((idx, shade(normal, palette), glow, part))
+
+    def pivot(self, part, point):
+        self.pivots[part] = point
+
+    def parts(self):
+        """Part names in the order they were first added."""
+        names = []
+        for _idx, _color, _glow, part in self.faces:
+            if part not in names:
+                names.append(part)
+        return names
 
     def check(self):
         count = len(self.verts)
-        for idx, _color, _glow in self.faces:
+        for idx, _color, _glow, _part in self.faces:
             assert len(idx) in (3, 4), idx
             assert len(set(idx)) == len(idx), idx
             assert all(0 <= i < count for i in idx), idx
-        tris = sum(len(idx) - 2 for idx, _c, _g in self.faces)
-        print(f"{self.name}: {count} vertices, {len(self.faces)} faces, {tris} triangles")
+        tris = sum(len(idx) - 2 for idx, _c, _g, _p in self.faces)
+        names = [p for p in self.parts() if p is not None]
+        extra = f", parts: {', '.join(names)}" if names else ""
+        print(f"{self.name}: {count} vertices, {len(self.faces)} faces, {tris} triangles{extra}")
 
 
 # ---------------------------------------------------------------- shapes
@@ -214,29 +232,32 @@ def ridge(path, side, radii, tip_length=0.12):
     return parts, tip
 
 
-def add_eye(model, at, look, side, radius, eye, pupil, shine, pupil_size=0.52):
+def add_eye(model, at, look, side, radius, eye, pupil, shine, pupil_size=0.52, part=None):
     """Pale dome set into the head, dark pupil, small highlight.
-    `side` is -1 or 1 and nudges the pupil toward the nose."""
+    `side` is -1 or 1 and nudges the pupil toward the nose.
+    With a `part`, the eye is pivoted at its base so it can be squashed to blink."""
     s = radius / 0.33
     eye_v, eye_f = dome(radius, 0.2 * s)
-    model.add(placed(eye_v, at, look), eye_f, eye)
+    model.add(placed(eye_v, at, look), eye_f, eye, part=part)
 
     pupil_at = add(at, add(mul(look, 0.13 * s), (-side * 0.04 * s, 0.0, 0.0)))
     pupil_v, pupil_f = dome(radius * pupil_size, 0.11 * s, segments=6)
-    model.add(placed(pupil_v, pupil_at, look), pupil_f, pupil)
+    model.add(placed(pupil_v, pupil_at, look), pupil_f, pupil, part=part)
 
     shine_at = add(pupil_at, add(mul(look, 0.085 * s), (-0.06 * s, 0.0, 0.07 * s)))
     shine_v, shine_f = dome(0.05 * s, 0.04 * s, segments=4)
-    model.add(placed(shine_v, shine_at, look), shine_f, shine)
+    model.add(placed(shine_v, shine_at, look), shine_f, shine, part=part)
+    if part is not None:
+        model.pivot(part, at)
 
 
-def add_smile(model, y, z, half_width, palette, thickness=0.045):
+def add_smile(model, y, z, half_width, palette, thickness=0.045, part=None):
     """Small curved strip on a front face at depth y, centered at height z."""
     xs = [half_width * k / 2 for k in (-2, -1, 0, 1, 2)]
     top = [(x, y, z + (x / half_width) ** 2 * half_width * 0.45) for x in xs]
     bottom = [(x, y + 0.005, pz - thickness) for x, _y, pz in top]
     faces = [(i, i + 1, len(xs) + i + 1, len(xs) + i) for i in range(len(xs) - 1)]
-    model.add(*face_out(top + bottom, faces, (0.0, 0.0, z)), palette)
+    model.add(*face_out(top + bottom, faces, (0.0, 0.0, z)), palette, part=part)
 
 
 # ------------------------------------------------------------------- glb
@@ -255,21 +276,27 @@ def to_gltf_axes(v):
 
 def write_glb(model, glow_color="#5DCAA5"):
     """Write models/<name>.glb. Unindexed triangles, so every face keeps its
-    own flat normal and color. Glowing faces get their own emissive material."""
-    groups = {False: ([], [], []), True: ([], [], [])}
-    for idx, hex_color, glow in model.faces:
-        pts = [to_gltf_axes(model.verts[i]) for i in idx]
-        normal = face_normal(pts)
-        color = srgb_to_linear(hex_color)
-        positions, normals, colors = groups[glow]
-        for i in range(1, len(pts) - 1):
-            for p in (pts[0], pts[i], pts[i + 1]):
-                positions.append(p)
-                normals.append(normal)
-                colors.append(color)
+    own flat normal and color. Glowing faces get their own emissive material.
+
+    Without parts the file holds one node and one mesh. With parts, a root
+    node named after the model has one child node per part; each child is
+    placed at the part's pivot and its vertices are relative to that pivot."""
+    names = model.parts()
+    used = {glow for _i, _c, glow, _p in model.faces}
+    material_of = {}
+    materials = []
+    surface = {"baseColorFactor": [1, 1, 1, 1], "metallicFactor": 0.0, "roughnessFactor": 0.9}
+    for glow in (False, True):
+        if glow not in used:
+            continue
+        material = {"name": "Glow" if glow else "Body", "pbrMetallicRoughness": surface}
+        if glow:
+            material["emissiveFactor"] = list(srgb_to_linear(glow_color))
+        material_of[glow] = len(materials)
+        materials.append(material)
 
     blob = bytearray()
-    views, accessors, primitives, materials = [], [], [], []
+    views, accessors = [], []
 
     def push(rows, with_bounds=False):
         offset = len(blob)
@@ -285,30 +312,52 @@ def write_glb(model, glow_color="#5DCAA5"):
         accessors.append(accessor)
         return len(accessors) - 1
 
-    surface = {"baseColorFactor": [1, 1, 1, 1], "metallicFactor": 0.0, "roughnessFactor": 0.9}
-    for glow in (False, True):
-        positions, normals, colors = groups[glow]
-        if not positions:
-            continue
-        material = {"name": "Glow" if glow else "Body", "pbrMetallicRoughness": surface}
-        if glow:
-            material["emissiveFactor"] = list(srgb_to_linear(glow_color))
-        materials.append(material)
-        primitives.append({
-            "attributes": {
-                "POSITION": push(positions, with_bounds=True),
-                "NORMAL": push(normals),
-                "COLOR_0": push(colors),
-            },
-            "material": len(materials) - 1,
-        })
+    meshes, children = [], []
+    for name in names:
+        pivot = to_gltf_axes(model.pivots.get(name, (0.0, 0.0, 0.0))) if name else (0.0, 0.0, 0.0)
+        groups = {False: ([], [], []), True: ([], [], [])}
+        for idx, hex_color, glow, part in model.faces:
+            if part != name:
+                continue
+            pts = [sub(to_gltf_axes(model.verts[i]), pivot) for i in idx]
+            normal = face_normal(pts)
+            color = srgb_to_linear(hex_color)
+            positions, normals, colors = groups[glow]
+            for i in range(1, len(pts) - 1):
+                for p in (pts[0], pts[i], pts[i + 1]):
+                    positions.append(p)
+                    normals.append(normal)
+                    colors.append(color)
+        primitives = []
+        for glow in (False, True):
+            positions, normals, colors = groups[glow]
+            if not positions:
+                continue
+            primitives.append({
+                "attributes": {
+                    "POSITION": push(positions, with_bounds=True),
+                    "NORMAL": push(normals),
+                    "COLOR_0": push(colors),
+                },
+                "material": material_of[glow],
+            })
+        meshes.append({"name": name or model.name, "primitives": primitives})
+        node = {"name": name or model.name, "mesh": len(meshes) - 1}
+        if any(pivot):
+            node["translation"] = list(pivot)
+        children.append(node)
+
+    if names == [None]:
+        nodes = children
+    else:
+        nodes = [{"name": model.name, "children": list(range(1, len(children) + 1))}] + children
 
     doc = {
         "asset": {"version": "2.0", "generator": "tools/lowpoly.py"},
         "scene": 0,
         "scenes": [{"nodes": [0]}],
-        "nodes": [{"name": model.name, "mesh": 0}],
-        "meshes": [{"name": model.name, "primitives": primitives}],
+        "nodes": nodes,
+        "meshes": meshes,
         "materials": materials,
         "accessors": accessors,
         "bufferViews": views,
@@ -358,7 +407,7 @@ def write_preview(model, scale=46, lift=0.0):
     for n, (label, yaw, pitch) in enumerate(views):
         verts = [rotate(v, yaw, pitch) for v in model.verts]
         drawn = []
-        for idx, color, _glow in model.faces:
+        for idx, color, _glow, _part in model.faces:
             pts = [verts[i] for i in idx]
             if face_normal(pts)[1] >= 0:
                 continue
