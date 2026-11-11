@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embed test</title>
+<style>
+  body { margin: 0; font: 15px sans-serif; background: #f3efe6; color: #222; }
+  header, footer { padding: 24px; }
+  footer { height: 1600px; background: linear-gradient(#f3efe6, #d9d2c3); }
+  iframe { display: block; margin: 0 24px; border: 0; width: 960px; height: 600px; }
+</style>
+</head>
+<body>
+<header>
+  <p>Checks the built game the way itch.io shows it: from a subfolder, inside a 960×600 frame on a page that can scroll.</p>
+  <p><code>npm run build</code>, serve the project folder (for example <code>python3 -m http.server</code>), open <code>tools/embed-test.html</code>.
+  Click the game, then hold the arrow keys: the squid should move and this page should not scroll.</p>
+</header>
+<iframe src="../dist/index.html" allow="autoplay; fullscreen" title="Game"></iframe>
+<footer>Tall footer so the page can scroll.</footer>
+</body>
+</html>
