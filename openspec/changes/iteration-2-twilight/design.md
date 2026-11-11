@@ -1,52 +1,80 @@
 ## Context
 
-- Builds on the iteration 1 codebase: fixed-step loop, pure logic in `src/game/`, level data files in `src/levels/`, models split into animated parts
+- Builds on the iteration 1 codebase: fixed-step loop, pure logic in `src/game/`, level data in `src/levels/` (`Level`, `buildLevel`, per-piece colliders in `pieces.ts`), models split into animated parts, the `LocalLights` uniform system for cheap local light, a single-rect `CameraRig`, DOM HUD and a single-pad `Synth`
+- Midnight home spans x 0–54, y −1–21.5; its shaft is the gap x 23.4–30.6 in the rock ceiling, currently closed by a soft push from y = 19
 
 ## Goals / Non-Goals
 
 **Goals:**
 - Move from one zone to a world of zones without rewriting the camera, level or friend code
-- Keep 60 fps with about 30 instanced fireflies on screen
+- Keep 60 fps with about 30 instanced fireflies on screen and both zones' lights in view
+- Every new behaviour has its logic in `src/game/` with Vitest tests, like iteration 1
 
 **Non-Goals:**
 - No saving of world state between sessions (iteration 3)
 - No streaming of distant zones; the whole world is small enough to keep in memory
+- No riding of friends
 
 ## Decisions
 
 ### World = zone list + passages in one coordinate space
 - Each zone keeps its own level file but is placed at an offset in one shared world space; passages are rectangles shared by two zones
-- Camera clamps to the union of the zones overlapping the view
+- Twilight sits directly above home, centred on the shaft (about x 12–42, y 21.5–66); the shaft is the passage
+- Collision, pulses, sparkles and followers all work in world space, so crossing a border needs no hand-over
 - Alternative: separate scenes with transitions (would break the "no loading screen" rule)
 
+### The world is solid around its zones; the camera clamps to one world rectangle
+- Zones do not form a rectangle (narrow Twilight on top of wide home), so the space around them is filled with rock: decor rock walls beside Twilight above home's ceiling, so any view inside the world rectangle shows rock, never empty water
+- The camera keeps clamping to a single rectangle (the world's bounds); colliders keep the squid inside the zones
+- Alternative: clamping to a union of rectangles (an L-shaped clamp jumps at concave corners)
+
 ### Zone state lives in one world-state object
-- Lit plants, lit lanterns, found friends and swarm size go into a single serialisable `WorldState`
+- Lit plants, lit lanterns, found friends and swarm size go into a single serialisable `WorldState`; views read from it instead of keeping their own state (today `PlantsView` holds plant state)
 - Iteration 3 saves this object as it is, so it is designed for that now
+
+### Glow-reactive things are one list
+- Plants, lanterns, the cave and friends register as pulse targets with a kind and a lit flag
+- Dumbo's pointing and the firefly arrow use "nearest unlit glow-reactive thing", so they point at lanterns in Twilight and plants at home
+
+### Local lights are culled to the view
+- `LocalLights` keeps its 32 slots; each frame only lights within a margin of the camera view are added, nearest first, so home's plants and Twilight's lanterns never compete
+
+### Mood per zone, blended by height
+- Each zone defines water colour (bottom and top, for Twilight's gradient), fog and pad layers
+- A full-screen backdrop shader draws the gradient; fog colour and pad layers blend by the squid's position across passages
 
 ### Followers share one behaviour
 - Dumbo's follow-and-catch-up logic is generalised into a follower behaviour used by dumbo and the swarm centre
 - Swarm members are boids around the swarm centre; shapes are target points the boids steer to
 
-### Nautilus as a path follower
-- A vertical path with pause points; riding parents the squid to a seat point on the shell
-- Input during a ride is read as "hop off" rather than steering
+### Nautilus as a path follower that drops sparkles
+- A vertical path with pause points at the top and bottom; it faces its travel direction
+- While cruising it releases a sparkle every so often behind its shell into the sparkle field (capped, so the shaft never floods)
+- Touching it the first time is the discovery; glowing in Twilight sends it toward the squid's height, which brings its sparkles along
+- It has no collider: the squid passes in front of it, so it can never block or trap the squid
 
 ### Twilight pieces are `.glb` models
-- Jellyfish lantern and 3 wall-ledge variants come from the Python model pipeline, like iteration 1's environment; light rays stay a code effect
+- Jellyfish lantern and 3 wall-ledge variants come from the Python model pipeline, like iteration 1's environment; light rays and the backdrop stay code effects
 
 ### Dash as an impulse on the existing steering
-- Adds a velocity impulse and a temporary higher top speed; swipe detection is a fast pointer move under ~150 ms
+- Adds a velocity impulse and a temporary higher top speed along the current steering direction (or facing, when idle), with a 1 s cooldown
+- Touch: a round dash button above the glow button, same style and size; keyboard: Shift
+- Gestures (double-tap, swipe) are not used: they clash with tap-the-squid-to-glow and with steering
+
+### Stickers per friend
+- `Hud.stickerFly` takes the sticker art as an argument; firefly and nautilus get inline SVG stickers like dumbo's
 
 ## Risks / Trade-offs
 
 - [Swarm hides the squid] → swarm stays behind the squid's travel direction and renders smaller and dimmer than the squid
-- [Riding feels like losing control] → any input hops off instantly
-- [Swipe dash triggers by accident while steering] → require a fast, short swipe; tune in playtest
+- [Nautilus sparkles flood the shaft] → cap on how many trail sparkles exist at once; they join the normal field and respawn rules
+- [A second round button crowds the corner] → dash sits above glow with a clear gap; both stay at least 64 px
+- [Rock fill around Twilight looks like a box] → irregular ledges and decor rocks break the walls
 
 ## Migration Plan
 
-`midnight-home`'s closed shaft becomes an open passage; no saved data exists yet, so nothing else migrates.
+`midnight-home`'s closed shaft (the soft push) is removed and becomes an open passage; no saved data exists yet, so nothing else migrates.
 
 ## Open Questions
 
-- Exact zone sizes and lantern count: tune in playtest
+- Exact zone sizes, lantern count and nautilus sparkle rate: tune in playtest

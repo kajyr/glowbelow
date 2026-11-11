@@ -12,11 +12,15 @@ Zones SHALL be joined by wide, obvious passages. Swimming through a passage SHAL
 - **THEN** it arrives in Twilight while the player keeps control the whole time
 
 ### Requirement: Camera works across zones
-The camera SHALL follow the squid across a zone border smoothly and SHALL clamp to the combined bounds of the zones in view, never showing empty space outside the world.
+The camera SHALL follow the squid across a zone border smoothly and SHALL never show empty space outside the world: where zones do not fill the view, rock fills it.
 
 #### Scenario: At a border
 - **WHEN** the squid hovers in the passage between two zones
 - **THEN** parts of both zones are visible and the camera does not jump
+
+#### Scenario: Beside a narrow zone
+- **WHEN** the squid is at the bottom corner of Twilight, above Midnight home's ceiling
+- **THEN** the view beside Twilight shows rock, not empty water
 
 ### Requirement: Zones keep their state
 Lit plants, lanterns and found friends SHALL stay as they were when the squid leaves a zone and comes back during the same session.
@@ -38,3 +42,10 @@ Each zone SHALL have its own background colour, fog and ambient sound, blending 
 #### Scenario: Colour blend
 - **WHEN** the squid swims from home up into Twilight
 - **THEN** the water colour shifts gradually from navy to blue-lavender
+
+### Requirement: Light stays smooth across zones
+Lit plants, lit lanterns and pulses near the border SHALL all keep lighting their surroundings when both zones are in view, with no light flickering on or off as the camera moves.
+
+#### Scenario: Looking down from Twilight
+- **WHEN** the squid is at the bottom of Twilight with many home plants lit below
+- **THEN** both the lit plants below and the lit lanterns nearby light their surroundings

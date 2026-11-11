@@ -7,31 +7,48 @@
 ## 2. Connected world
 
 - [ ] 2.1 Introduce the shared world space, zone offsets and passages; verify Vitest tests for which zone contains a point
-- [ ] 2.2 Move lit plants and found friends into a `WorldState` object; verify state survives leaving and re-entering a zone
-- [ ] 2.3 Clamp the camera to the union of visible zones; verify no jump at a border
-- [ ] 2.4 Blend water colour, fog and ambient pad across passages; verify by swimming between zones
-- [ ] 2.5 Open Midnight home's shaft; verify the squid reaches Twilight
+- [ ] 2.2 Move lit plants and found friends into a `WorldState` object that views read from; verify Vitest tests and that state survives leaving and re-entering a zone
+- [ ] 2.3 Register plants, lanterns, the cave and friends as one list of glow-reactive things; verify Vitest tests that the nearest unlit thing is chosen across kinds and zones
+- [ ] 2.4 Fill the space around the zones with rock and clamp the camera to the world rectangle; verify no empty water is visible beside Twilight and no jump at a border
+- [ ] 2.5 Cull local lights to the camera view, nearest first; verify Vitest tests for the culling and no flicker when looking from Twilight down at lit home plants
+- [ ] 2.6 Add per-zone mood (water gradient backdrop, fog, pad layers) blended by position; verify by swimming between zones
+- [ ] 2.7 Remove Midnight home's shaft soft push and open the shaft as a passage; verify the squid reaches Twilight and can swim back down
 
 ## 3. Twilight
 
 - [ ] 3.1 Write `src/levels/twilight.ts` (about 2×4 screens, placed ledge models, top passage soft wall); verify colliders with the debug overlay
 - [ ] 3.2 Build the gradient mood and light rays; verify the water lightens upward
-- [ ] 3.3 Place about 12 jellyfish lantern models that light on pulse, stay lit and bob, with tentacles swaying; verify
+- [ ] 3.3 Add a Twilight sparkle field with the same density and rules as home; verify Vitest tests that the meter can be filled in Twilight
+- [ ] 3.4 Place about 12 jellyfish lanterns that light on pulse, stay lit, bob and wiggle when pulsed again, with tentacles swaying; verify with the debug light-all key
+- [ ] 3.5 Make lit lanterns add local light and play the all-lit celebration; verify Twilight brightens and the celebration plays once
 
 ## 4. Friends
 
 - [ ] 4.1 Tag animated parts in `make_firefly_squid.py` and `make_nautilus.py` and rebuild; verify in the viewer
 - [ ] 4.2 Generalise dumbo's follow logic into a follower behaviour; verify dumbo still behaves as in iteration 1 (existing tests pass)
-- [ ] 4.3 Add firefly groups, joining, swarm boids and the arrow/star/heart shapes; verify Vitest tests for shape choice and on screen at 60 fps
-- [ ] 4.4 Add the nautilus path, first-touch discovery, riding, hopping off and calling; verify each scenario
-- [ ] 4.5 Make friends follow across zones; verify dumbo and the swarm arrive in Twilight
-- [ ] 4.6 Add firefly chimes and the nautilus's deep sound; verify by listening
+- [ ] 4.3 Make dumbo point at the nearest unlit glow-reactive thing; verify Vitest tests for a lantern chosen in Twilight
+- [ ] 4.4 Add firefly groups, joining, swarm boids and the arrow/star/heart shapes; verify Vitest tests for shape choice and arrow target, and on screen at 60 fps
+- [ ] 4.5 Add the nautilus path with pauses, facing, no collider, and its sparkle trail with a cap; verify Vitest tests for the path, the cap and calling toward the squid's height
+- [ ] 4.6 Add the nautilus's first-touch discovery; verify it happens once
+- [ ] 4.7 Make `Hud.stickerFly` take sticker art; draw firefly and nautilus stickers; verify each friend sends its own sticker
+- [ ] 4.8 Make friends follow across zones; verify dumbo and the swarm arrive in Twilight
+- [ ] 4.9 Add the lantern note, firefly chimes and the nautilus's deep sound; verify each is triggered (no errors, muted when muted)
 
 ## 5. Dash
 
-- [ ] 5.1 Add dash input (Shift, double-tap, swipe) and the impulse with 1 s cooldown; verify Vitest tests and on a tablet
+- [ ] 5.1 Implement the dash impulse, temporary top speed and 1 s cooldown in `src/game/`; verify Vitest tests for direction, cooldown and that a dash into a rock is an ordinary bump
+- [ ] 5.2 Add the dash button above the glow button (at least 64 px, ready state) and Shift; verify both trigger a dash and the button shows the cooldown
 
-## 6. Playtest
+## 6. Checks
 
-- [ ] 6.1 Play from home up to the top of Twilight on a tablet; verify 60 fps, no stuck spots, and that both friends can be found without help
-- [ ] 6.2 Run `npm test` and `npm run build`; verify both pass
+- [ ] 6.1 Run `npm test` and `npm run build`; verify both pass
+- [ ] 6.2 Play from home to the top of Twilight and back on a laptop in the browser; verify no stuck spots, state kept, friends follow, 60 fps
+
+## 7. Manual checks (you)
+
+These need a real tablet or ears. Claude does not tick them; tick them after trying.
+
+- [ ] 7.1 On a tablet over the local network: 60 fps from home to the top of Twilight with the full swarm and both zones lit
+- [ ] 7.2 On a tablet: the dash button and the glow button are easy to hit with a thumb and never pressed by mistake
+- [ ] 7.3 On a tablet: both new friends can be found without help
+- [ ] 7.4 By ear: lantern note, firefly chimes, nautilus sound and the pad blending between zones sound pleasant
