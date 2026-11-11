@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100" role="img" aria-label="Transparent glass squid with arms held up">
+<rect x="-50" y="-50" width="100" height="100" rx="8" fill="#042C53"/>
+<polygon points="-6,-14 -11,-32 -3,-23 0,-34 3,-23 11,-32 6,-14" fill="#85B7EB" fill-opacity="0.45" stroke="#B5D4F4" stroke-width="1"/>
+<polygon points="-8,26 -18,34 -4,30" fill="#85B7EB" fill-opacity="0.35" stroke="#B5D4F4" stroke-width="1"/><polygon points="8,26 18,34 4,30" fill="#85B7EB" fill-opacity="0.35" stroke="#B5D4F4" stroke-width="1"/>
+<polygon points="0,-17 16,-10 19,8 9,26 0,31 -9,26 -19,8 -16,-10" fill="#85B7EB" fill-opacity="0.28" stroke="#B5D4F4" stroke-width="1.2"/>
+<polygon points="-16,-10 0,-17 -4,6 -19,8" fill="#E6F1FB" fill-opacity="0.2"/>
+<polygon points="0,0 5,11 0,20 -5,11" fill="#F0997B"/>
+<circle cx="-10" cy="-10" r="4.5" fill="#E6F1FB"/><circle cx="10" cy="-10" r="4.5" fill="#E6F1FB"/><circle cx="-9" cy="-10" r="2.2" fill="#042C53"/><circle cx="11" cy="-10" r="2.2" fill="#042C53"/>
+</svg>

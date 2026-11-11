@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200" role="img" aria-label="Vampire squid, side swimming view: head leading to the right, cape trailing behind with the coral lining showing underneath">
+<rect x="-100" y="-100" width="200" height="200" rx="12" fill="#042C53"/>
+<g transform="rotate(-12)">
+<polygon points="38,26 46,42 52,22" fill="#791F1F"/>
+<polygon points="10,-28 10,28 -42,48 -28,28 -66,26 -40,10 -76,0 -40,-10 -66,-26 -28,-28 -42,-48" fill="#791F1F"/>
+<polygon points="10,2 10,28 -42,48 -28,28 -66,26 -40,10 -76,0" fill="#D85A30"/>
+<polygon points="10,2 10,14 -66,26 -40,10 -76,0" fill="#F0997B"/>
+<polygon points="10,-24 10,-17 -42,-48" fill="#A32D2D"/>
+<polygon points="10,-14 10,-8 -66,-26" fill="#A32D2D"/>
+<polygon points="10,-3 10,3 -76,0" fill="#A32D2D"/>
+<polygon points="10,8 10,13 -66,26" fill="#A32D2D"/>
+<polygon points="10,17 10,23 -42,48" fill="#A32D2D"/>
+<polygon points="10,-30 36,-32 60,-18 70,0 60,18 36,32 10,30" fill="#A32D2D"/>
+<polygon points="10,-30 36,-32 60,-18 70,0 34,-6" fill="#E24B4A"/>
+<polygon points="70,0 60,18 36,32 10,30 34,8" fill="#791F1F"/>
+<polygon points="12,-30 -6,-46 16,-12" fill="#791F1F"/>
+<polygon points="12,30 -6,44 16,14" fill="#501313"/>
+<polygon points="38,-30 45,-48 52,-25" fill="#E24B4A"/>
+<polygon points="38,-30 45,-48 44,-31" fill="#F09595"/>
+<circle cx="30" cy="-2" r="12" fill="#B5D4F4"/>
+<circle cx="33" cy="-2" r="6" fill="#042C53"/>
+<circle cx="30" cy="-5" r="2" fill="#E6F1FB"/>
+<path d="M46,11 Q52,13 56,8" fill="none" stroke="#501313" stroke-width="2" stroke-linecap="round"/>
+<circle cx="-42" cy="-48" r="3.5" fill="#5DCAA5"/><circle cx="-66" cy="-26" r="3.5" fill="#5DCAA5"/><circle cx="-76" cy="0" r="3.5" fill="#5DCAA5"/><circle cx="-66" cy="26" r="3.5" fill="#5DCAA5"/><circle cx="-42" cy="48" r="3.5" fill="#5DCAA5"/>
+</g>
+</svg>

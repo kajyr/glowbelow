@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100" role="img" aria-label="Swarm of three firefly squid">
+<rect x="-50" y="-50" width="100" height="100" rx="8" fill="#042C53"/>
+<defs><g id="ffsq">
+<polygon points="-5,-7 -11,-11 -2,-13" fill="#85B7EB"/><polygon points="5,-7 11,-11 2,-13" fill="#378ADD"/>
+<polygon points="0,-14 6,-3 5,7 -5,7 -6,-3" fill="#378ADD"/><polygon points="0,-14 -6,-3 -5,7 0,7" fill="#85B7EB"/>
+<polygon points="-5,7 5,7 6,17 2,11 0,19 -2,11 -6,17" fill="#185FA5"/>
+<circle cx="-2" cy="2" r="1.6" fill="#042C53"/><circle cx="3" cy="2" r="1.6" fill="#042C53"/>
+<circle cx="-6" cy="17" r="1.8" fill="#9FE1CB"/><circle cx="0" cy="19" r="1.8" fill="#9FE1CB"/><circle cx="6" cy="17" r="1.8" fill="#9FE1CB"/><circle cx="0" cy="-8" r="1.4" fill="#9FE1CB"/>
+</g></defs>
+<use href="#ffsq" transform="translate(-22,-16) rotate(35)"/>
+<use href="#ffsq" transform="translate(14,-4) rotate(50) scale(1.25)"/>
+<use href="#ffsq" transform="translate(-12,22) rotate(40) scale(0.9)"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100" role="img" aria-label="Cuttlefish with striped back and frilly fin">
+<rect x="-50" y="-50" width="100" height="100" rx="8" fill="#042C53"/>
+<polygon points="20,-8 40,-4 29,0 42,6 28,6 38,13 20,8" fill="#0F6E56"/>
+<polygon points="-32,6 -20,14 18,12 26,2 23,18 -20,22 -36,12" fill="#9FE1CB"/>
+<polygon points="-32,-4 -20,-17 4,-19 22,-11 26,2 18,12 -20,14 -32,6" fill="#1D9E75"/>
+<polygon points="-20,-17 4,-19 22,-11 0,-8 -24,-6" fill="#5DCAA5"/>
+<polygon points="-22,-14 -16,-2 -12,-15" fill="#EF9F27"/><polygon points="-8,-17 -2,-3 2,-18" fill="#D85A30"/><polygon points="6,-16 10,-4 15,-13" fill="#D4537E"/>
+<circle cx="15" cy="0" r="5" fill="#E1F5EE"/><path d="M12,0 Q13.5,3 15,0 Q16.5,3 18,0" fill="none" stroke="#04342C" stroke-width="1.8" stroke-linecap="round"/>
+</svg>
