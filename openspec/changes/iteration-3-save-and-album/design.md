@@ -36,12 +36,18 @@
 ### Bubble ring and starfish are `.glb` models
 - Both come from the Python model pipeline with animated parts (each bubble, each starfish arm); the pop's spray of tiny bubbles stays a code effect
 
+### Storage detection for the itch.io frame
+- The game is already published on itch.io (`itch-io-release`), where it runs in a frame on another domain and Safari may treat `localStorage` as third-party
+- On start, a test write/read to `localStorage` inside try/catch; failure in a framed context sets `saveUnavailable`
+- "Open full page" opens the game's own frame URL in a new tab, which is first-party there
+
 ### Long press with a visible fill
 - The parent-corner control shows a ring filling during the 3-second hold, which reassures adults and means nothing to a child
 
 ## Risks / Trade-offs
 
 - [Safari clears storage for sites not visited for weeks] → acceptable for a small home game; iteration 7's installable app keeps storage longer
+- [Safari clears the itch.io frame's storage when quit] → the full-page option and the game's own address are the reliable way to keep progress
 - [Child finds the long press] → 3 seconds plus a confirmation step for reset
 - [Save written mid-change corrupts state] → write the whole blob at once; validate on load and fall back to a new game
 

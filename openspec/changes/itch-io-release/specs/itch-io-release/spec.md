@@ -29,8 +29,15 @@ New versions SHALL be uploadable with one command that pushes the zip to the itc
 - **WHEN** the release command is run with valid itch.io credentials
 - **THEN** the new version replaces the old one on the itch.io page
 
+### Requirement: Kept in step with the game
+The itch.io version SHALL be updated after each iteration is archived, at the same page address, so it always matches the latest finished iteration.
+
+#### Scenario: After an iteration
+- **WHEN** an iteration is archived and the release command is run
+- **THEN** the itch.io page plays the new version at the same address
+
 ### Requirement: Game page
-The itch.io page SHALL have the game's title, a cover image, at least three screenshots, a short description stating it is a peaceful game for young children, and SHALL be free to play with no in-game links out.
+The itch.io page SHALL have the game's title, a cover image, at least three screenshots, a short description stating it is a peaceful game for young children, SHALL be marked as in development until the last planned iteration ships, and SHALL be free to play with no in-game links out that a child can reach; the parent corner's "open full page" option is the only exception.
 
 #### Scenario: Page check
 - **WHEN** the itch.io page is viewed logged out

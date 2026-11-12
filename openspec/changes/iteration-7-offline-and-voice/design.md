@@ -20,6 +20,10 @@
 - `registerType: 'prompt'`-style flow handled silently: the new worker waits and activates on the next launch
 - Alternative: a hand-written service worker (more code to get caching and updates right)
 
+### No service worker in the itch.io build
+- `npm run build:itch` (from `itch-io-release`) sets `VITE_TARGET=itch`, which skips service worker registration; offline install belongs to the game's own address
+- Safety net at run time: no registration when the page is framed by an itch domain
+
 ### Static hosting on GitHub Pages
 - Free HTTPS hosting from the repository with a build-and-publish workflow
 - Alternative: Netlify (equally fine; choose whichever the user already uses)

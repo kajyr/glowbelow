@@ -9,6 +9,7 @@ Depends on: `iteration-6-italian`.
 - The game is published as a static site and can be installed to the home screen
 - After the first visit, the game works fully offline, including all models and sounds
 - Updates are picked up on the next launch without interrupting play
+- The itch.io build registers no service worker; offline install stays on the game's own address
 - Each friend's album page gains a spoken fun fact, played by tapping a speaker icon, in the chosen language
 - Fun facts use recorded voice files where provided (for example recorded by a parent), and the device's speech voice otherwise
 

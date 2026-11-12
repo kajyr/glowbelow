@@ -18,6 +18,8 @@
 - [ ] 3.1 Add the 3-second long-press control with a filling ring and Shift+P; verify a short tap does nothing
 - [ ] 3.2 Add music and effects volume, saved with progress; verify each slider affects only its sounds
 - [ ] 3.3 Add reset with confirmation returning to the title; verify reset and cancel
+- [ ] 3.4 Detect unavailable storage in a framed context; verify a Vitest test with a throwing storage stub
+- [ ] 3.5 Show the "saving unavailable here" note with "open full page" in the parent corner only; verify it appears with blocked storage and not otherwise
 
 ## 4. Bubble rings
 
@@ -35,4 +37,5 @@
 ## 6. Verification
 
 - [ ] 6.1 Play a full session on a tablet, close the tab, reopen and continue; verify everything found is still there and the album matches
-- [ ] 6.2 Run `npm test` and `npm run build`; verify both pass
+- [ ] 6.2 Push to itch.io and play there in Safari on an iPad, close Safari, reopen; verify the game still works; the parent-corner note appears only if storage was blocked, and progress lost to Safari clearing the frame's storage is expected
+- [ ] 6.3 Run `npm test` and `npm run build`; verify both pass
