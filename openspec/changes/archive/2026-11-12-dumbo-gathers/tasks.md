@@ -18,5 +18,5 @@
 
 These need a person playing or listening. Claude does not tick them; tick them after trying.
 
-- [ ] 4.1 Resting with dumbo feels like a nice reward but swimming is still the faster way to fill the meter
-- [ ] 4.2 Dumbo's pickup note sounds soft and pleasant next to the squid's sparkle notes
+- [x] 4.1 Resting with dumbo feels like a nice reward but swimming is still the faster way to fill the meter
+- [x] 4.2 Dumbo's pickup note sounds soft and pleasant next to the squid's sparkle notes
