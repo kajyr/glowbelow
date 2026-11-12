@@ -10,13 +10,13 @@
 - [ ] 2.2 Move lit plants and found friends into a `WorldState` object that views read from; verify Vitest tests and that state survives leaving and re-entering a zone
 - [ ] 2.3 Register plants, lanterns, the cave and friends as one list of glow-reactive things; verify Vitest tests that the nearest unlit thing is chosen across kinds and zones
 - [ ] 2.4 Fill the space around the zones with rock and clamp the camera to the world rectangle; verify no empty water is visible beside Twilight and no jump at a border
-- [ ] 2.5 Cull local lights to the camera view, nearest first; verify Vitest tests for the culling and no flicker when looking from Twilight down at lit home plants
+- [ ] 2.5 Add lit lanterns as light candidates to the existing light culling (from `procedural-home`); verify no flicker when looking from Twilight down at lit home plants
 - [ ] 2.6 Add per-zone mood (water gradient backdrop, fog, pad layers) blended by position; verify by swimming between zones
 - [ ] 2.7 Remove Midnight home's shaft soft push and open the shaft as a passage; verify the squid reaches Twilight and can swim back down
 
 ## 3. Twilight
 
-- [ ] 3.1 Write `src/levels/twilight.ts` (about 2×4 screens, placed ledge models, top passage soft wall); verify colliders with the debug overlay
+- [ ] 3.1 Write a Twilight `ZoneRecipe` for the zone generator (placed above home's shaft, ledge models, lanterns, top passage soft wall) and extend the generator and rules where Twilight needs it; verify Vitest tests over 500 seeds and colliders with the debug overlay
 - [ ] 3.2 Build the gradient mood and light rays; verify the water lightens upward
 - [ ] 3.3 Add a Twilight sparkle field with the same density and rules as home; verify Vitest tests that the meter can be filled in Twilight
 - [ ] 3.4 Place about 12 jellyfish lanterns that light on pulse, stay lit, bob and wiggle when pulsed again, with tentacles swaying; verify with the debug light-all key

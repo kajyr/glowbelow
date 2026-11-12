@@ -1,6 +1,7 @@
 ## Context
 
 - Builds on the `WorldState` object introduced in iteration 2, which already holds lit plants, found friends and swarm size
+- Zones are generated from a world seed (`procedural-home`): the save stores the seed, and lit plants and lanterns are stored by their generated ids, which are stable for a given seed
 - The HUD is plain DOM over the canvas; the album and parent corner follow the same approach
 
 ## Goals / Non-Goals

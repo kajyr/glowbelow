@@ -30,6 +30,7 @@ Depends on: `iteration-2-twilight`.
 ## Impact
 
 - `WorldState` from iteration 2 gains a version number and is written to `localStorage`
+- The world seed (from `procedural-home`) is saved with it; "continue" regenerates the same world from that seed, and only a new game draws a new seed
 - New DOM screens (album, parent corner) navigable by touch and by arrows + Space/Enter
 - Two new model scripts and `.glb` files (bubble ring, starfish)
 - No new dependencies expected

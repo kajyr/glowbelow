@@ -51,10 +51,11 @@
   - keep-out areas are empty
   - the cave distance is in range
 - The same grid gives A* paths for trails and for the crossing-time and trail-length tests
+- On a 0.5-unit grid a gap is only detected reliably from about 3.1 units (the middle of the gap can fall up to 0.25 off a cell centre), so rocks keep 3.4 units between their colliders and the cave is scaled 1.5×; the "two squid widths" rule is therefore checked with a margin
 - Alternative: physics-based test swims (slow and flaky)
 
 ### Bigger cave in the recipe
-- The recipe places the cave at a scale of about 1.35, so its entrance (about 2.6 units) meets the two-squid-width rule. Its colliders scale with the placement, as for every piece
+- The recipe places the cave at a scale of 1.5 (tuned up from 1.35 to leave room for the grid margin), so its entrance (about 3.2 units) meets the two-squid-width rule. Its colliders scale with the placement, as for every piece
 - Alternative: rebuild the cave model with a taller entrance (a model change, can come later)
 
 ### Trails from A* paths
@@ -95,3 +96,13 @@
 ## Open Questions
 
 - Exact counts (seabed rocks, floating rocks), spacing and trail density: tune after looking at a dozen seeds
+
+## Review notes (after implementation)
+
+- Tuned: 6 seabed rocks (9 did not fit with 3.4-unit gaps), 20 seabed plants (45 in total), cave scale 1.5, upper floating band raised to 24–32
+- Floating rocks are stratified into columns so every part of the water has a plant within a screen; the top band stays centred, lower bands zig-zag so the rocks do not form a grid
+- Rocks keep the full rock gap from the side walls too: a 2-unit strip between a rock and a wall was the main source of "pocket" rejections
+- Straight trail routes get a gentle wave where the water stays wide, so they look like drifting snow rather than ruler lines
+- About 97% of seeds pass on the first try; rejections are rare pockets and no room for a hanging rock. Generation takes about 7 ms in tests and 16 ms in the browser
+- Repetition seen across a dozen seeds: the seabed is nearly flat at this size (all three segments are low). Variety comes from rock placement; taller seabed variants or terrain steps would help later
+- Found while reviewing: mirrored pieces rendered dark (an iteration 1 bug in instancing); fixed by giving mirrored placements their own mirrored mesh
