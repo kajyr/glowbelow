@@ -15,7 +15,22 @@ export interface SquidInfo {
   facing: number;
 }
 
-export type DumboEvent = { kind: 'point'; plant: PlantInfo } | { kind: 'spin' } | null;
+/** A drifting sparkle dumbo may gather. */
+export interface SparkleInfo {
+  index: number;
+  x: number;
+  y: number;
+}
+
+export type DumboEvent =
+  | { kind: 'point'; plant: PlantInfo }
+  | { kind: 'spin' }
+  /** Dumbo reached this sparkle and gathers it for the squid. */
+  | { kind: 'gather'; index: number }
+  | null;
+
+/** While found: following the squid, or gathering sparkles while it rests. */
+export type DumboActivity = 'follow' | 'gather';
 
 export type DumboState = 'hidden' | 'popping' | 'following';
 
@@ -26,8 +41,10 @@ export const POP_TIME = 1.4;
  * Dumbo's behaviour: hidden in the cave until found, then follows the squid
  * at a short distance (catching up fast when left behind), and when the
  * squid stops for a moment points at the nearest unlit plant — or spins
- * happily when every plant is lit. Dumbo ignores walls so it can never get
- * stuck; it only keeps above the seabed.
+ * happily when every plant is lit. If the squid keeps resting, dumbo then
+ * gathers drifting sparkles near the squid for it, until the squid moves.
+ * Dumbo ignores walls so it can never get stuck; it only keeps above the
+ * seabed.
  */
 export class DumboBrain {
   state: DumboState = 'hidden';
@@ -38,8 +55,13 @@ export class DumboBrain {
   popTime = 0;
   /** Plant being pointed at, if any. */
   pointing: PlantInfo | null = null;
+  activity: DumboActivity = 'follow';
+  /** Sparkle dumbo is swimming to, if any. */
+  target: SparkleInfo | null = null;
   private stillTime = 0;
   private reacted = false;
+  private pause = 0;
+  private sinceGather = Infinity;
 
   constructor(
     home: Vec2,
@@ -56,7 +78,8 @@ export class DumboBrain {
     return true;
   }
 
-  update(dt: number, squid: SquidInfo, plants: PlantInfo[]): DumboEvent {
+  /** `sparkles` are the drifting sparkles dumbo may gather (never trail ones). */
+  update(dt: number, squid: SquidInfo, plants: PlantInfo[], sparkles: SparkleInfo[] = []): DumboEvent {
     if (this.state === 'hidden') return null;
     if (this.state === 'popping') {
       this.popTime += dt;
@@ -65,8 +88,10 @@ export class DumboBrain {
       return null;
     }
 
+    const event = this.watchStillness(dt, squid, plants);
+    if (this.activity === 'gather') return this.gather(dt, squid, sparkles) ?? event;
     this.follow(dt, squid);
-    return this.watchStillness(dt, squid, plants);
+    return event;
   }
 
   /** The spot dumbo swims to: just behind and a little above the squid. */
@@ -77,15 +102,18 @@ export class DumboBrain {
 
   private follow(dt: number, squid: SquidInfo) {
     const D = TUNING.dumbo;
-    const target = this.followPoint(squid);
+    const far = Math.hypot(squid.pos.x - this.pos.x, squid.pos.y - this.pos.y) > D.catchUpDistance;
+    this.swimTo(this.followPoint(squid), far ? D.catchUpSpeed : D.speed, far ? 5 : 3, dt);
+  }
+
+  /** Eases toward a point; ignores walls, keeps above the seabed. */
+  private swimTo(target: Vec2, top: number, rate: number, dt: number) {
     const dx = target.x - this.pos.x;
     const dy = target.y - this.pos.y;
     const d = Math.hypot(dx, dy);
-    const far = Math.hypot(squid.pos.x - this.pos.x, squid.pos.y - this.pos.y) > D.catchUpDistance;
-    const top = far ? D.catchUpSpeed : D.speed;
     const speed = Math.min(top, d * 2.2);
     const want = d > 1e-6 ? { x: (dx / d) * speed, y: (dy / d) * speed } : { x: 0, y: 0 };
-    const k = ease(far ? 5 : 3, dt);
+    const k = ease(rate, dt);
     this.vel.x += (want.x - this.vel.x) * k;
     this.vel.y += (want.y - this.vel.y) * k;
     this.pos.x += this.vel.x * dt;
@@ -95,15 +123,55 @@ export class DumboBrain {
     if (Math.abs(this.vel.x) > 0.3) this.facing = Math.sign(this.vel.x);
   }
 
+  /**
+   * Gathering: swim to the drifting sparkle nearest to dumbo among those
+   * in the visible box around the squid, pick it up, pause for a bounce, repeat.
+   * Hovers at the follow point when nothing is in range.
+   */
+  private gather(dt: number, squid: SquidInfo, sparkles: SparkleInfo[]): DumboEvent {
+    const D = TUNING.dumbo;
+    this.sinceGather += dt;
+    this.pause = Math.max(0, this.pause - dt);
+    let best: SparkleInfo | null = null;
+    let bestD = Infinity;
+    for (const s of sparkles) {
+      if (Math.abs(s.x - squid.pos.x) > D.gatherRangeX || Math.abs(s.y - squid.pos.y) > D.gatherRangeY) continue;
+      const d = Math.hypot(s.x - this.pos.x, s.y - this.pos.y);
+      if (d < bestD) {
+        bestD = d;
+        best = s;
+      }
+    }
+    this.target = best;
+    if (!best || this.pause > 0) {
+      this.swimTo(best && this.pause > 0 ? this.pos : this.followPoint(squid), D.speed, 3, dt);
+      return null;
+    }
+    this.swimTo(best, D.gatherSpeed, 3, dt);
+    if (Math.hypot(best.x - this.pos.x, best.y - this.pos.y) <= D.gatherReach && this.sinceGather >= D.gatherInterval) {
+      this.sinceGather = 0;
+      this.pause = D.gatherPause;
+      this.target = null;
+      return { kind: 'gather', index: best.index };
+    }
+    return null;
+  }
+
   private watchStillness(dt: number, squid: SquidInfo, plants: PlantInfo[]): DumboEvent {
     const D = TUNING.dumbo;
     if (Math.hypot(squid.vel.x, squid.vel.y) > D.stillSpeed) {
       this.stillTime = 0;
       this.reacted = false;
       this.pointing = null;
+      this.activity = 'follow';
+      this.target = null;
       return null;
     }
     this.stillTime += dt;
+    if (this.reacted && this.activity === 'follow' && this.stillTime >= D.pointAfter + D.gatherAfterPoint) {
+      this.activity = 'gather';
+      this.pointing = null;
+    }
     if (this.reacted || this.stillTime < D.pointAfter) return null;
     this.reacted = true;
     const plant = nearestUnlit(squid.pos, plants);

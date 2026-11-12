@@ -190,6 +190,28 @@ export class Synth {
     });
   }
 
+  /** One short soft flute note when dumbo gathers a sparkle; quieter than the squid's notes. */
+  dumboNote(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const f = PENTA[3 + Math.floor(Math.random() * 4)];
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = f;
+    const vib = ctx.createOscillator();
+    vib.frequency.value = 5.5;
+    const vd = ctx.createGain();
+    vd.gain.value = f * 0.01;
+    vib.connect(vd);
+    vd.connect(o.frequency);
+    o.connect(this.env(now, 0.06, 0.04, 0.35));
+    o.start(now);
+    vib.start(now);
+    o.stop(now + 0.45);
+    vib.stop(now + 0.45);
+  }
+
   /** Dumbo's soft flute call: three notes, sine with vibrato and a little breath. */
   flute(): void {
     const ctx = this.live();

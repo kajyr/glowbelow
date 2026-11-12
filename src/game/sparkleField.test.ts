@@ -57,4 +57,27 @@ describe('sparkle field', () => {
     expect(field.sparkles.filter((s) => s.alive).length).toBe(total);
     expect(field.countIn({ minX: -1, maxX: 41, minY: 0, maxY: 20 })).toBe(total);
   });
+
+  test('friends only see drifting sparkles, never trails', () => {
+    const field = new SparkleField({ bounds, floor, trails: [{ x: 10, y: 5 }, { x: 12, y: 5 }], count: 5, rng: makeRng(3) });
+    const list = field.drifting();
+    expect(list).toHaveLength(5);
+    for (const d of list) expect(field.sparkles[d.index].kind).toBe('drift');
+    expect(field.collect(0)).toBeNull(); // index 0 is a trail sparkle
+    expect(field.sparkles[0].alive).toBe(true);
+  });
+
+  test('a sparkle collected for a friend respawns under the usual rules', () => {
+    const field = new SparkleField({ bounds, floor, trails: [], count: 3, rng: makeRng(4) });
+    const view = { minX: 10, maxX: 25, minY: 2, maxY: 13 };
+    const at = field.collect(1);
+    expect(at).not.toBeNull();
+    expect(field.sparkles[1].alive).toBe(false);
+    expect(field.collect(1)).toBeNull(); // already gone
+    expect(field.drifting().map((d) => d.index)).not.toContain(1);
+    for (let t = 0; t < TUNING.sparkles.respawnMax + 0.1; t += 1 / 60) field.update(1 / 60, { x: -50, y: -50 }, view);
+    expect(field.sparkles[1].alive).toBe(true);
+    expect(field.sparkles[1].x).toBeGreaterThanOrEqual(view.minX);
+    expect(field.sparkles[1].x).toBeLessThanOrEqual(view.maxX);
+  });
 });

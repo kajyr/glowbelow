@@ -11,6 +11,9 @@ interface Fx {
   vy: number;
   life: number;
   max: number;
+  /** A spark that travels from one point to another (dumbo to the squid). */
+  from?: { x: number; y: number };
+  to?: { x: number; y: number };
 }
 
 /**
@@ -38,6 +41,11 @@ export class SparklesView {
       const s = 1.2 + Math.random() * 1.6;
       this.spawn({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0, max: 0.7 + Math.random() * 0.4 });
     }
+  }
+
+  /** A spark that flies from one point to another, then pops (dumbo hands a sparkle to the squid). */
+  fly(from: { x: number; y: number }, to: { x: number; y: number }): void {
+    this.spawn({ x: from.x, y: from.y, vx: 0, vy: 0, life: 0, max: 0.5, from: { ...from }, to });
   }
 
   /** A tiny pop where a sparkle was eaten. */
@@ -77,11 +85,21 @@ export class SparklesView {
         this.fx.splice(i, 1);
         continue;
       }
-      f.x += f.vx * dt;
-      f.y += f.vy * dt;
-      f.vx *= 1 - 3 * dt;
-      f.vy *= 1 - 3 * dt;
-      const k = 1 - f.life / f.max;
+      let k = 1 - f.life / f.max;
+      if (f.from && f.to) {
+        // Arc from dumbo to the squid, staying full size until it arrives.
+        const t = f.life / f.max;
+        const e = t * t * (3 - 2 * t);
+        f.x = f.from.x + (f.to.x - f.from.x) * e;
+        f.y = f.from.y + (f.to.y - f.from.y) * e + Math.sin(t * Math.PI) * 0.8;
+        k = 1.1;
+        if (f.life + dt >= f.max) this.pop(f.to.x, f.to.y);
+      } else {
+        f.x += f.vx * dt;
+        f.y += f.vy * dt;
+        f.vx *= 1 - 3 * dt;
+        f.vy *= 1 - 3 * dt;
+      }
       e.set(0, 0, f.life * 6);
       q.setFromEuler(e);
       pos.set(f.x, f.y, 0.4);

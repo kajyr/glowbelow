@@ -57,5 +57,14 @@ export const TUNING = {
     catchUpSpeed: 11,
     pointAfter: 2, // seconds of squid stillness
     stillSpeed: 0.35,
+    gatherAfterPoint: 1.2, // dumbo starts gathering this long after pointing
+    // Only sparkles in a box around the squid that stays inside the visible
+    // screen, so the child always sees dumbo at work.
+    gatherRangeX: 7,
+    gatherRangeY: 4.5,
+    gatherSpeed: 2.4, // slower than the squid's 4.5
+    gatherReach: 0.6,
+    gatherPause: 1.0, // the little bounce after each pickup
+    gatherInterval: 2.0, // at least this long between pickups
   },
 } as const;

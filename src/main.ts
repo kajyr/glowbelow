@@ -253,9 +253,20 @@ async function boot() {
       dt,
       { pos: body.pos, vel: body.vel, facing: squidView.facing },
       plants.plants.map((p) => ({ id: p.id, x: p.x, y: p.y, lit: p.state !== 'unlit' })),
+      brain.state === 'following' ? field.drifting() : [],
     );
     if (dumboEvent?.kind === 'point') synth.flute();
     if (dumboEvent?.kind === 'spin') dumboView.happySpin();
+    if (dumboEvent?.kind === 'gather') {
+      // Dumbo's sparkle counts exactly like one the squid caught.
+      const at = field.collect(dumboEvent.index);
+      if (at) {
+        meter.add();
+        synth.dumboNote();
+        dumboView.hop();
+        sparkles.fly(at, body.pos);
+      }
+    }
 
     const speed = Math.hypot(body.vel.x, body.vel.y);
     hints.update(dt, {

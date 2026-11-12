@@ -82,9 +82,7 @@ export class SparkleField {
       const dy = squid.y - s.y;
       const d = Math.hypot(dx, dy);
       if (d < S.collectRadius) {
-        s.alive = false;
-        s.respawnIn = S.respawnMin + this.rng() * (S.respawnMax - S.respawnMin);
-        collected.push({ x: s.x, y: s.y });
+        collected.push(this.take(s));
         continue;
       }
       if (s.pulled || d < S.magnetRadius) {
@@ -109,6 +107,37 @@ export class SparkleField {
       if (s.y < this.floor(s.x) + 0.2) this.recycleAtTop(s);
     }
     return collected;
+  }
+
+  /** Collects a sparkle: it disappears and comes back later from the top of the view. */
+  private take(s: Sparkle): Vec2 {
+    const S = TUNING.sparkles;
+    s.alive = false;
+    s.respawnIn = S.respawnMin + this.rng() * (S.respawnMax - S.respawnMin);
+    return { x: s.x, y: s.y };
+  }
+
+  /**
+   * Sparkles a friend may gather: alive, drifting (never part of a trail) and
+   * not already being pulled in by the squid.
+   */
+  drifting(): { index: number; x: number; y: number }[] {
+    const out: { index: number; x: number; y: number }[] = [];
+    this.sparkles.forEach((s, index) => {
+      if (s.alive && s.kind === 'drift' && !s.pulled) out.push({ index, x: s.x, y: s.y });
+    });
+    return out;
+  }
+
+  /**
+   * Collects a drifting sparkle on a friend's behalf, exactly like a squid
+   * pickup (same respawn). Returns where it was, or null if it is gone or is
+   * not a drifting sparkle.
+   */
+  collect(index: number): Vec2 | null {
+    const s = this.sparkles[index];
+    if (!s || !s.alive || s.kind !== 'drift') return null;
+    return this.take(s);
   }
 
   /** A sparkle that reached the seabed starts again high in the zone. */
