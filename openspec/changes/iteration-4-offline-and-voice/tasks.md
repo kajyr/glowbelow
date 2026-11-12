@@ -7,7 +7,7 @@
 
 ## 2. Publishing
 
-- [ ] 2.1 Add a build-and-publish workflow for GitHub Pages (or the user's chosen static host); verify the site loads over HTTPS
+- [x] 2.1 Add a build-and-publish workflow for GitHub Pages (or the user's chosen static host); verify the site loads over HTTPS
 - [ ] 2.2 Install to an iPad home screen and launch in airplane mode; verify full-screen offline play
 
 ## 3. Fun facts
