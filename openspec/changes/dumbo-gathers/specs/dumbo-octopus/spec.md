@@ -1,0 +1,49 @@
+## MODIFIED Requirements
+
+### Requirement: Dumbo points toward unlit plants
+After being found, when the squid stops for about 2 seconds, dumbo SHALL turn toward the nearest unlit glow plant and point at it with a wiggle of an ear. When every plant is lit, dumbo SHALL instead do a happy spin. Right after pointing or spinning, dumbo SHALL start gathering sparkles as described in "Dumbo gathers sparkles".
+
+#### Scenario: Pointing
+- **WHEN** the squid hovers still for 2 seconds and unlit plants remain
+- **THEN** dumbo turns and wiggles an ear toward the nearest unlit plant
+
+#### Scenario: Everything lit
+- **WHEN** the squid hovers still and every plant is lit
+- **THEN** dumbo does a happy spin instead of pointing
+
+#### Scenario: Pointing, then gathering
+- **WHEN** dumbo has pointed and the squid stays still
+- **THEN** dumbo starts swimming to nearby sparkles
+
+## ADDED Requirements
+
+### Requirement: Dumbo gathers sparkles
+While the squid stays still after dumbo has pointed (or spun), dumbo SHALL swim to the nearest drifting sparkle within about one screen of the squid and collect it, then move on to the next. Each sparkle dumbo collects SHALL fill the squid's glow meter exactly as if the squid had collected it, with a little bounce and a small spark flying from dumbo to the squid. Dumbo SHALL never collect sparkles that are part of a trail. Dumbo SHALL gather more slowly than the squid can collect (about one sparkle every 2 to 3 seconds). As soon as the squid moves, dumbo SHALL stop gathering and return to following. While gathering, dumbo SHALL still never get stuck and SHALL stay above the seabed.
+
+#### Scenario: Resting while dumbo gathers
+- **WHEN** the squid stays still for 10 seconds with drifting sparkles nearby
+- **THEN** dumbo collects several of them one after another and the glow meter rises with each
+
+#### Scenario: Spark to the squid
+- **WHEN** dumbo collects a sparkle
+- **THEN** a small spark flies from dumbo to the squid as the meter fills
+
+#### Scenario: Trails stay
+- **WHEN** dumbo gathers next to a sparkle trail
+- **THEN** the trail's sparkles are left in place
+
+#### Scenario: Only nearby
+- **WHEN** the only drifting sparkles are more than a screen away from the squid
+- **THEN** dumbo stays near the squid and does not go after them
+
+#### Scenario: Moving again
+- **WHEN** the squid starts swimming while dumbo is gathering
+- **THEN** dumbo stops and follows the squid again
+
+#### Scenario: Pineapple pose
+- **WHEN** the squid curls into the pineapple pose
+- **THEN** dumbo keeps gathering
+
+#### Scenario: Before being found
+- **WHEN** dumbo has not been found yet
+- **THEN** no sparkles are gathered for the squid
