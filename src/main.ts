@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Synth } from './audio/synth';
 import { BumpState } from './game/bump';
+import { Dash, dashDirection } from './game/dash';
 import { collide } from './game/collision';
 import { DumboBrain } from './game/dumboBrain';
 import { GlowMeter } from './game/glowMeter';
@@ -12,6 +13,8 @@ import { PulseSystem } from './game/pulse';
 import { shaftPush } from './game/shaft';
 import { SparkleField } from './game/sparkleField';
 import { steer, type Body, type SteerInput } from './game/steering';
+import { fireflyGroupId, Swarm } from './game/swarm';
+import { Nautilus } from './game/nautilus';
 import { TUNING } from './game/tuning';
 import { WorldState } from './game/worldState';
 import { Input } from './input';
@@ -31,7 +34,11 @@ import { CAMERA_DISTANCE, Stage } from './render/stage';
 import { buildWorld } from './render/world';
 import { buildRockFill } from './render/rockFill';
 import { LanternsView, lanternId } from './render/lanterns';
+import { FireflyView } from './render/fireflyView';
+import { NautilusView } from './render/nautilusView';
+import { zoneAt } from './levels/world';
 import { Hud } from './ui/hud';
+import { STICKER_DUMBO, STICKER_FIREFLY, STICKER_NAUTILUS } from './ui/icons';
 import { JellyView } from './render/jellyView';
 
 const STEP = 1 / 60;
@@ -86,6 +93,14 @@ async function boot() {
   const brain = new DumboBrain({ ...cave.eyes }, built.floor);
   const dumboView = new DumboView(models, cave.eyes);
   scene.add(dumboView.root, dumboView.caveEyes);
+  // The firefly squid: five groups in Twilight that join the swarm when glowed at.
+  const swarm = new Swarm(level.fireflyGroups ?? [], level.start);
+  const fireflyView = new FireflyView(models, swarm, lights);
+  scene.add(fireflyView.group);
+  // The nautilus cruising up and down Twilight.
+  const nautilus = level.nautilus ? new Nautilus(level.nautilus) : null;
+  const nautilusView = nautilus ? new NautilusView(models) : null;
+  if (nautilusView) scene.add(nautilusView.root);
   const field = new SparkleField({
     // Sparkles drift in each zone's water, never in the rock between them.
     bounds: [sparkleBounds(zone.layout.level), ...gameWorld.map.zones.filter((z) => z.name !== 'home').map((z) => ({ minX: z.rect.minX + 1, maxX: z.rect.maxX - 1, minY: z.rect.minY + 1, maxY: z.rect.maxY - 5 }))],
@@ -120,6 +135,7 @@ async function boot() {
   const meter = new GlowMeter();
   const pulses = new PulseSystem();
   const bump = new BumpState();
+  const dash = new Dash();
   const input = new Input(container, (t) => hud.isControl(t));
   const hints = new Hints(input.last);
   let mode: 'title' | 'play' = 'title';
@@ -169,7 +185,14 @@ async function boot() {
     muted = !muted;
     synth.setMuted(muted);
     hud.setMuted(muted);
+    try {
+      localStorage.setItem('glowbelow.muted', muted ? '1' : '0');
+    } catch { /* storage unavailable: the choice just won't persist */ }
   };
+  if (muted) {
+    synth.setMuted(true);
+    hud.setMuted(true);
+  }
   hud.mute.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -180,17 +203,17 @@ async function boot() {
     e.stopPropagation();
     hud.wiggleAlbum();
   });
+  // A world that already unlocked dash (a saved game, from iteration 3) shows it from the start.
+  if (worldState.dashUnlocked) hud.showDash(false);
+  hud.dash.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    input.dash(e.pointerType === 'mouse' ? input.last : 'touch');
+  });
   hud.glow.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    try {
-      localStorage.setItem('glowbelow.muted', muted ? '1' : '0');
-    } catch { /* storage unavailable: the choice just won't persist */ }
     input.glow(e.pointerType === 'mouse' ? input.last : 'touch');
-  if (muted) {
-    synth.setMuted(true);
-    hud.setMuted(true);
-  }
   });
 
   input.onKey = (code) => {
@@ -240,6 +263,26 @@ async function boot() {
     if (brain.state === 'following') setTimeout(() => dumboView.happySpin(), 1200);
   }
 
+  function joinFireflies(group: number) {
+    const ev = swarm.join(group);
+    if (!ev) return;
+    worldState.join(fireflyGroupId(group));
+    synth.fireflyChimes();
+    // The first group found is the friend: it sends its sticker to the album.
+    if (ev.first && worldState.find('firefly')) {
+      const g = swarm.groups[group];
+      setTimeout(() => hud.stickerFly(stage.toScreen(new THREE.Vector3(g.x, g.y, 0)), STICKER_FIREFLY), 500);
+    }
+  }
+
+  function meetNautilus() {
+    if (!nautilus || !worldState.find('nautilus')) return;
+    synth.nautilus();
+    nautilusView?.nodHead();
+    const at = nautilus.pos;
+    setTimeout(() => hud.stickerFly(stage.toScreen(new THREE.Vector3(at.x, at.y + 1, 0)), STICKER_NAUTILUS), 700);
+  }
+
   function discoverDumbo() {
     if (!brain.discover()) return;
     worldState.find('dumbo');
@@ -247,7 +290,7 @@ async function boot() {
     dumboView.happySpin();
     setTimeout(() => {
       const at = stage.toScreen(new THREE.Vector3(brain.pos.x, brain.pos.y + 0.6, 0));
-      hud.stickerFly(at);
+      hud.stickerFly(at, STICKER_DUMBO);
     }, 700);
   }
 
@@ -258,7 +301,9 @@ async function boot() {
     ...built.plants.map((p): GlowTarget => ({ id: p.id, kind: 'plant', x: p.x, y: p.y + 0.8, r: 0.5 })),
     { id: 'cave', kind: 'cave', x: cave.x, y: cave.y, r: cave.r },
     ...(level.lanterns ?? []).map((l, i): GlowTarget => ({ id: lanternId(i), kind: 'lantern', x: l.x, y: l.y + 0.25, r: 0.6 })),
+    ...swarm.groups.map((g, i): GlowTarget => ({ id: fireflyGroupId(i), kind: 'firefly', x: g.x, y: g.y, r: TUNING.firefly.groupRadius })),
   ];
+  const fireflyGroupOf = new Map(swarm.groups.map((_g, i) => [fireflyGroupId(i), i]));
   const glowById = new Map(glowTargets.map((t) => [t.id, t]));
   const unlitThings = () =>
     glowTargets.filter((t) => LIGHTABLE.includes(t.kind)).map((t) => ({ id: t.id, x: t.x, y: t.y, lit: worldState.isLit(t.id) }));
@@ -284,7 +329,12 @@ async function boot() {
     if (steering || ev.any) idle = 0;
     else idle += dt;
 
-    steer(body, steerIn, dt);
+    // The optional dash: a burst along the steering (or facing), then steering eases back.
+    dash.update(dt);
+    // Dash unlocks the first time the squid reaches Twilight, and stays.
+    if (!worldState.dashUnlocked && zoneAt(gameWorld.map, body.pos) === 'twilight' && worldState.unlockDash()) hud.showDash(true);
+    if (ev.dash && worldState.dashUnlocked && !bump.locked && dash.trigger(body, dashDirection(body, steerIn, squidView.facing))) hud.dashFlash();
+    steer(body, steerIn, dt, dash.params());
     const contact = collide(body, TUNING.squid.radius, built.world, dt);
     shaftPush(body, level.shaft, dt);
     if (jelly) {
@@ -326,6 +376,11 @@ async function boot() {
         squidView.pulse(p.kind === 'big');
         hud.glowFlash();
         if (brain.state === 'following') dumboView.hop();
+        // A glow in Twilight calls the nautilus (once it has been found).
+        if (nautilus && zoneAt(gameWorld.map, body.pos) === 'twilight' && nautilus.call(body.pos.y)) {
+          synth.nautilus(true);
+          nautilusView?.nodHead();
+        }
       }
     }
     pulses.update(dt);
@@ -334,6 +389,7 @@ async function boot() {
       if (kind === 'cave') discoverDumbo();
       else if (kind === 'plant') touchPlant(id);
       else if (kind === 'lantern') touchLantern(id);
+      else if (kind === 'firefly') joinFireflies(fireflyGroupOf.get(id) ?? -1);
     }
 
     const dumboEvent = brain.update(
@@ -342,6 +398,12 @@ async function boot() {
       unlitThings(),
       brain.state === 'following' ? field.drifting() : [],
     );
+    swarm.update(dt, { pos: body.pos, vel: body.vel, facing: squidView.facing }, unlitThings());
+    for (const e of nautilus?.update(dt, body.pos, TUNING.squid.radius) ?? []) {
+      if (e.kind === 'shed') field.shed(e.at, e.drift);
+      else if (e.kind === 'met') meetNautilus();
+    }
+
     if (dumboEvent?.kind === 'point') synth.flute();
     if (dumboEvent?.kind === 'spin') dumboView.happySpin();
     if (dumboEvent?.kind === 'gather') {
@@ -384,6 +446,7 @@ async function boot() {
     lights.add(body.pos.x, body.pos.y, 1.2, 2.8, SQUID_LIGHT, 0.2 + 0.4 * meter.value, 0, true);
     plants.update(frameDt, lights);
     lanterns.update(frameDt, lights);
+    fireflyView.update(frameDt, lights);
     effects.update(frameDt, stage.camera, pulses.active, lights);
     lights.end(0.24 + 0.46 * lit + 0.06 * tw, rig.view());
     const wc = brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y));
@@ -401,6 +464,7 @@ async function boot() {
     });
     dumboView.update(frameDt, brain);
     if (jelly && jellyView) jellyView.update(frameDt, jelly);
+    if (nautilus && nautilusView) nautilusView.update(frameDt, nautilus);
     sparkles.update(frameDt);
 
     // The camera eases in from the title close-up.
@@ -419,6 +483,7 @@ async function boot() {
     const squidScreen = stage.toScreen(new THREE.Vector3(body.pos.x, body.pos.y, 0));
     const play = mode === 'play';
     hud.setMeter(meter.value, play && (meter.full || hints.glowVisible));
+    hud.setDash(dash.readiness);
     hud.setHints(play && hints.moveVisible, play && hints.glowVisible, hints.icons, squidScreen);
     synth.setBrightness(lit);
     synth.setZone(tw);
@@ -454,7 +519,7 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash } });
 }
 
 boot().catch((err) => {

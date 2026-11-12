@@ -10,6 +10,8 @@ export interface WorldStateData {
   found: FriendName[];
   /** Ids of firefly groups that joined the swarm. */
   swarm: string[];
+  /** Dash is unlocked (the first time the squid reaches Twilight). */
+  dash: boolean;
 }
 
 /**
@@ -23,6 +25,7 @@ export class WorldState {
   private readonly lit = new Set<string>();
   private readonly found = new Set<FriendName>();
   private readonly swarm = new Set<string>();
+  private dash = false;
 
   constructor(seed: number) {
     this.seed = seed;
@@ -70,8 +73,19 @@ export class WorldState {
     return this.swarm.has(group);
   }
 
+  get dashUnlocked(): boolean {
+    return this.dash;
+  }
+
+  /** Unlocks dash. Returns true the first time only. */
+  unlockDash(): boolean {
+    if (this.dash) return false;
+    this.dash = true;
+    return true;
+  }
+
   toJSON(): WorldStateData {
-    return { version: 1, seed: this.seed, lit: [...this.lit].sort(), found: [...this.found].sort(), swarm: [...this.swarm].sort() };
+    return { version: 1, seed: this.seed, lit: [...this.lit].sort(), found: [...this.found].sort(), swarm: [...this.swarm].sort(), dash: this.dash };
   }
 
   static fromJSON(data: WorldStateData): WorldState {
@@ -79,6 +93,7 @@ export class WorldState {
     data.lit.forEach((id) => w.lit.add(id));
     data.found.forEach((f) => w.found.add(f));
     data.swarm.forEach((g) => w.swarm.add(g));
+    w.dash = data.dash;
     return w;
   }
 }

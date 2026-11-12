@@ -19,6 +19,8 @@ import lanternUrl from '../../models/jellyfish-lantern.glb?url';
 import ledge1Url from '../../models/ledge-1.glb?url';
 import ledge2Url from '../../models/ledge-2.glb?url';
 import ledge3Url from '../../models/ledge-3.glb?url';
+import fireflyUrl from '../../models/firefly-squid.glb?url';
+import nautilusUrl from '../../models/nautilus.glb?url';
 
 /** Every model the game uses, imported from models/ so Vite gives each a relative URL. */
 export const MODEL_URLS = {
@@ -40,6 +42,8 @@ export const MODEL_URLS = {
   'ledge-1': ledge1Url,
   'ledge-2': ledge2Url,
   'ledge-3': ledge3Url,
+  'firefly-squid': fireflyUrl,
+  nautilus: nautilusUrl,
 } as const;
 
 export type ModelName = keyof typeof MODEL_URLS;

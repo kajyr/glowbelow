@@ -26,6 +26,7 @@ export class Input {
   private readonly tapped = new Set<string>();
   private pointer: { id: number; x: number; y: number } | null = null;
   private glowQueued = false;
+  private dashQueued = false;
   private tapQueued: { x: number; y: number } | null = null;
   private pressStart: { x: number; y: number; t: number } | null = null;
   /** Input used most recently. */
@@ -89,7 +90,8 @@ export class Input {
       this.keys.add(e.code);
       this.tapped.add(e.code);
       if (e.code === 'Space') this.glowQueued = true;
-      if (KEY_DIRS[e.code] || e.code === 'Space') this.mark('keyboard');
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.dashQueued = true;
+      if (KEY_DIRS[e.code] || e.code === 'Space' || this.dashQueued) this.mark('keyboard');
       this.onKey(e.code);
     });
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
@@ -108,6 +110,12 @@ export class Input {
   /** Requests a glow from a button. */
   glow(kind: InputKind): void {
     this.glowQueued = true;
+    this.mark(kind);
+  }
+
+  /** Requests a dash from a button. */
+  dash(kind: InputKind): void {
+    this.dashQueued = true;
     this.mark(kind);
   }
 
@@ -138,10 +146,11 @@ export class Input {
     return { kind: 'none' };
   }
 
-  /** Events since the last call: glow presses, taps, whether any input happened. */
-  consume(): { glow: boolean; tap: { x: number; y: number } | null; any: boolean; kind: InputKind | undefined } {
-    const out = { glow: this.glowQueued, tap: this.tapQueued, any: this.touched, kind: this.kindThisStep };
+  /** Events since the last call: glow and dash presses, taps, whether any input happened. */
+  consume(): { glow: boolean; dash: boolean; tap: { x: number; y: number } | null; any: boolean; kind: InputKind | undefined } {
+    const out = { glow: this.glowQueued, dash: this.dashQueued, tap: this.tapQueued, any: this.touched, kind: this.kindThisStep };
     this.glowQueued = false;
+    this.dashQueued = false;
     this.tapQueued = null;
     this.touched = false;
     this.kindThisStep = undefined;
@@ -159,6 +168,7 @@ export class Input {
     this.tapped.clear();
     this.pointer = null;
     this.glowQueued = false;
+    this.dashQueued = false;
     this.tapQueued = null;
   }
 }

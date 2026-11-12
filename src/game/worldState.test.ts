@@ -15,12 +15,21 @@ describe('world state', () => {
     expect(w.litCount(['plant-1', 'plant-3', 'lantern-2'])).toBe(1);
   });
 
+  test('dash starts locked and unlocks once', () => {
+    const w = new WorldState(1);
+    expect(w.dashUnlocked).toBe(false);
+    expect(w.unlockDash()).toBe(true);
+    expect(w.unlockDash()).toBe(false);
+    expect(w.dashUnlocked).toBe(true);
+  });
+
   test('survives leaving and coming back: a round trip through its saved form keeps everything', () => {
     const w = new WorldState(7);
     w.light('plant-1');
     w.light('lantern-12');
     w.find('nautilus');
     w.join('group-4');
+    w.unlockDash();
     const data = JSON.parse(JSON.stringify(w.toJSON()));
     const back = WorldState.fromJSON(data);
     expect(back.toJSON()).toEqual(w.toJSON());
@@ -28,5 +37,6 @@ describe('world state', () => {
     expect(back.isLit('lantern-12')).toBe(true);
     expect(back.hasFound('nautilus')).toBe(true);
     expect(back.hasJoined('group-4')).toBe(true);
+    expect(back.dashUnlocked).toBe(true);
   });
 });

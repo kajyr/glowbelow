@@ -1,5 +1,6 @@
+import { Follower } from './follower';
 import { TUNING } from './tuning';
-import { ease, type Vec2 } from './vec';
+import type { Vec2 } from './vec';
 
 export interface PlantInfo {
   id: string;
@@ -43,14 +44,12 @@ export const POP_TIME = 1.4;
  * squid stops for a moment points at the nearest unlit plant — or spins
  * happily when every plant is lit. If the squid keeps resting, dumbo then
  * gathers drifting sparkles near the squid for it, until the squid moves.
- * Dumbo ignores walls so it can never get stuck; it only keeps above the
- * seabed.
+ * Its swimming is the shared follower behaviour: it ignores walls so it can
+ * never get stuck, and only keeps above the seabed.
  */
 export class DumboBrain {
   state: DumboState = 'hidden';
-  pos: Vec2;
-  vel: Vec2 = { x: 0, y: 0 };
-  facing = 1;
+  private readonly body: Follower;
   /** Time since the pop-out started. */
   popTime = 0;
   /** Plant being pointed at, if any. */
@@ -63,11 +62,21 @@ export class DumboBrain {
   private pause = 0;
   private sinceGather = Infinity;
 
-  constructor(
-    home: Vec2,
-    private readonly floor: (x: number) => number = () => -Infinity,
-  ) {
-    this.pos = { ...home };
+  constructor(home: Vec2, floor: (x: number) => number = () => -Infinity) {
+    this.body = new Follower(home, floor);
+  }
+
+  get pos(): Vec2 {
+    return this.body.pos;
+  }
+
+  get vel(): Vec2 {
+    return this.body.vel;
+  }
+
+  /** 1 facing right, -1 facing left. */
+  get facing(): number {
+    return this.body.facing;
   }
 
   /** Called when a pulse reaches the cave. Returns true the first time only. */
@@ -101,26 +110,11 @@ export class DumboBrain {
   }
 
   private follow(dt: number, squid: SquidInfo) {
-    const D = TUNING.dumbo;
-    const far = Math.hypot(squid.pos.x - this.pos.x, squid.pos.y - this.pos.y) > D.catchUpDistance;
-    this.swimTo(this.followPoint(squid), far ? D.catchUpSpeed : D.speed, far ? 5 : 3, dt);
+    this.body.follow(dt, this.followPoint(squid), squid.pos, TUNING.dumbo);
   }
 
-  /** Eases toward a point; ignores walls, keeps above the seabed. */
   private swimTo(target: Vec2, top: number, rate: number, dt: number) {
-    const dx = target.x - this.pos.x;
-    const dy = target.y - this.pos.y;
-    const d = Math.hypot(dx, dy);
-    const speed = Math.min(top, d * 2.2);
-    const want = d > 1e-6 ? { x: (dx / d) * speed, y: (dy / d) * speed } : { x: 0, y: 0 };
-    const k = ease(rate, dt);
-    this.vel.x += (want.x - this.vel.x) * k;
-    this.vel.y += (want.y - this.vel.y) * k;
-    this.pos.x += this.vel.x * dt;
-    this.pos.y += this.vel.y * dt;
-    const low = this.floor(this.pos.x) + 0.5;
-    if (this.pos.y < low) this.pos.y = low;
-    if (Math.abs(this.vel.x) > 0.3) this.facing = Math.sign(this.vel.x);
+    this.body.swimTo(target, top, rate, dt);
   }
 
   /**
@@ -177,7 +171,7 @@ export class DumboBrain {
     const plant = nearestUnlit(squid.pos, plants);
     if (!plant) return { kind: 'spin' };
     this.pointing = plant;
-    this.facing = Math.sign(plant.x - this.pos.x) || this.facing;
+    this.body.facing = Math.sign(plant.x - this.pos.x) || this.body.facing;
     return { kind: 'point', plant };
   }
 }

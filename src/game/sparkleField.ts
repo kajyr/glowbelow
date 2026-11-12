@@ -219,6 +219,29 @@ export class SparkleField {
     });
   }
 
+  /**
+   * Sheds one sparkle at a point, drifting gently with `drift` (the nautilus'
+   * trail). Like a spill, it reuses a waiting or far-away sparkle, so the
+   * number of sparkles never changes.
+   */
+  shed(at: Vec2, drift: Vec2): void {
+    const s =
+      this.sparkles.find((q) => !q.alive) ??
+      this.sparkles.filter((q) => q.alive && q.kind === 'drift').sort((a, b) => Math.hypot(b.x - at.x, b.y - at.y) - Math.hypot(a.x - at.x, a.y - at.y))[0];
+    if (!s) return;
+    s.kind = 'drift';
+    s.alive = true;
+    s.pulled = false;
+    s.respawnIn = 0;
+    s.region = this.regionAt(at);
+    s.age = 0;
+    s.x = s.baseX = at.x;
+    s.y = s.baseY = at.y;
+    s.vx = drift.x;
+    s.vy = drift.y;
+    s.noPickup = 0.3;
+  }
+
   /** A sparkle that reached the seabed starts again high in the zone. */
   private recycleAtTop(s: Sparkle) {
     const b = this.regions[s.region];

@@ -202,6 +202,37 @@ export class Synth {
     this.tone(f * 3, 'sine', now + 0.06, 0.02, 0.01, 0.7);
   }
 
+  /** A firefly group joining: a quick, giggly run of high chimes. */
+  fireflyChimes(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const run = [0, 2, 1, 3, 2, 4];
+    run.forEach((k, i) => {
+      const at = now + i * 0.07 + Math.random() * 0.02;
+      const f = PENTA[k] * 2;
+      this.tone(f, 'sine', at, 0.05, 0.005, 0.35);
+      this.tone(f * 2.01, 'triangle', at, 0.012, 0.005, 0.2);
+    });
+  }
+
+  /** The nautilus: a deep, slow note gliding down, with a soft fifth above. Quieter when it answers a call. */
+  nautilus(quiet = false): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const peak = quiet ? 0.07 : 0.14;
+    for (const [f, k] of [[110, 1], [164.81, 0.35]] as const) {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f, now);
+      o.frequency.exponentialRampToValueAtTime(f * 0.75, now + 1.8);
+      o.connect(this.env(now, peak * k, 0.35, 2.2));
+      o.start(now);
+      o.stop(now + 2.8);
+    }
+  }
+
   /** The phantom jelly's soft, low boing: lower and slower than the bump boing. */
   jellyBoing(): void {
     const ctx = this.live();
