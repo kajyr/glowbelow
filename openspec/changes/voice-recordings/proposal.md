@@ -1,6 +1,6 @@
 ## Why
 
-Fun facts are read by the device's speech voice, which sounds flat on many tablets. A familiar voice (a parent) is warmer and easier for a 6-year-old to follow. The player already picks a recording when one exists. What's missing is an easy way to make the recordings and a guard that keeps them correct.
+Fun facts are read by the device's speech voice, which sounds poor on tablets. The album's speaker icon was taken out until the facts sound good. A familiar voice (a parent) is warmer and easier for a 6-year-old to follow. The player already picks a recording when one exists. What's missing is an easy way to make the recordings and a guard that keeps them correct.
 
 Depends on: `iteration-4-offline-and-voice` (takes over its task 3.4).
 
@@ -12,6 +12,7 @@ Depends on: `iteration-4-offline-and-voice` (takes over its task 3.4).
 - Recordings live at `voice/<lang>/<stamp>.mp3`; any subset is fine, and missing facts still use the device voice
 - A check that fails when a recording does not match a language and a stamp with a fact, or is too big
 - The first recordings the user provides are added and checked on a tablet
+- The speaker icon comes back on found stamps once the facts sound good
 
 ## Capabilities
 
@@ -21,7 +22,7 @@ Depends on: `iteration-4-offline-and-voice` (takes over its task 3.4).
 
 ### Modified Capabilities
 
-- None. The fun-facts playback rule ("a recording wins") is unchanged.
+- `sticker-album`: the speaker icon on found stamps returns (it was taken out after iteration 4)
 
 ## Impact
 

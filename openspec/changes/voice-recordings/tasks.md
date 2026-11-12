@@ -14,6 +14,11 @@
 - [ ] 3.1 Add the recordings the user provides under `voice/<lang>/`; verify the checks pass
 - [ ] 3.2 On a tablet, play a recorded and an unrecorded fact; verify the recording plays for one and the device voice for the other, both offline
 
-## 4. Verification
+## 4. Speaker icon
 
-- [ ] 4.1 Run `npm test` and `npm run build`; verify both pass
+- [ ] 4.1 Decide with the user whether unrecorded facts use the device voice or stay silent, based on how it sounds on the tablet
+- [ ] 4.2 Turn `FACT_SPEAKER` back on in `src/ui/album.ts`; verify the speaker shows on found stamps only and plays the fact
+
+## 5. Verification
+
+- [ ] 5.1 Run `npm test` and `npm run build`; verify both pass
