@@ -62,6 +62,7 @@
 - Adds a velocity impulse and a temporary higher top speed along the current steering direction (or facing, when idle), with a 1 s cooldown
 - Touch: a round dash button above the glow button, same style and size; keyboard: Shift
 - Gestures (double-tap, swipe) are not used: they clash with tap-the-squid-to-glow and with steering
+- Locked at the start: it unlocks the first time the squid reaches Twilight (a `dash` flag in `WorldState`, so iteration 3 saves it), the button pops in, and it stays. Midnight home stays two-button (glow and move) for the first minutes
 
 ### Stickers per friend
 - `Hud.stickerFly` takes the sticker art as an argument; firefly and nautilus get inline SVG stickers like dumbo's
