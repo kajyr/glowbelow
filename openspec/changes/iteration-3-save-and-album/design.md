@@ -1,7 +1,9 @@
 ## Context
 
-- Builds on the `WorldState` object introduced in iteration 2, which already holds lit plants, found friends and swarm size
-- Zones are generated from a world seed (`procedural-home`): the save stores the seed, and lit plants and lanterns are stored by their generated ids, which are stable for a given seed
+- Builds on the `WorldState` object introduced in iteration 2. It is already serialisable (`toJSON`/`fromJSON`, `version: 1`) and holds the seed, lit ids (plants and lanterns), found friends, joined firefly groups and the dash unlock
+- Zones are generated from a world seed (`procedural-home`): the save stores the seed, and things are stored by their generated ids (`plant-3`, `lantern-12`, `firefly-2`). Those ids come from generation order, so they are stable for a seed only while the generator is unchanged
+- The game is re-published on itch.io after every iteration, and later iterations change world generation, so saves must outlive generator changes
+- The mute choice is already remembered on its own (`glowbelow.muted`, from iteration 2)
 - The HUD is plain DOM over the canvas; the album and parent corner follow the same approach
 
 ## Goals / Non-Goals
@@ -18,12 +20,18 @@
 ## Decisions
 
 ### `localStorage` with a versioned JSON blob
-- One key, `vampire-squid-save`, holding `{ version, state }`; upgrade functions per version
+- One key, `glowbelow.save`, holding `{ version, layout, state }`; upgrade functions per version
 - Writes are debounced (about 1 s) and forced on `visibilitychange` to hidden
 - Alternative: IndexedDB (more complex, nothing gained for a few kilobytes)
 
-### Stable ids for everything that is saved
-- Plants, lanterns, starfish and friends get string ids in the level files, so reordering level data does not corrupt saves
+### Settings live apart from progress
+- Mute (already `glowbelow.muted`) and the two volumes (`glowbelow.volume`) are settings, not progress: reset erases `glowbelow.save` only
+
+### Generated ids, plus a layout version
+- Plants, lanterns, firefly groups and starfish keep the ids the generator gives them; a test checks they are unique and identical across two generations from the same seed
+- `layout` is a number in the code, bumped whenever a change alters what the generator produces for a seed
+- On load with an older `layout`: keep found friends, joined groups, found starfish and the dash unlock (they do not depend on positions); drop lit ids, so zones glow again as they are relit
+- Alternative: ids from positions (break on any nudge), or freezing the generator (blocks every later iteration)
 
 ### Album as a DOM overlay with pre-rendered friend pictures
 - Friend pictures are the existing concept-art SVGs in `artwork/friends/`, imported as URLs
@@ -35,6 +43,11 @@
 
 ### Bubble ring and starfish are `.glb` models
 - Both come from the Python model pipeline with animated parts (each bubble, each starfish arm); the pop's spray of tiny bubbles stays a code effect
+
+### Collectibles come from the zone generator
+- Bubble-ring chains and starfish are added to the Midnight home and Twilight recipes and placed from the seed, like lanterns and firefly groups
+- The generator's rules check that every ring and starfish is reachable, over many seeds
+- Adding them changes what a seed produces, so this iteration bumps `layout` to 2 (no saves exist yet, so nothing is lost)
 
 ### Storage detection for the itch.io frame
 - The game is already published on itch.io (`itch-io-release`), where it runs in a frame on another domain and Safari may treat `localStorage` as third-party
@@ -50,7 +63,9 @@
 - [Safari clears the itch.io frame's storage when quit] → the full-page option and the game's own address are the reliable way to keep progress
 - [Child finds the long press] → 3 seconds plus a confirmation step for reset
 - [Save written mid-change corrupts state] → write the whole blob at once; validate on load and fall back to a new game
+- [A game update lays out the world differently] → the `layout` version: friends and starfish are kept, lit things are relit
+- [Keyboard shortcuts clash with play] → album on B (A steers left), parent corner by holding P (Shift dashes)
 
 ## Migration Plan
 
-First version of the save format is `1`; there are no earlier saves to upgrade.
+First version of the save format is `1` with `layout: 2`; there are no earlier saves to upgrade. Later iterations that change generation bump `layout`.

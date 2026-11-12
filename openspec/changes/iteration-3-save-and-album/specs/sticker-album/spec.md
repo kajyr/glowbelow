@@ -5,7 +5,7 @@ The sticker album is the game's collection and the only "goal": a page for every
 ## ADDED Requirements
 
 ### Requirement: Opening and closing the album
-Tapping the album button, clicking it, or pressing the A key SHALL open the album and pause play. A large close control, tapping outside the album, or pressing Escape SHALL close it and resume play exactly where it was.
+Tapping the album button, clicking it, or pressing the B key SHALL open the album and pause play. (A is not used: it steers left.) A large close control, tapping outside the album, or pressing Escape SHALL close it and resume play exactly where it was.
 
 #### Scenario: Open and close
 - **WHEN** the player opens the album and then closes it

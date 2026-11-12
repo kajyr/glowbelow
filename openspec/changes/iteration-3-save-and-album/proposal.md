@@ -29,8 +29,11 @@ Depends on: `iteration-2-twilight`.
 
 ## Impact
 
-- `WorldState` from iteration 2 gains a version number and is written to `localStorage`
-- The world seed (from `procedural-home`) is saved with it; "continue" regenerates the same world from that seed, and only a new game draws a new seed
+- `WorldState` from iteration 2 (already versioned, with the seed) is written to `localStorage` as `glowbelow.save`, with a world-layout version so saves survive game updates that change generation
+- "Continue" regenerates the same world from the saved seed; only a new game draws a new seed
+- Settings (mute, already remembered, and the new volumes) stay apart from progress, so reset keeps them
+- Bubble rings and starfish are placed by the zone generator, like lanterns
+- Keyboard: album on B, parent corner by holding P (A steers left; Shift dashes)
 - New DOM screens (album, parent corner) navigable by touch and by arrows + Space/Enter
 - Two new model scripts and `.glb` files (bubble ring, starfish)
 - No new dependencies expected

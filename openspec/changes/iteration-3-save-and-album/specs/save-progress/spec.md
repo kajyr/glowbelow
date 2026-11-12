@@ -5,14 +5,14 @@ Keeps the player's progress between sessions without accounts or any action from
 ## ADDED Requirements
 
 ### Requirement: Progress saves automatically
-The game SHALL save progress in the browser automatically whenever something is lit, a friend or starfish is found, or the squid crosses into another zone, and when the page is hidden. There SHALL be no save button.
+The game SHALL save progress in the browser automatically whenever the world state changes (something is lit, a friend or starfish is found, a firefly group joins, dash unlocks), when the squid crosses into another zone, and when the page is hidden. There SHALL be no save button.
 
 #### Scenario: Closing the tab
 - **WHEN** the player lights three plants and closes the browser tab
 - **THEN** reopening the game shows those three plants still lit
 
 ### Requirement: What is saved
-The save SHALL include lit plants and lanterns, found friends, swarm size, found starfish, the zone the squid was in and the mute state. It SHALL NOT include the squid's exact position or the glow meter.
+The save SHALL include the world's seed, lit plants and lanterns, found friends, the firefly groups that joined the swarm, found starfish, whether dash is unlocked, and the zone the squid was in. It SHALL NOT include the squid's exact position or the glow meter. Mute and volume are settings, remembered separately, and are not part of the save.
 
 #### Scenario: Starting position after load
 - **WHEN** the player continues a saved game
@@ -31,6 +31,13 @@ The save SHALL carry a version number. A save from an older version SHALL be upg
 #### Scenario: Corrupted save
 - **WHEN** the stored save is unreadable
 - **THEN** the game starts fresh without errors
+
+### Requirement: Saves survive game updates
+The save SHALL record which version of the world layout it was made with. When a newer version of the game lays the world out differently, continuing SHALL keep found friends, the joined firefly groups, found starfish and the dash unlock, so the album never loses anything; lit plants and lanterns from the old layout SHALL be dropped, so those zones glow again as the player lights them.
+
+#### Scenario: After an update
+- **WHEN** a save made before a game update that changed world generation is continued
+- **THEN** every friend and starfish found is still in the album, and plants start unlit
 
 ### Requirement: Data stays on the device
 Saved data SHALL be stored only in the browser on the device and SHALL never be sent anywhere.
