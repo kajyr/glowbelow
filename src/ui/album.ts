@@ -1,4 +1,6 @@
 import { t, type StringKey } from '../i18n';
+import { factText } from '../audio/facts';
+import { ICON_SOUND_ON } from './icons';
 import type { StampName, WorldState } from '../game/worldState';
 import dumboArt from '../../artwork/friends/dumbo-octopus.svg?raw';
 import fireflyArt from '../../artwork/friends/firefly-squid.svg?raw';
@@ -47,6 +49,8 @@ export interface StarfishZone {
 export interface AlbumActions {
   /** Play a stamp's sound (tapping it). */
   onStampSound: (stamp: StampName) => void;
+  /** Speak a stamp's fun fact (its speaker icon). */
+  onFact: (stamp: StampName) => void;
   /** Opened or closed: play pauses while it is open. */
   onOpenChange: (open: boolean) => void;
   /** The new-sticker badge should show or hide. */
@@ -58,8 +62,8 @@ const STAR_ICON = `<svg viewBox="-50 -50 100 100" aria-hidden="true"><path d="M0
 
 /**
  * The sticker album, on one page: a grid of stamps, one per planned friend
- * and sea creature (picture, name and its sound on tap once found; a dark
- * silhouette before), with a strip of starfish per zone underneath. Nothing to
+ * and sea creature (picture, name, its sound on tap and a speaker for its fun
+ * fact once found; a dark silhouette before), with a strip of starfish per zone underneath. Nothing to
  * turn; closed by the big X, a tap outside, B or Escape. Opening it shows
  * every stamp, so it clears the new-sticker badge; a stamp seen for the first
  * time pops.
@@ -136,6 +140,18 @@ export class Album {
         : `<div class="friend-art" role="img" aria-label="${t('notFound')}">${f.art}</div>`;
       if (!found) stamp.querySelector('svg')?.setAttribute('aria-hidden', 'true');
       else stamp.addEventListener('click', () => this.actions.onStampSound(f.name));
+      if (found && factText(f.name)) {
+        const speaker = document.createElement('button');
+        speaker.type = 'button';
+        speaker.className = 'fact-speaker';
+        speaker.setAttribute('aria-label', t('hearFact'));
+        speaker.innerHTML = `<span>${ICON_SOUND_ON}</span>`;
+        speaker.addEventListener('click', (e) => {
+          e.stopPropagation(); // the fact, not the stamp's own sound
+          this.actions.onFact(f.name);
+        });
+        stamp.appendChild(speaker);
+      }
       this.grid.appendChild(stamp);
     }
     this.stars.innerHTML = '';

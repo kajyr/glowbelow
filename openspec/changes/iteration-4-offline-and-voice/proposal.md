@@ -29,5 +29,5 @@ Depends on: `iteration-3-save-and-album`.
 
 - Web app manifest, icons and a service worker (via `vite-plugin-pwa`)
 - Static hosting setup (for example GitHub Pages or Netlify) with HTTPS
-- `src/i18n/en.json` gains fun-fact texts; optional voice files under `public/voice/<lang>/`
+- `src/i18n/en.json` gains fun-fact texts; optional voice files under `voice/<lang>/`
 - New dependency: `vite-plugin-pwa`

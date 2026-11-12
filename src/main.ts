@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Synth } from './audio/synth';
+import { FactPlayer } from './audio/facts';
 import { BumpState } from './game/bump';
 import { Dash, dashDirection } from './game/dash';
 import { collide } from './game/collision';
@@ -48,6 +49,7 @@ import { zoneAt } from './levels/world';
 import { Hud } from './ui/hud';
 import { STICKER_DUMBO, STICKER_FIREFLY, STICKER_NAUTILUS } from './ui/icons';
 import { JellyView } from './render/jellyView';
+import { registerOffline } from './pwa';
 
 const STEP = 1 / 60;
 const SQUID_LIGHT = new THREE.Color('#5dcaa5');
@@ -56,6 +58,8 @@ const params = new URLSearchParams(location.search);
 const DEBUG = params.has('debug');
 
 const container = document.getElementById('game') as HTMLElement;
+
+registerOffline();
 
 // ------------------------------------------------- keep the browser out of the way
 const stop = (e: Event) => e.preventDefault();
@@ -172,16 +176,20 @@ async function boot() {
   // The parent corner: volumes (settings, kept on start over), start over, and the frame note.
   const volumes = loadVolumes(storage);
   synth.setVolumes(volumes.music, volumes.effects);
+  const facts = new FactPlayer();
+  facts.volume = volumes.effects;
   // Play pauses while the album or the parent corner is open.
   let overlayOpen = false;
   const overlayChanged = () => {
     overlayOpen = album.open || parent.open;
+    if (!album.open) facts.stop();
     synth.setDucked(overlayOpen);
     input.reset();
   };
   const parent = new ParentCorner(container, volumes, {
     onVolumes: (v) => {
       synth.setVolumes(v.music, v.effects);
+      facts.volume = v.effects;
       saveVolumes(storage, v);
     },
     onReset: () => {
@@ -202,6 +210,8 @@ async function boot() {
   };
   const album = new Album(container, worldState, {
     onStampSound: (s) => stampSounds[s]?.(),
+    // Silent while muted; closing the album stops it (see overlayChanged).
+    onFact: (s) => !muted && facts.play(s),
     onOpenChange: overlayChanged,
     onBadge: (show) => hud.setBadge(show),
   }, [
@@ -270,6 +280,7 @@ async function boot() {
   const toggleMute = () => {
     muted = !muted;
     synth.setMuted(muted);
+    if (muted) facts.stop();
     hud.setMuted(muted);
     try {
       localStorage.setItem('glowbelow.muted', muted ? '1' : '0');
