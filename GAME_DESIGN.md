@@ -192,7 +192,7 @@ Goal: playable with one finger on a tablet, or with arrow keys on a laptop.
 | **Starfish** | Shy starfish on rocks and the seabed, about five per zone | Glow near one: it lights up and waves; found, not taken | Counted in the album per zone | No |
 
 - Trails of sparkles act as breadcrumbs toward interesting places
-- Nothing is ever lost or spent
+- Nothing is ever lost for good: stars can spill (the phantom jelly), but they float nearby and can always be caught again
 
 ### Glow pulse (the Ecco "sonar")
 
@@ -213,6 +213,13 @@ Goal: playable with one finger on a tablet, or with arrow keys on a laptop.
 
 - Stay still for a moment → squid curls into a spiky ball, then pops back
 - An idle animation, not a mechanic
+
+### Phantom jelly (issue #1)
+
+- A giant phantom jelly (*Stygiomedusa gigantea*) drifts very slowly through Midnight home: pink, a little see-through, with four long ribbon arms
+- Touching it (bell or arms): a soft boing, and up to 5 stars spill out of the glow meter and float around it, ready to be caught again; nothing spills from an empty meter
+- One touch spills once (a short grace period), and it never traps the squid: the bell pushes gently, the arms do not block
+- Its route is generated with the zone and keeps to wide open water, away from the start and the cave
 
 ### Deferred (not in the peaceful version)
 
@@ -298,7 +305,7 @@ Vertical world; home is at the bottom. One tall connected stack for the side-on 
 
 | Zone | Mood | Palette | Features |
 |---|---|---|---|
-| **Midnight home** | Calm, dark, safe | Navy, violet, red squid pops | Glow plants, dumbo octopus, tutorial |
+| **Midnight home** | Calm, dark, safe | Navy, violet, red squid pops | Glow plants, dumbo octopus, phantom jelly, tutorial |
 | **Whale fall** | Mysterious but friendly | Bone white, soft blue | Skeleton arches to swim through, giant squid |
 | **Twilight** | Dreamy | Blue to lavender gradient | Firefly swarm, nautilus elevator |
 | **Sunlit reef** | Reward, party | Full pastel rainbow | Cuttlefish, color play |
@@ -383,7 +390,7 @@ World shape: Midnight home at the bottom, Whale fall beside it to the left, Twil
 
 ## 13. Child-friendly rules
 
-- No game over, no timers, no losing collected progress
+- No game over, no timers, no losing collected progress (spilled stars can always be caught again)
 - No reading required
 - Nothing scary: big animals are slow, round and smiling; darkness is cozy, never empty
 - No ads, no links out, no accounts, no data collection
