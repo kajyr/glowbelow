@@ -3,6 +3,7 @@ import { Fields } from './clearance';
 import { generateLayout, type Layout } from './generate';
 import { checkRules } from './rules';
 import { layTrails } from './trails';
+import { JellyFreeArea, pickJellyStart } from './jellyArea';
 import type { Vec2 } from '../game/vec';
 import type { ZoneRecipe } from './zoneRecipe';
 
@@ -48,6 +49,10 @@ export function generateValidZone(recipe: ZoneRecipe, seed: number, maxAttempts 
     const fields = new Fields(buildLevel(layout.level).world, layout.level.start);
     const { trails, paths } = layTrails(layout, fields);
     layout.level.trails = trails;
+    if (recipe.phantomJelly) {
+      const start = pickJellyStart(layout, new JellyFreeArea(layout, fields), s);
+      layout.level.jelly = start ? { start } : null;
+    }
     const bad = checkRules(layout, fields);
     if (bad.length === 0) return { layout, fields, paths, seed: s, attempts: attempt + 1, rejected };
     rejected.push({ seed: s, why: bad });

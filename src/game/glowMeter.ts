@@ -27,4 +27,16 @@ export class GlowMeter {
   empty(): void {
     this.value = 0;
   }
+
+  /** Sparkles in the meter, as a whole number. */
+  get count(): number {
+    return Math.round(this.value / this.step);
+  }
+
+  /** Takes up to `n` sparkles out of the meter. Returns how many came out. */
+  spill(n: number): number {
+    const removed = Math.min(n, this.count);
+    this.value = Math.max(0, (this.count - removed) * this.step);
+    return removed;
+  }
 }

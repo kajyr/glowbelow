@@ -23,7 +23,15 @@ export interface Sparkle {
   respawnIn: number;
   /** Being pulled toward the squid. */
   pulled: boolean;
+  /** Outward drift of a spilled sparkle, slowing down. */
+  vx: number;
+  vy: number;
+  /** Time before a spilled sparkle can be picked up. */
+  noPickup: number;
 }
+
+/** How long spilled sparkles float out before they can be caught again. */
+export const SPILL_PICKUP_DELAY = 1;
 
 export interface FieldOptions {
   bounds: Rect;
@@ -60,7 +68,7 @@ export class SparkleField {
   }
 
   private make(x: number, y: number, kind: Sparkle['kind']): Sparkle {
-    return { x, y, baseX: x, baseY: y, phase: this.rng() * Math.PI * 2, age: 0, kind, alive: true, respawnIn: 0, pulled: false };
+    return { x, y, baseX: x, baseY: y, phase: this.rng() * Math.PI * 2, age: 0, kind, alive: true, respawnIn: 0, pulled: false, vx: 0, vy: 0, noPickup: 0 };
   }
 
   /**
@@ -78,6 +86,24 @@ export class SparkleField {
         continue;
       }
       s.age += dt;
+      if (s.noPickup > 0 || s.vx !== 0 || s.vy !== 0) {
+        // A spilled sparkle floats outward and slows down before it can be caught.
+        s.noPickup = Math.max(0, s.noPickup - dt);
+        s.baseX += s.vx * dt;
+        s.baseY += s.vy * dt;
+        const slow = Math.exp(-2.5 * dt);
+        s.vx *= slow;
+        s.vy *= slow;
+        if (Math.hypot(s.vx, s.vy) < 0.05) {
+          s.vx = 0;
+          s.vy = 0;
+        }
+        if (s.noPickup > 0) {
+          s.x = s.baseX;
+          s.y = s.baseY;
+          continue;
+        }
+      }
       const dx = squid.x - s.x;
       const dy = squid.y - s.y;
       const d = Math.hypot(dx, dy);
@@ -138,6 +164,35 @@ export class SparkleField {
     const s = this.sparkles[index];
     if (!s || !s.alive || s.kind !== 'drift') return null;
     return this.take(s);
+  }
+
+  /**
+   * Spills `n` sparkles at a point (the phantom jelly): they float out around
+   * it and can be caught again after a moment, as ordinary drifting sparkles.
+   * Reuses sparkles waiting to respawn, else the drifting ones farthest away,
+   * so the number of sparkles never changes.
+   */
+  spill(at: Vec2, n: number): void {
+    const waiting = this.sparkles.filter((s) => !s.alive);
+    const far = this.sparkles
+      .filter((s) => s.alive && s.kind === 'drift')
+      .sort((a, b) => Math.hypot(b.x - at.x, b.y - at.y) - Math.hypot(a.x - at.x, a.y - at.y));
+    const chosen = [...waiting, ...far].slice(0, n);
+    chosen.forEach((s, i) => {
+      const a = (i / Math.max(1, chosen.length)) * Math.PI * 2 + this.rng() * 0.8;
+      // Floats out about 2.5–4 units before slowing to a stop.
+      const speed = 6.5 + this.rng() * 3.5;
+      s.kind = 'drift';
+      s.alive = true;
+      s.pulled = false;
+      s.respawnIn = 0;
+      s.age = 0;
+      s.x = s.baseX = at.x;
+      s.y = s.baseY = at.y;
+      s.vx = Math.cos(a) * speed;
+      s.vy = Math.sin(a) * speed;
+      s.noPickup = SPILL_PICKUP_DELAY;
+    });
   }
 
   /** A sparkle that reached the seabed starts again high in the zone. */

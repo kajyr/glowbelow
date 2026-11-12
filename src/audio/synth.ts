@@ -190,6 +190,36 @@ export class Synth {
     });
   }
 
+  /** The phantom jelly's soft, low boing: lower and slower than the bump boing. */
+  jellyBoing(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(170, now);
+    o.frequency.exponentialRampToValueAtTime(85, now + 0.6);
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 7;
+    const depth = ctx.createGain();
+    depth.gain.value = 10;
+    lfo.connect(depth);
+    depth.connect(o.frequency);
+    o.connect(this.env(now, 0.12, 0.03, 0.65));
+    o.start(now);
+    lfo.start(now);
+    o.stop(now + 0.75);
+    lfo.stop(now + 0.75);
+  }
+
+  /** Stars spilling out: a short, soft twinkle going down the scale. */
+  spill(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [7, 5, 3].forEach((n, i) => this.tone(PENTA[n], 'sine', now + 0.08 + i * 0.09, 0.06, 0.005, 0.35));
+  }
+
   /** One short soft flute note when dumbo gathers a sparkle; quieter than the squid's notes. */
   dumboNote(): void {
     const ctx = this.live();

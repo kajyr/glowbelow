@@ -14,6 +14,7 @@ import archUrl from '../../models/arch.glb?url';
 import caveUrl from '../../models/cave.glb?url';
 import plantUrl from '../../models/glow-plant.glb?url';
 import sparkleUrl from '../../models/sparkle.glb?url';
+import jellyUrl from '../../models/phantom-jelly.glb?url';
 
 /** Every model the game uses, imported from models/ so Vite gives each a relative URL. */
 export const MODEL_URLS = {
@@ -30,6 +31,7 @@ export const MODEL_URLS = {
   cave: caveUrl,
   'glow-plant': plantUrl,
   sparkle: sparkleUrl,
+  'phantom-jelly': jellyUrl,
 } as const;
 
 export type ModelName = keyof typeof MODEL_URLS;

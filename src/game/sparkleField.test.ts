@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { makeRng } from './rng';
-import { SparkleField } from './sparkleField';
+import { SPILL_PICKUP_DELAY, SparkleField } from './sparkleField';
 import { TUNING } from './tuning';
 
 const DT = 1 / 60;
@@ -79,5 +79,30 @@ describe('sparkle field', () => {
     expect(field.sparkles[1].alive).toBe(true);
     expect(field.sparkles[1].x).toBeGreaterThanOrEqual(view.minX);
     expect(field.sparkles[1].x).toBeLessThanOrEqual(view.maxX);
+  });
+
+  test('a spill keeps the sparkle count, floats out, waits, then can be caught again', () => {
+    const field = new SparkleField({ bounds, floor, trails: [{ x: 5, y: 5 }], count: 10, rng: makeRng(6) });
+    const total = field.sparkles.length;
+    const at = { x: 20, y: 10 };
+    // The squid sits right on the spill point.
+    field.collect(1); // one sparkle waiting to respawn
+    field.spill(at, 5);
+    expect(field.sparkles.length).toBe(total);
+    const spilled = field.sparkles.filter((s) => s.noPickup > 0);
+    expect(spilled).toHaveLength(5);
+    expect(spilled.every((s) => s.kind === 'drift')).toBe(true);
+    expect(field.sparkles[0].kind).toBe('trail'); // trails are never used for a spill
+    let caught = 0;
+    for (let t = 0; t < SPILL_PICKUP_DELAY - 0.05; t += 1 / 60) caught += field.update(1 / 60, at, bounds).length;
+    expect(caught).toBe(0);
+    for (const s of spilled) expect(Math.hypot(s.x - at.x, s.y - at.y)).toBeGreaterThan(2.3);
+    // Swim over each spilled sparkle: it can be collected again.
+    let got = 0;
+    for (const s of spilled) {
+      const where = { x: s.x, y: s.y };
+      for (let t = 0; t < 0.5; t += 1 / 60) got += field.update(1 / 60, where, bounds).length;
+    }
+    expect(got).toBeGreaterThanOrEqual(5);
   });
 });

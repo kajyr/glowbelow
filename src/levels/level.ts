@@ -30,6 +30,8 @@ export interface Level {
   cave: { x: number; y: number; r: number; eyes: Vec2 };
   /** Spots on the seabed where bubbles rise. */
   bubbleVents: number[];
+  /** Where the phantom jelly starts roaming, if the zone has one. */
+  jelly: { start: Vec2 } | null;
 }
 
 export interface BuiltLevel {

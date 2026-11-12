@@ -4,6 +4,7 @@ import { BumpState } from './game/bump';
 import { collide } from './game/collision';
 import { DumboBrain } from './game/dumboBrain';
 import { GlowMeter } from './game/glowMeter';
+import { Jelly } from './game/jelly';
 import { Hints, type InputKind } from './game/hints';
 import { PulseSystem } from './game/pulse';
 import { shaftPush } from './game/shaft';
@@ -12,6 +13,7 @@ import { steer, type Body, type SteerInput } from './game/steering';
 import { TUNING } from './game/tuning';
 import { Input } from './input';
 import { generateValidZone } from './levels/generateValid';
+import { JellyFreeArea } from './levels/jellyArea';
 import { buildLevel, sparkleBounds } from './levels/level';
 import { MIDNIGHT_HOME } from './levels/zoneRecipe';
 import { CameraRig } from './render/cameraRig';
@@ -26,6 +28,7 @@ import { SquidView } from './render/squidView';
 import { CAMERA_DISTANCE, Stage } from './render/stage';
 import { buildWorld } from './render/world';
 import { Hud } from './ui/hud';
+import { JellyView } from './render/jellyView';
 
 const STEP = 1 / 60;
 const SQUID_LIGHT = new THREE.Color('#5dcaa5');
@@ -77,11 +80,16 @@ async function boot() {
     count: DEBUG && params.has('sparkles') ? Number(params.get('sparkles')) : undefined,
   });
   const sparkles = new SparklesView(models, field);
+  // The phantom jelly roams freely inside the open water where it fits.
+  const jellyArea = level.jelly ? new JellyFreeArea(zone.layout, zone.fields) : null;
+  const jelly = level.jelly && jellyArea ? new Jelly(jellyArea, level.jelly.start, zone.seed) : null;
+  const jellyView = jelly ? new JellyView(models, lights) : null;
+  if (jellyView) scene.add(jellyView.root);
   scene.add(sparkles.mesh);
   const effects = new Effects(level.bounds, level.bubbleVents, level.shaft);
   scene.add(effects.group);
   const overlay = colliderOverlay(built);
-  const reach = reachOverlay(zone.fields, zone.paths);
+  const reach = reachOverlay(zone.fields, zone.paths, jellyArea?.cells ?? null);
   scene.add(overlay, reach);
   const fog = scene.fog;
   let overview = false;
@@ -218,6 +226,22 @@ async function boot() {
     steer(body, steerIn, dt);
     const contact = collide(body, TUNING.squid.radius, built.world, dt);
     shaftPush(body, level.shaft, dt);
+    if (jelly) {
+      jelly.update(dt);
+      // Touching the phantom jelly spills a few stars that float nearby, ready to catch again.
+      const at = jelly.touch(body, TUNING.squid.radius, contact !== null, dt);
+      if (at) {
+        // The squid bounced off: a brief pause in steering lets the bounce show.
+        bump.lockBriefly();
+        synth.jellyBoing();
+        jellyView?.flash();
+        const n = meter.spill(TUNING.jelly.spill);
+        if (n > 0) {
+          field.spill(at, n);
+          synth.spill();
+        }
+      }
+    }
     if (bump.update(contact, dt) && contact) {
       sparkles.cloud(body.pos.x, body.pos.y);
       synth.boing();
@@ -305,6 +329,7 @@ async function boot() {
       meter: meter.value,
     });
     dumboView.update(frameDt, brain);
+    if (jelly && jellyView) jellyView.update(frameDt, jelly);
     sparkles.update(frameDt);
 
     // The camera eases in from the title close-up.
@@ -357,7 +382,7 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, worldSeed, genMs } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, worldSeed, genMs, jelly } });
 }
 
 boot().catch((err) => {

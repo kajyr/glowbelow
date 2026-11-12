@@ -30,6 +30,11 @@ export class BumpState {
     return this.spin > 0 ? 1 - this.spin / TUNING.bump.spinTime : 0;
   }
 
+  /** Locks steering for a moment without a spin (bouncing off the jelly). */
+  lockBriefly(): void {
+    this.lock = Math.max(this.lock, TUNING.bump.lockTime);
+  }
+
   get locked(): boolean {
     return this.lock > 0;
   }

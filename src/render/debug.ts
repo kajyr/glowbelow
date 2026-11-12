@@ -53,10 +53,10 @@ export function colliderOverlay(built: BuiltLevel): THREE.Group {
 
 /**
  * Debug overlay (?debug=1, press G): the comfortably reachable water (the
- * validator's wide field, green dots) and the routes the sparkle trails follow
- * (yellow lines).
+ * validator's wide field, green dots), the routes the sparkle trails follow
+ * (yellow lines) and where the phantom jelly may roam (magenta dots).
  */
-export function reachOverlay(fields: Fields, paths: Vec2[][]): THREE.Group {
+export function reachOverlay(fields: Fields, paths: Vec2[][], jellyCells: Vec2[] | null = null): THREE.Group {
   const group = new THREE.Group();
   group.name = 'debug-reach';
   const pts: number[] = [];
@@ -74,6 +74,12 @@ export function reachOverlay(fields: Fields, paths: Vec2[][]): THREE.Group {
       new THREE.LineBasicMaterial({ color: '#ffe14a', depthTest: false }),
     );
     group.add(line);
+  }
+  if (jellyCells) {
+    // Where the phantom jelly may roam (magenta dots).
+    const jg = new THREE.BufferGeometry();
+    jg.setAttribute('position', new THREE.Float32BufferAttribute(jellyCells.flatMap((c) => [c.x, c.y, 1]), 3));
+    group.add(new THREE.Points(jg, new THREE.PointsMaterial({ color: '#ff4ae0', size: 3, sizeAttenuation: false, depthTest: false })));
   }
   group.renderOrder = 998;
   group.visible = false;

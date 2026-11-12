@@ -334,6 +334,7 @@ export function generateLayout(recipe: ZoneRecipe, seed: number, why: { step?: s
       eyes: { x: q(caveX - m * 1.0 * caveScale), y: q(caveBase + 1.3 * caveScale) },
     },
     bubbleVents: vents,
+    jelly: null, // placed after the clearance fields, see jellyArea.ts
   };
   return { seed, recipe, level, cave, keepOuts, startSide };
 }

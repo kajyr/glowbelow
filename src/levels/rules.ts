@@ -3,6 +3,7 @@ import type { Vec2 } from '../game/vec';
 import { CELL, Fields, WIDE } from './clearance';
 import { rectDistance, type KeepOut, type Layout } from './generate';
 import { buildLevel, type PlantSpot } from './level';
+import { JellyFreeArea, MIN_JELLY_AREA } from './jellyArea';
 
 /** A plant counts as reachable when the squid can get within this distance of its top. */
 export const PLANT_REACH = 1.8;
@@ -101,6 +102,12 @@ export function checkRules(layout: Layout, fields: Fields): string[] {
   if (plantsInRocks(built.plants, built.world.circles).length > 0) bad.push('plant-in-rock');
   if (!caveDistanceOk(level.start, layout.cave.interior, recipe.screen.w)) bad.push('cave-distance');
   if (pocketCells(fields) > 0) bad.push('pockets');
+
+  if (recipe.phantomJelly) {
+    // Enough open water for the jelly to roam, and a start inside it.
+    const area = new JellyFreeArea(layout, fields);
+    if (!level.jelly || area.area < MIN_JELLY_AREA || !area.free(level.jelly.start.x, level.jelly.start.y)) bad.push('jelly-space');
+  }
 
   const first = level.trails[0];
   if (!first) bad.push('no-trails');

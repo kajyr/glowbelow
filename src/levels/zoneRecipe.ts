@@ -29,6 +29,8 @@ export interface ZoneRecipe {
   /** Plants on the seabed, on top of the arch and on the cave roof. Every seabed rock and every floating rock also gets one. */
   plants: { seabed: number; archTop: number; caveRoof: number };
   ventCount: number;
+  /** Whether a giant phantom jelly drifts through the zone. */
+  phantomJelly: boolean;
 }
 
 /** Number of plants a recipe asks for. */
@@ -57,6 +59,7 @@ export const MIDNIGHT_HOME: ZoneRecipe = {
   decorRocks: 26,
   plants: { seabed: 20, archTop: 1, caveRoof: 2 },
   ventCount: 10,
+  phantomJelly: true,
 };
 
 /** Models the generator may use. */

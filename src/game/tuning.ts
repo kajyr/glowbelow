@@ -67,4 +67,20 @@ export const TUNING = {
     gatherPause: 1.0, // the little bounce after each pickup
     gatherInterval: 2.0, // at least this long between pickups
   },
+  jelly: {
+    speed: 0.6, // the squid swims at 4.5
+    /** The model is drawn at this scale; the shapes below already include it. */
+    scale: 0.5,
+    bellRadius: 0.8,
+    /** Bell centre above the jelly's position (the bell opening). */
+    bellLift: 0.25,
+    /** Where the four arms hang, across the bell (matches the model). */
+    arms: [-0.45, -0.15, 0.18, 0.48],
+    armLength: 2.75,
+    armRadius: 0.25,
+    grace: 2, // seconds after a touch before another can spill
+    spill: 5, // stars that spill on a touch
+    pushRate: 6, // share of the overlap removed per second by the bell
+    bounce: 5, // speed the squid bounces away at when it touches the jelly (a bit over top speed)
+  },
 } as const;
