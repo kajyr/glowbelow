@@ -17,7 +17,11 @@ export type PieceName =
   | 'seabed-3'
   | 'arch'
   | 'cave'
-  | 'glow-plant';
+  | 'glow-plant'
+  | 'ledge-1'
+  | 'ledge-2'
+  | 'ledge-3'
+  | 'jellyfish-lantern';
 
 export interface PieceDef {
   circles: Circle[];
@@ -40,6 +44,21 @@ function band(inner: [number, number], outer: [number, number], from: number, to
     a += step / speed;
   }
   circles.push({ x: mid[0] * Math.cos(to), y: mid[1] * Math.sin(to), r });
+  return circles;
+}
+
+/**
+ * Circles along the middle of a wall ledge (tools/make_ledges.py): from the
+ * wall to the tip, as thick as the ledge, following its droop.
+ */
+function ledge(length: number, thick: number, tip: number, droop: number): Circle[] {
+  const circles: Circle[] = [];
+  const n = Math.max(3, Math.ceil(length / 0.6));
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const h = thick + (tip - thick) * t;
+    circles.push({ x: length * t, y: -droop * t * t, r: h / 2 + 0.05 });
+  }
   return circles;
 }
 
@@ -76,6 +95,12 @@ export const PIECES: Record<PieceName, PieceDef> = {
   // tools/make_cave.py: inside 3.4 x 3.0, outside 4.6 x 4.3, wall from 50° to 180°.
   cave: { circles: band([3.4, 3.0], [4.6, 4.3], (50 * Math.PI) / 180, Math.PI) },
   'glow-plant': { circles: [] },
+  // tools/make_ledges.py: built for the left wall, sticking out to +x.
+  'ledge-1': { circles: ledge(3.0, 1.3, 0.6, 0.2) },
+  'ledge-2': { circles: ledge(4.2, 1.6, 0.7, 0.4) },
+  'ledge-3': { circles: ledge(5.4, 1.2, 0.5, -0.2) },
+  // tools/make_jellyfish_lantern.py: the bell is a soft bump; tentacles are not solid.
+  'jellyfish-lantern': { circles: [{ x: 0, y: 0.25, r: 0.6 }] },
 };
 
 export interface Placement {

@@ -1,8 +1,11 @@
-"""Low-poly nautilus, the slow old elevator between zones.
+"""Low-poly nautilus, the slow old friend that cruises up and down Twilight.
 
     python3 tools/make_nautilus.py
 
 Writes models/nautilus.glb and artwork/nautilus-model-preview.svg.
+
+Parts (one node each, for animation in the game): shell, head (body, hood
+and eyes), tentacles.
 
 Unlike the other creatures, the nautilus is built in profile: the flat side
 of the shell faces the camera (-Y) and the animal looks to the right (+X).
@@ -76,18 +79,19 @@ def build():
             palette = STRIPE
         else:
             palette = SHELL
-        model.add([verts[v] for v in face], [tuple(range(len(face)))], palette)
+        model.add([verts[v] for v in face], [tuple(range(len(face)))], palette, part="shell")
 
     # Soft body poking out of the opening, looking right and a little down.
     forward = unit((1.0, 0.0, -0.22))
     body_v, body_f = dome(0.44, 0.62, segments=8)
     body = placed(body_v, (0.78, 0.0, -0.1), forward)
-    model.add([(x, y * 0.78, z) for x, y, z in body], body_f, BODY)
+    model.add([(x, y * 0.78, z) for x, y, z in body], body_f, BODY, part="head")
+    model.pivot("head", (0.78, 0.0, -0.1))
 
     # Hood: a leathery cap over the top of the head.
     hood_v, hood_f = dome(0.46, 0.2, segments=6)
     hood = placed(hood_v, (1.0, 0.0, 0.2), (0.3, 0.0, 1.0))
-    model.add([(x, y * 0.8, z) for x, y, z in hood], hood_f, HOOD)
+    model.add([(x, y * 0.8, z) for x, y, z in hood], hood_f, HOOD, part="head")
 
     # A fan of short tentacles.
     spread = [(8, 0.0), (-8, 0.14), (-8, -0.14), (-26, 0.0),
@@ -103,12 +107,13 @@ def build():
         ]
         parts, _tip = ridge(path, (0.0, 1.0, 0.0), (0.1, 0.085, 0.055), tip_length=0.1)
         for part_v, part_f in parts:
-            model.add(part_v, part_f, ARM)
+            model.add(part_v, part_f, ARM, part="tentacles")
+    model.pivot("tentacles", (1.22, 0.0, -0.2))
 
     # One eye on each side of the head.
     for side in (-1, 1):
         add_eye(model, (1.05, side * 0.27, 0.0), (0.0, float(side), 0.0), -1,
-                0.17, EYE, PUPIL, SHINE, pupil_size=0.6)
+                0.17, EYE, PUPIL, SHINE, pupil_size=0.6, part="head")
 
     return model
 

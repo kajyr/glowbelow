@@ -7,7 +7,7 @@ Depends on: `iteration-1-playable-demo` (archived).
 ## What Changes
 
 - Connected world: Midnight home's shaft opens into Twilight; the camera, lighting and mood work across zones with no loading
-- Twilight zone: a tall open blue-to-lavender shaft (about 2 screens wide, 4 tall) with jellyfish lanterns that light up, stay lit and brighten the zone like home's plants, with an all-lit celebration
+- Twilight zone: a tall open blue-to-lavender shaft (about 3 screens wide, 10 tall, sized like the bigger generated home) with about 30 jellyfish lanterns that light up, stay lit and brighten the zone like home's plants, with an all-lit celebration
 - Sparkles drift in Twilight too, so the glow meter can be filled there
 - Firefly squid: five small groups scattered in Twilight; glowing near a group adds it to a swarm that trails the squid and forms bigger shapes as it grows
 - Nautilus: cruises slowly up and down the shaft shedding a trail of sparkles behind its shell; found by touching it, comes toward the squid when it glows. It is not ridden: Twilight is short enough to swim, and riding would take control away from the player
@@ -31,7 +31,8 @@ Depends on: `iteration-1-playable-demo` (archived).
 
 ## Impact
 
-- New level file for Twilight, new world/zone data and a `WorldState` object (saved in iteration 3)
+- A Twilight recipe for the zone generator from `procedural-home`, new world/zone data and a `WorldState` object (saved in iteration 3)
+- The phantom jelly stays in Midnight home only
 - Uses `models/firefly-squid.glb` and `models/nautilus.glb` (parts tagged for animation, as done for the squid in iteration 1)
 - Swarm rendered with instancing (about 30 fireflies)
 - New model scripts and `.glb` files for the jellyfish lantern and wall ledges

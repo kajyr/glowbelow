@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { WorldState } from '../game/worldState';
 import { placementMatrix } from './instancing';
 import { envMaterial, type LocalLights } from './localLights';
 import { modelParts, type ModelPart, type Models } from './models';
@@ -39,8 +40,14 @@ export class PlantsView {
   private readonly glowMaterial: THREE.MeshStandardMaterial | null = null;
   private time = 0;
 
-  constructor(models: Models, spots: { id: string; x: number; y: number; rot: number; scale: number }[], lights: LocalLights) {
-    this.plants = spots.map((s, i) => ({ ...s, state: 'unlit', t: 0, wiggle: 0, flash: 0, light: 0, phase: i * 1.7 }));
+  constructor(
+    models: Models,
+    spots: { id: string; x: number; y: number; rot: number; scale: number }[],
+    lights: LocalLights,
+    private readonly world: WorldState,
+  ) {
+    // Whether a plant is lit lives in the world state; plants lit before start open.
+    this.plants = spots.map((s, i) => ({ ...s, state: world.isLit(s.id) ? 'lit' : 'unlit', t: 0, wiggle: 0, flash: 0, light: world.isLit(s.id) ? 1 : 0, phase: i * 1.7 }));
     for (const part of modelParts(models['glow-plant'])) {
       let material: THREE.Material;
       if (part.glow) {
@@ -59,18 +66,21 @@ export class PlantsView {
   }
 
   get litCount(): number {
-    return this.plants.filter((p) => p.state !== 'unlit').length;
+    return this.world.litCount(this.plants.map((p) => p.id));
   }
 
   get allLit(): boolean {
-    return this.plants.every((p) => p.state !== 'unlit');
+    return this.litCount === this.plants.length;
   }
 
-  /** A pulse reached this plant. Returns 'bloom' if it starts blooming, 'wiggle' if it was already lit. */
+  /**
+   * A pulse reached this plant. Lights it in the world state; returns 'bloom'
+   * if it starts blooming, 'wiggle' if it was already lit.
+   */
   touch(id: string): 'bloom' | 'wiggle' | null {
     const p = this.plants.find((q) => q.id === id);
     if (!p) return null;
-    if (p.state === 'unlit') {
+    if (this.world.light(id)) {
       p.state = 'blooming';
       p.t = 0;
       return 'bloom';
@@ -82,7 +92,7 @@ export class PlantsView {
   /** Lights the plant at once (debug and the celebration). */
   lightNow(id: string): void {
     const p = this.plants.find((q) => q.id === id);
-    if (p && p.state === 'unlit') {
+    if (p && this.world.light(id)) {
       p.state = 'blooming';
       p.t = 0;
     }

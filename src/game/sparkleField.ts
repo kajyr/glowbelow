@@ -28,13 +28,16 @@ export interface Sparkle {
   vy: number;
   /** Time before a spilled sparkle can be picked up. */
   noPickup: number;
+  /** The water region the sparkle drifts in. */
+  region: number;
 }
 
 /** How long spilled sparkles float out before they can be caught again. */
 export const SPILL_PICKUP_DELAY = 1;
 
 export interface FieldOptions {
-  bounds: Rect;
+  /** Where sparkles drift: one rectangle, or several water regions (one per zone). */
+  bounds: Rect | Rect[];
   floor: (x: number) => number;
   trails: Vec2[];
   /** Number of drifting sparkles; default from the zone area. */
@@ -50,25 +53,45 @@ export interface FieldOptions {
 export class SparkleField {
   readonly sparkles: Sparkle[] = [];
   private readonly rng: () => number;
-  private readonly bounds: Rect;
+  private readonly regions: Rect[];
   private readonly floor: (x: number) => number;
 
   constructor(opts: FieldOptions) {
     this.rng = opts.rng ?? Math.random;
-    this.bounds = opts.bounds;
+    this.regions = Array.isArray(opts.bounds) ? opts.bounds : [opts.bounds];
     this.floor = opts.floor;
-    const b = opts.bounds;
-    const count = opts.count ?? Math.round((b.maxX - b.minX) * (b.maxY - b.minY) * TUNING.sparkles.density);
-    for (const t of opts.trails) this.sparkles.push(this.make(t.x, t.y, 'trail'));
+    const areas = this.regions.map((b) => (b.maxX - b.minX) * (b.maxY - b.minY));
+    const total = areas.reduce((a, b) => a + b, 0);
+    const count = opts.count ?? Math.round(total * TUNING.sparkles.density);
+    for (const t of opts.trails) this.sparkles.push(this.make(t.x, t.y, 'trail', this.regionAt(t)));
     for (let i = 0; i < count; i++) {
+      // Spread by area, so every region has the same density.
+      let pickArea = this.rng() * total;
+      let r = 0;
+      while (r < areas.length - 1 && pickArea > areas[r]) pickArea -= areas[r++];
+      const b = this.regions[r];
       const x = b.minX + this.rng() * (b.maxX - b.minX);
       const low = Math.max(b.minY, this.floor(x) + 0.5);
-      this.sparkles.push(this.make(x, low + this.rng() * (b.maxY - low), 'drift'));
+      this.sparkles.push(this.make(x, low + this.rng() * Math.max(0, b.maxY - low), 'drift', r));
     }
   }
 
-  private make(x: number, y: number, kind: Sparkle['kind']): Sparkle {
-    return { x, y, baseX: x, baseY: y, phase: this.rng() * Math.PI * 2, age: 0, kind, alive: true, respawnIn: 0, pulled: false, vx: 0, vy: 0, noPickup: 0 };
+  /** Index of the region a point is in (the nearest one if it is in none). */
+  private regionAt(p: Vec2): number {
+    let best = 0;
+    let bestD = Infinity;
+    this.regions.forEach((r, i) => {
+      const d = Math.hypot(Math.max(r.minX - p.x, 0, p.x - r.maxX), Math.max(r.minY - p.y, 0, p.y - r.maxY));
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  private make(x: number, y: number, kind: Sparkle['kind'], region: number): Sparkle {
+    return { x, y, baseX: x, baseY: y, phase: this.rng() * Math.PI * 2, age: 0, kind, alive: true, respawnIn: 0, pulled: false, vx: 0, vy: 0, noPickup: 0, region };
   }
 
   /**
@@ -130,7 +153,7 @@ export class SparkleField {
       s.baseY -= S.fallSpeed * dt;
       s.y = s.baseY;
       s.x = s.baseX + S.sway * Math.sin(s.age * 0.9 + s.phase);
-      if (s.y < this.floor(s.x) + 0.2) this.recycleAtTop(s);
+      if (s.y < this.floor(s.x) + 0.2 || s.y < this.regions[s.region].minY) this.recycleAtTop(s);
     }
     return collected;
   }
@@ -186,6 +209,7 @@ export class SparkleField {
       s.alive = true;
       s.pulled = false;
       s.respawnIn = 0;
+      s.region = this.regionAt(at);
       s.age = 0;
       s.x = s.baseX = at.x;
       s.y = s.baseY = at.y;
@@ -195,9 +219,32 @@ export class SparkleField {
     });
   }
 
+  /**
+   * Sheds one sparkle at a point, drifting gently with `drift` (the nautilus'
+   * trail). Like a spill, it reuses a waiting or far-away sparkle, so the
+   * number of sparkles never changes.
+   */
+  shed(at: Vec2, drift: Vec2): void {
+    const s =
+      this.sparkles.find((q) => !q.alive) ??
+      this.sparkles.filter((q) => q.alive && q.kind === 'drift').sort((a, b) => Math.hypot(b.x - at.x, b.y - at.y) - Math.hypot(a.x - at.x, a.y - at.y))[0];
+    if (!s) return;
+    s.kind = 'drift';
+    s.alive = true;
+    s.pulled = false;
+    s.respawnIn = 0;
+    s.region = this.regionAt(at);
+    s.age = 0;
+    s.x = s.baseX = at.x;
+    s.y = s.baseY = at.y;
+    s.vx = drift.x;
+    s.vy = drift.y;
+    s.noPickup = 0.3;
+  }
+
   /** A sparkle that reached the seabed starts again high in the zone. */
   private recycleAtTop(s: Sparkle) {
-    const b = this.bounds;
+    const b = this.regions[s.region];
     s.baseX = b.minX + this.rng() * (b.maxX - b.minX);
     s.baseY = b.maxY - this.rng() * 2;
     s.x = s.baseX;
@@ -206,7 +253,9 @@ export class SparkleField {
   }
 
   private respawnInView(s: Sparkle, view: Rect) {
-    const b = this.bounds;
+    // In the region the player is looking at.
+    s.region = this.regionAt({ x: (view.minX + view.maxX) / 2, y: (view.minY + view.maxY) / 2 });
+    const b = this.regions[s.region];
     const minX = Math.max(b.minX + 0.5, view.minX + 0.5);
     const maxX = Math.min(b.maxX - 0.5, view.maxX - 0.5);
     const top = Math.min(b.maxY - 0.3, view.maxY - 0.2);

@@ -5,6 +5,9 @@
 Writes models/firefly-squid.glb and artwork/firefly-squid-model-preview.svg.
 Built at full size for easy viewing; the game scales it down to about a
 quarter of the vampire squid.
+
+Parts (one node each, for animation in the game): body (mantle, glow spots
+and eyes), fins, arms (with their glowing tips).
 """
 
 import math
@@ -40,7 +43,7 @@ def build():
         circle(SIDES, 0.34, -0.52),
         [(0.0, 0.0, -0.58)],
     ]
-    model.add(*lathe(body), MANTLE)
+    model.add(*lathe(body), MANTLE, part="body")
 
     # Two thin triangular fins near the tip of the mantle.
     for side in (-1, 1):
@@ -50,7 +53,8 @@ def build():
             (side * 0.5, 0.05, 0.85),
             (side * 0.25, 0.05, 1.35),
         ]
-        model.add(*pyramid(fin_base, (side * 1.0, 0.0, 1.0)), FIN)
+        model.add(*pyramid(fin_base, (side * 1.0, 0.0, 1.0)), FIN, part="fins")
+    model.pivot("fins", (0.0, 0.0, 1.1))
 
     # Eight short arms; the two side ones are longer tentacles.
     for k in range(ARMS):
@@ -66,13 +70,14 @@ def build():
         ]
         parts, tip = ridge(path, across, (0.075, 0.06, 0.04), tip_length=0.08)
         for verts, faces in parts:
-            model.add(verts, faces, ARM)
-        model.add(*gem(tip, 0.1 if long_arm else 0.08), GLOW, glow=True)
+            model.add(verts, faces, ARM, part="arms")
+        model.add(*gem(tip, 0.1 if long_arm else 0.08), GLOW, glow=True, part="arms")
+    model.pivot("arms", (0.0, 0.0, -0.5))
 
     # Glowing spots down the front of the mantle.
     for z, radius in ((1.0, 0.37), (0.6, 0.475), (0.25, 0.47)):
         spot_v, spot_f = dome(0.09, 0.04, segments=4)
-        model.add(placed(spot_v, (0.0, -radius, z), (0.0, -1.0, 0.0)), spot_f, GLOW, glow=True)
+        model.add(placed(spot_v, (0.0, -radius, z), (0.0, -1.0, 0.0)), spot_f, GLOW, glow=True, part="body")
 
     # Big eyes on the head.
     for side in (-1, 1):
@@ -80,7 +85,7 @@ def build():
         out = (side * math.sin(spread), -math.cos(spread))
         look = unit((out[0], out[1], 0.0))
         add_eye(model, (out[0] * 0.42, out[1] * 0.42, -0.2), look, side,
-                0.24, EYE, PUPIL, SHINE, pupil_size=0.6)
+                0.24, EYE, PUPIL, SHINE, pupil_size=0.6, part="body")
 
     return model
 

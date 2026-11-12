@@ -59,6 +59,20 @@ describe('dumbo brain', () => {
     expect(ev).toEqual({ kind: 'spin' });
   });
 
+  test('in Twilight, points at the nearest unlit lantern rather than a plant back home', () => {
+    const d = found({ x: 20, y: 80 });
+    const squid: SquidInfo = { pos: { x: 20, y: 80 }, vel: { x: 0, y: 0 }, facing: 1 };
+    // Unlit plants down in home, one lit and one unlit lantern up in Twilight.
+    const things: PlantInfo[] = [
+      ...plants,
+      { id: 'lantern-0', x: 22, y: 81, lit: true },
+      { id: 'lantern-1', x: 14, y: 86, lit: false },
+    ];
+    let ev: DumboEvent = null;
+    for (let t = 0; t < TUNING.dumbo.pointAfter + 1 && !ev; t += DT) ev = d.update(DT, squid, things);
+    expect(ev).toEqual({ kind: 'point', plant: things[4] });
+  });
+
   test('follows behind the squid at a short distance', () => {
     const d = found();
     const squid: SquidInfo = { pos: { x: 0, y: 0 }, vel: { x: TUNING.squid.topSpeed, y: 0 }, facing: 1 };

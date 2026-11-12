@@ -5,11 +5,11 @@ Twilight is the dreamy open shaft above Midnight home, where light starts to arr
 ## ADDED Requirements
 
 ### Requirement: Twilight layout
-Twilight SHALL be a tall open zone about 2 screens wide and 4 screens tall, with Midnight home below it and a closed-for-now passage at the top leading to the Sunlit reef. Rock ledges on the side walls SHALL break up the shaft without blocking it.
+Twilight SHALL be a tall open zone about 3 screens wide and 10 screens tall, generated from the world's seed like Midnight home, with Midnight home below it and a closed-for-now passage at the top leading to the Sunlit reef. Rock ledges on the side walls SHALL break up the shaft without blocking it.
 
 #### Scenario: Open shaft
 - **WHEN** the squid swims from the bottom to the top of Twilight
-- **THEN** there is always a clear path, and it takes under about 40 seconds
+- **THEN** there is always a clear path, and it takes about a minute or less
 
 ### Requirement: Gradient mood
 Twilight SHALL be darker blue at the bottom and lighter lavender toward the top, with faint light rays coming from above.
@@ -26,7 +26,7 @@ Sparkles SHALL drift in Twilight as they do in Midnight home, few at a time, wit
 - **THEN** it can collect enough sparkles to fill the glow meter
 
 ### Requirement: Jellyfish lanterns
-Twilight SHALL contain about 12 jellyfish lanterns floating at different heights. A lantern reached by a glow pulse SHALL light up, play a note and then stay lit for the rest of the session, slowly bobbing with its tentacles swaying. A lit lantern reached again SHALL give a small happy wiggle.
+Twilight SHALL contain about 30 jellyfish lanterns floating at different heights, spread so that every part of the zone has some. A lantern reached by a glow pulse SHALL light up, play a note and then stay lit for the rest of the session, slowly bobbing with its tentacles swaying. A lit lantern reached again SHALL give a small happy wiggle.
 
 #### Scenario: Lighting a lantern
 - **WHEN** a pulse reaches an unlit jellyfish lantern

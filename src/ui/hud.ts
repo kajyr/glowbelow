@@ -4,13 +4,13 @@ import {
   ICON_ALBUM,
   ICON_ARROWS,
   ICON_DRAG,
+  ICON_DASH,
   ICON_GLOW,
   ICON_PLAY,
   ICON_ROTATE,
   ICON_SOUND_OFF,
   ICON_SOUND_ON,
   ICON_SPACE,
-  STICKER_DUMBO,
 } from './icons';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, html = ''): HTMLElementTagNameMap[K] {
@@ -31,6 +31,7 @@ export class Hud {
   readonly album: HTMLButtonElement;
   readonly glow: HTMLButtonElement;
   private readonly glowFill: HTMLElement;
+  readonly dash: HTMLButtonElement;
   private readonly badge: HTMLElement;
   private readonly rotate: HTMLElement;
   private readonly moveHint: HTMLElement;
@@ -57,6 +58,10 @@ export class Hud {
     this.glow.type = 'button';
     this.glow.setAttribute('aria-label', t('glow'));
     this.glowFill = this.glow.querySelector('.glow-fill')!;
+    // Dash sits above glow; its ring fills back up during the cooldown.
+    this.dash = el('button', 'dash-button ready', `<span class="dash-ring"></span><span class="dash-icon">${ICON_DASH}</span>`);
+    this.dash.type = 'button';
+    this.dash.setAttribute('aria-label', t('dash'));
 
     this.rotate = el('div', 'rotate-overlay', ICON_ROTATE);
     this.rotate.setAttribute('role', 'img');
@@ -65,7 +70,7 @@ export class Hud {
     this.moveHint = el('div', 'hint move-hint');
     this.spaceHint = el('div', 'hint space-hint', ICON_SPACE);
 
-    root.append(this.moveHint, this.spaceHint, this.glow, this.album, this.mute, this.title, this.rotate);
+    root.append(this.moveHint, this.spaceHint, this.glow, this.dash, this.album, this.mute, this.title, this.rotate);
     this.setPlaying(false);
   }
 
@@ -96,6 +101,25 @@ export class Hud {
     this.glow.classList.toggle('invite', invite);
   }
 
+  /** Dash readiness 0 → 1: the ring fills during the cooldown; at 1 the button looks ready. */
+  setDash(readiness: number): void {
+    this.dash.style.setProperty('--ready', readiness.toFixed(3));
+    this.dash.classList.toggle('ready', readiness >= 1);
+  }
+
+  /** Shows the dash button (once unlocked); `reveal` pops it in so the child notices. */
+  showDash(reveal: boolean): void {
+    this.dash.classList.add('unlocked');
+    if (reveal) this.dash.classList.add('reveal');
+  }
+
+  /** Quick press feedback on the dash button. */
+  dashFlash(): void {
+    this.dash.classList.remove('flash');
+    void this.dash.offsetWidth;
+    this.dash.classList.add('flash');
+  }
+
   /** Quick flash on the button when the squid glows. */
   glowFlash(): void {
     this.glow.classList.remove('flash');
@@ -123,15 +147,16 @@ export class Hud {
   }
 
   /** A sticker flies from a screen point into the album button, which then shows a badge. */
-  stickerFly(from: { x: number; y: number }): void {
-    const sticker = el('div', 'sticker', STICKER_DUMBO);
+  /** A friend's sticker (`art`, an inline SVG) pops up next to it, then flies to the album button. */
+  stickerFly(from: { x: number; y: number }, art: string): void {
+    const sticker = el('div', 'sticker', art);
     this.root.appendChild(sticker);
     const box = this.root.getBoundingClientRect();
     const target = this.album.getBoundingClientRect();
     const tx = target.left - box.left + target.width / 2;
     const ty = target.top - box.top + target.height / 2;
     sticker.style.transform = `translate(${from.x}px, ${from.y}px) translate(-50%, -50%) scale(0.2)`;
-    // Pop up big next to dumbo, then fly to the album.
+    // Pop up big next to the friend, then fly to the album.
     requestAnimationFrame(() => {
       sticker.classList.add('pop');
       sticker.style.transform = `translate(${from.x}px, ${from.y - 70}px) translate(-50%, -50%) scale(1.4) rotate(-8deg)`;

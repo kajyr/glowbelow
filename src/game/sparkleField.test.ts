@@ -105,4 +105,41 @@ describe('sparkle field', () => {
     }
     expect(got).toBeGreaterThanOrEqual(5);
   });
+
+  describe('several water regions (home and Twilight)', () => {
+    const home = { minX: 0, maxX: 128, minY: 0.5, maxY: 39 };
+    const twilight = { minX: 40, maxX: 88, minY: 45, maxY: 150 };
+    const inside = (r: typeof home, p: { x: number; y: number }) => p.x >= r.minX - 1 && p.x <= r.maxX + 1 && p.y >= r.minY - 0.5 && p.y <= r.maxY + 0.5;
+
+    test('sparkles are spread by area and never drift into the rock between regions', () => {
+      const field = new SparkleField({ bounds: [home, twilight], floor: () => 0, trails: [], rng: makeRng(3) });
+      const inTwilight = field.sparkles.filter((sp) => inside(twilight, sp)).length;
+      const share = inTwilight / field.sparkles.length;
+      const expected = (48 * 105) / (48 * 105 + 128 * 38.5);
+      expect(share).toBeGreaterThan(expected * 0.7);
+      expect(share).toBeLessThan(expected * 1.3);
+      for (let t = 0; t < 300; t += 0.1) {
+        field.update(0.1, { x: -100, y: -100 }, home);
+        for (const sp of field.sparkles) if (sp.alive) expect(inside(home, sp) || inside(twilight, sp)).toBe(true);
+      }
+    });
+
+    test('a minute of swimming around Twilight fills the meter', () => {
+      const field = new SparkleField({ bounds: [home, twilight], floor: () => 0, trails: [], rng: makeRng(8) });
+      const squid = { x: 44, y: 50 };
+      let dir = 1;
+      let got = 0;
+      for (let t = 0; t < 60; t += 1 / 30) {
+        // Zig-zag across Twilight, slowly rising, at top speed.
+        squid.x += dir * TUNING.squid.topSpeed / 30;
+        if (squid.x > 84 || squid.x < 44) {
+          dir = -dir;
+          squid.y += 4;
+        }
+        const view = { minX: squid.x - 9, maxX: squid.x + 9, minY: squid.y - 5.5, maxY: squid.y + 5.5 };
+        got += field.update(1 / 30, squid, view).length;
+      }
+      expect(got).toBeGreaterThanOrEqual(TUNING.meter.toFill);
+    });
+  });
 });

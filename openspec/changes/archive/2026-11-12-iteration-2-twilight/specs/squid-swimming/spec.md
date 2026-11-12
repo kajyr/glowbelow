@@ -15,8 +15,23 @@ The player SHALL be able to dash: a short burst of extra speed in the current st
 - **WHEN** the player presses dash three times in one second
 - **THEN** only one dash happens
 
+### Requirement: Dash unlocks in Twilight
+Dash SHALL be locked when a new game starts: the dash button is hidden and Shift does nothing. The first time the squid reaches Twilight, dash SHALL unlock, the dash button SHALL pop in, and dash SHALL stay unlocked from then on, in every zone. The unlock SHALL be part of the world state, so a saved game keeps it.
+
+#### Scenario: Starting at home
+- **WHEN** a new game starts in Midnight home
+- **THEN** there is no dash button and Shift does nothing
+
+#### Scenario: Reaching Twilight
+- **WHEN** the squid swims into Twilight for the first time
+- **THEN** the dash button pops in above the glow button and dash works
+
+#### Scenario: Back home
+- **WHEN** the squid returns to Midnight home after reaching Twilight
+- **THEN** the dash button stays and dash still works
+
 ### Requirement: Dash button
-On every device a round dash button SHALL sit above the glow button, at least 64 px, showing an icon only. It SHALL show when dash is ready again.
+On every device, once dash is unlocked, a round dash button SHALL sit above the glow button, at least 64 px, showing an icon only. It SHALL show when dash is ready again.
 
 #### Scenario: Ready again
 - **WHEN** a second has passed since the last dash

@@ -13,6 +13,11 @@ export const TUNING = {
     deadZone: 0.35, // hovers when the finger is this close
     radius: 0.55,
   },
+  dash: {
+    speed: 10, // the burst, about twice the squid's top speed
+    boostTime: 0.35, // the top speed eases back down over this long
+    cooldown: 1, // usable again after this (spec: about 1 s)
+  },
   walls: {
     pushRate: 10, // how much of the penetration is removed per second
     slide: 0.85, // share of the into-wall velocity removed on contact
@@ -82,5 +87,42 @@ export const TUNING = {
     spill: 5, // stars that spill on a touch
     pushRate: 6, // share of the overlap removed per second by the bell
     bounce: 5, // speed the squid bounces away at when it touches the jelly (a bit over top speed)
+  },
+  firefly: {
+    perGroup: 6,
+    groupRadius: 1.2, // a group hovers in a cloud this wide; a pulse reaching it makes it join
+    // The swarm centre trails behind and a little below the squid.
+    followDistance: 2.2,
+    followDrop: 0.4,
+    speed: 4.4,
+    catchUpDistance: 6,
+    catchUpSpeed: 11,
+    cloudRadius: 1.1, // loose cloud around the swarm centre
+    memberSpeed: 12, // top speed of one firefly: above the centre's catch-up speed, so none is left behind
+    memberRate: 4, // how quickly a firefly turns toward its spot
+    separation: 0.35, // fireflies push apart when closer than this
+    swirlTime: 1.2, // the giggly swirl when a group joins
+    shapeAfter: 2, // seconds of squid stillness before the swarm makes a shape
+    stillSpeed: 0.35,
+    // Shapes, in world units around the squid.
+    arrowDistance: 2.2, // the arrow's middle, from the squid toward the unlit thing
+    arrowLength: 2.6,
+    starRadius: 2.0,
+    heartRadius: 2.1,
+  },
+  nautilus: {
+    /** The model is drawn at this scale: about 1.5 times the squid. */
+    scale: 0.85,
+    // Bottom to top and back in about a minute, pauses included (the squid swims at 4.5).
+    speed: 3.4,
+    pauseTime: 3, // at the top and bottom of its path
+    turnTime: 1.2, // easing into and out of a pause
+    touchRadius: 1.1, // the shell, around its position
+    meetTime: 2.5, // stops and looks at the squid when first met
+    shedEvery: 0.8, // seconds between trail sparkles while it moves
+    trailCap: 8, // never more trail sparkles than this at once
+    trailLife: 10, // a trail sparkle counts toward the cap this long
+    trailDrift: 0.35, // trail sparkles drift away behind it this fast
+    callPause: 4, // waits this long at the squid's height when called
   },
 } as const;

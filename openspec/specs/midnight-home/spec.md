@@ -53,12 +53,16 @@ When the last plant in the zone is lit, the zone SHALL play a short celebration 
 - **WHEN** the final unlit plant blooms
 - **THEN** a wave of light runs across the zone and a celebratory chord plays
 
-### Requirement: The way up is visible but closed for the demo
-The shaft at the top of the zone SHALL be visible as the way to the next zone. In the demo, swimming into it SHALL gently turn the squid back with a soft wall.
+### Requirement: The shaft leads to Twilight
+The shaft at the top of Midnight home SHALL be an open passage into Twilight, with light from above showing the way.
 
-#### Scenario: Top of the shaft
+#### Scenario: Swimming up
 - **WHEN** the squid swims up into the shaft
-- **THEN** it is gently eased back down, with no message and no penalty
+- **THEN** it continues into Twilight without being turned back
+
+#### Scenario: Swimming back down
+- **WHEN** the squid swims down from Twilight into the shaft
+- **THEN** it arrives back in Midnight home
 
 ### Requirement: Constant slow motion
 The zone SHALL always have something gently moving: drifting particles, swaying plants and rising bubbles.
