@@ -39,4 +39,32 @@ describe('world state', () => {
     expect(back.hasJoined('group-4')).toBe(true);
     expect(back.dashUnlocked).toBe(true);
   });
+
+  test('creatures get stamps like friends: met once, new until seen in the album', () => {
+    const w = new WorldState(5);
+    expect(w.find('phantom-jelly')).toBe(true);
+    expect(w.find('phantom-jelly')).toBe(false);
+    w.find('starfish');
+    expect(w.unviewed.sort()).toEqual(['phantom-jelly', 'starfish']);
+    w.view('starfish');
+    expect(w.unviewed).toEqual(['phantom-jelly']);
+    expect(WorldState.fromJSON(w.toJSON()).unviewed).toEqual(['phantom-jelly']);
+  });
+});
+
+describe('world state changes', () => {
+  test('onChange fires once per real change, never for repeats', () => {
+    const w = new WorldState(3);
+    let n = 0;
+    w.onChange = () => n++;
+    w.light('plant-1');
+    w.light('plant-1');
+    w.find('dumbo');
+    w.find('dumbo');
+    w.join('firefly-0');
+    w.unlockDash();
+    w.findStarfish('starfish-home-0');
+    w.findStarfish('starfish-home-0');
+    expect(n).toBe(5);
+  });
 });

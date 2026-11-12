@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100" role="img" aria-label="Jellyfish lantern">
+<rect x="-50" y="-50" width="100" height="100" rx="8" fill="#042C53"/>
+<circle cx="0" cy="-8" r="34" fill="#FFD58A" opacity="0.18"/>
+<path d="M-14,8 Q-18,22 -12,34" fill="none" stroke="#A9A1E4" stroke-width="3" stroke-linecap="round"/>
+<path d="M-5,8 Q-8,24 -3,40" fill="none" stroke="#C9C3F4" stroke-width="3" stroke-linecap="round"/>
+<path d="M5,8 Q8,24 3,40" fill="none" stroke="#A9A1E4" stroke-width="3" stroke-linecap="round"/>
+<path d="M14,8 Q18,22 12,34" fill="none" stroke="#C9C3F4" stroke-width="3" stroke-linecap="round"/>
+<polygon points="-24,8 -21,-12 -11,-25 0,-28 11,-25 21,-12 24,8" fill="#B9B3EE"/>
+<polygon points="-21,-12 -11,-25 0,-28 -4,-12" fill="#D6D2FA"/>
+<circle cx="0" cy="-6" r="9" fill="#FFD58A"/><circle cx="0" cy="-6" r="5" fill="#FFE7B0"/>
+<polygon points="-24,8 24,8 19,12 -19,12" fill="#ECE9FF"/>
+</svg>

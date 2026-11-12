@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Vec2 } from '../game/vec';
 import type { WorldState } from '../game/worldState';
+import { lanternId } from '../levels/ids';
 import { placementMatrix } from './instancing';
 import { envMaterial, type LocalLights } from './localLights';
 import { modelParts, type ModelPart, type Models } from './models';
@@ -137,5 +138,4 @@ export class LanternsView {
   }
 }
 
-/** The id a lantern has in the world state and the glow list. */
-export const lanternId = (i: number): string => `lantern-${i}`;
+export { lanternId };

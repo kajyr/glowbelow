@@ -77,6 +77,8 @@ export function generateWorld(seed: number): GameWorld {
     bubbleVents: h.bubbleVents,
     jelly: h.jelly,
     lanterns: t.lanterns,
+    rings: [...(h.rings ?? []), ...(t.rings ?? [])],
+    starfish: [...(h.starfish ?? []), ...(t.starfish ?? [])],
     fireflyGroups: t.fireflyGroups,
     nautilus: t.nautilus,
     blocks,

@@ -79,6 +79,13 @@ export class DumboBrain {
     return this.body.facing;
   }
 
+  /** A continued game where dumbo was already found: it follows from the start, no pop-out. */
+  restore(at: Vec2): void {
+    this.state = 'following';
+    this.body.pos.x = at.x;
+    this.body.pos.y = at.y;
+  }
+
   /** Called when a pulse reaches the cave. Returns true the first time only. */
   discover(): boolean {
     if (this.state !== 'hidden') return false;

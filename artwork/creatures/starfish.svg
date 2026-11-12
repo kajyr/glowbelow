@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100" role="img" aria-label="Starfish">
+<rect x="-50" y="-50" width="100" height="100" rx="8" fill="#042C53"/>
+<polygon points="0,-38 10,-12 38,-11 16,6 24,34 0,18 -24,34 -16,6 -38,-11 -10,-12" fill="#E8865C"/>
+<polygon points="0,-38 10,-12 0,0 -10,-12" fill="#F7B48A"/><polygon points="-38,-11 -10,-12 0,0 -16,6" fill="#F7B48A"/>
+<polygon points="0,18 24,34 16,6 0,0" fill="#C9653F"/>
+<circle cx="0" cy="-34" r="2.5" fill="#FFD58F"/><circle cx="34" cy="-10" r="2.5" fill="#FFD58F"/><circle cx="21" cy="30" r="2.5" fill="#FFD58F"/><circle cx="-21" cy="30" r="2.5" fill="#FFD58F"/><circle cx="-34" cy="-10" r="2.5" fill="#FFD58F"/>
+<circle cx="-6" cy="-3" r="4" fill="#FBEFE6"/><circle cx="6" cy="-3" r="4" fill="#FBEFE6"/>
+<circle cx="-5.5" cy="-2.5" r="2.2" fill="#4A1B0C"/><circle cx="6.5" cy="-2.5" r="2.2" fill="#4A1B0C"/>
+<path d="M-3,5 Q0,8 3,5" fill="none" stroke="#8A3B1E" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

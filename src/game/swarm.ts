@@ -4,8 +4,7 @@ import { Follower } from './follower';
 import { TUNING } from './tuning';
 import { ease, type Vec2 } from './vec';
 
-/** A firefly group's id in the world state and the glow list. */
-export const fireflyGroupId = (i: number): string => `firefly-${i}`;
+export { fireflyGroupId } from '../levels/ids';
 
 export type SwarmShape = 'arrow' | 'star' | 'heart';
 
@@ -127,6 +126,19 @@ export class Swarm {
       this.centre.pos.y = this.groups[group].y;
     }
     return { kind: 'join', group, first: this.joined.length === 1 };
+  }
+
+  /** A continued game: this group is already in the swarm, no swirl. */
+  restore(group: number, at: Vec2): void {
+    if (group < 0 || group >= this.groups.length || this.hasJoined(group)) return;
+    this.joined.push(group);
+    for (const f of this.fireflies) {
+      if (f.group !== group) continue;
+      f.pos.x = at.x + Math.cos(f.phase) * 0.6;
+      f.pos.y = at.y + Math.sin(f.phase) * 0.6;
+    }
+    this.centre.pos.x = at.x;
+    this.centre.pos.y = at.y;
   }
 
   /** `unlit` are the lightable things the arrow may point at. */

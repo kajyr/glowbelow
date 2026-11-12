@@ -139,7 +139,12 @@ export class Hud {
     this.spaceHint.classList.toggle('show', glow && icons === 'keyboard');
   }
 
-  /** The album button only wiggles for now; the album comes later. */
+  /** The new-sticker badge on the album button. */
+  setBadge(show: boolean): void {
+    this.badge.classList.toggle('show', show);
+  }
+
+  /** A little wiggle of the album button (a sticker arrived). */
   wiggleAlbum(): void {
     this.album.classList.remove('wiggle');
     void this.album.offsetWidth;

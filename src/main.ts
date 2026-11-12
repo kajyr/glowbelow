@@ -15,8 +15,13 @@ import { SparkleField } from './game/sparkleField';
 import { steer, type Body, type SteerInput } from './game/steering';
 import { fireflyGroupId, Swarm } from './game/swarm';
 import { Nautilus } from './game/nautilus';
+import { BubbleRings } from './game/bubbleRings';
 import { TUNING } from './game/tuning';
-import { WorldState } from './game/worldState';
+import { WorldState, type CreatureName, type StampName } from './game/worldState';
+import { browserStorage, clearSave, loadSave, Saver, saveUnavailableHere } from './game/save';
+import { loadVolumes, saveVolumes } from './game/settings';
+import { ParentCorner } from './ui/parentCorner';
+import { Album, stampArt } from './ui/album';
 import { Input } from './input';
 import { generateWorld } from './levels/assembleWorld';
 import { JellyFreeArea } from './levels/jellyArea';
@@ -36,6 +41,9 @@ import { buildRockFill } from './render/rockFill';
 import { LanternsView, lanternId } from './render/lanterns';
 import { FireflyView } from './render/fireflyView';
 import { NautilusView } from './render/nautilusView';
+import { RingsView } from './render/ringsView';
+import { StarfishView } from './render/starfishView';
+import { starfishIds } from './levels/ids';
 import { zoneAt } from './levels/world';
 import { Hud } from './ui/hud';
 import { STICKER_DUMBO, STICKER_FIREFLY, STICKER_NAUTILUS } from './ui/icons';
@@ -62,9 +70,13 @@ async function boot() {
   const hud = new Hud(container);
   const synth = new Synth();
   const lights = new LocalLights();
-  // The world's seed: ?seed= picks one (testing, sharing a favourite world), otherwise a new one per game.
+  // A saved game continues: its seed regenerates the same world. ?seed= picks a
+  // world instead (testing, sharing a favourite one) and starts it fresh.
+  const storage = browserStorage();
   const seedParam = params.get('seed');
-  const worldSeed = seedParam !== null && seedParam !== '' && !Number.isNaN(Number(seedParam)) ? Number(seedParam) >>> 0 : Math.floor(Math.random() * 2 ** 32);
+  const forcedSeed = seedParam !== null && seedParam !== '' && !Number.isNaN(Number(seedParam)) ? Number(seedParam) >>> 0 : null;
+  const saved = forcedSeed === null ? loadSave(storage) : null;
+  const worldSeed = saved?.state.seed ?? forcedSeed ?? Math.floor(Math.random() * 2 ** 32);
   const genStart = performance.now();
   // The whole world: home, and Twilight above it through the shaft.
   const gameWorld = generateWorld(worldSeed);
@@ -80,7 +92,8 @@ async function boot() {
   scene.add(buildWorld(models, level.pieces, lights));
   scene.add(buildRockFill(level.blocks ?? [], lights));
   // Everything that changes as the player plays (lit things, found friends) lives here.
-  const worldState = new WorldState(worldSeed);
+  const worldState = saved?.state ?? new WorldState(worldSeed);
+  if (DEBUG && saved) console.info(`[save] continuing in ${saved.zone}${saved.relayout ? ' (older layout: lit things dropped)' : ''}`);
   const plants = new PlantsView(models, built.plants, lights, worldState);
   const lanterns = new LanternsView(models, level.lanterns ?? [], lights, worldState);
   scene.add(lanterns.group);
@@ -101,6 +114,14 @@ async function boot() {
   const nautilus = level.nautilus ? new Nautilus(level.nautilus) : null;
   const nautilusView = nautilus ? new NautilusView(models) : null;
   if (nautilusView) scene.add(nautilusView.root);
+  // Bubble rings to swim through: a toy, nothing to count.
+  const rings = new BubbleRings(level.rings ?? []);
+  const ringsView = new RingsView(models, rings);
+  scene.add(ringsView.group);
+  // Shy starfish on rocks and the seabed, found by glowing near them.
+  const starIds = starfishIds(level.starfish ?? []);
+  const starfish = new StarfishView(models, level.starfish ?? [], starIds, lights, worldState);
+  scene.add(starfish.group);
   const field = new SparkleField({
     // Sparkles drift in each zone's water, never in the rock between them.
     bounds: [sparkleBounds(zone.layout.level), ...gameWorld.map.zones.filter((z) => z.name !== 'home').map((z) => ({ minX: z.rect.minX + 1, maxX: z.rect.maxX - 1, minY: z.rect.minY + 1, maxY: z.rect.maxY - 5 }))],
@@ -131,7 +152,71 @@ async function boot() {
   const rig = new CameraRig(stage, level.cameraBounds);
 
   // ------------------------------------------------------------ state
-  const body: Body = { pos: { ...level.start }, vel: { x: 0, y: 0 } };
+  // A continued game starts at the entry of the zone it was left in.
+  const passage = gameWorld.map.passages[0].rect;
+  const twilightEntry = { x: (passage.minX + passage.maxX) / 2, y: gameWorld.map.zones[1].rect.minY + 3 };
+  const entry = saved?.zone === 'twilight' ? twilightEntry : level.start;
+  const body: Body = { pos: { ...entry }, vel: { x: 0, y: 0 } };
+  // Friends already found come back with the squid.
+  if (worldState.hasFound('dumbo')) brain.restore({ x: entry.x - 1.8, y: entry.y + 0.5 });
+  if (nautilus && worldState.hasFound('nautilus')) nautilus.found = true;
+  swarm.groups.forEach((_g, i) => worldState.hasJoined(fireflyGroupId(i)) && swarm.restore(i, { x: entry.x - 2, y: entry.y - 0.4 }));
+  // Saves about a second after any change, at once when the page is hidden.
+  let zoneNow = zoneAt(gameWorld.map, body.pos) ?? 'home';
+  const saver = new Saver(storage, worldState, () => zoneNow);
+  worldState.onChange = () => saver.request();
+  const flushSave = () => saver.flush();
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flushSave());
+  window.addEventListener('pagehide', flushSave);
+
+  // The parent corner: volumes (settings, kept on start over), start over, and the frame note.
+  const volumes = loadVolumes(storage);
+  synth.setVolumes(volumes.music, volumes.effects);
+  // Play pauses while the album or the parent corner is open.
+  let overlayOpen = false;
+  const overlayChanged = () => {
+    overlayOpen = album.open || parent.open;
+    synth.setDucked(overlayOpen);
+    input.reset();
+  };
+  const parent = new ParentCorner(container, volumes, {
+    onVolumes: (v) => {
+      synth.setVolumes(v.music, v.effects);
+      saveVolumes(storage, v);
+    },
+    onReset: () => {
+      saver.disable();
+      clearSave(storage);
+      location.reload();
+    },
+    onOpenChange: overlayChanged,
+  });
+  // The sticker album: a stamp per friend and sea creature, each playing its sound when tapped.
+  const stampSounds: Partial<Record<StampName, () => void>> = {
+    dumbo: () => synth.flute(),
+    firefly: () => synth.fireflyChimes(),
+    nautilus: () => synth.nautilus(),
+    starfish: () => synth.starfish(),
+    'phantom-jelly': () => synth.jellyBoing(),
+    'lantern-jelly': () => synth.lantern(),
+  };
+  const album = new Album(container, worldState, {
+    onStampSound: (s) => stampSounds[s]?.(),
+    onOpenChange: overlayChanged,
+    onBadge: (show) => hud.setBadge(show),
+  }, [
+    { zone: 'home', tint: '#0b2150', ids: starfish.idsIn('home') },
+    { zone: 'twilight', tint: '#3b3f8f', ids: starfish.idsIn('twilight') },
+  ]);
+  // Inside another site's frame (itch.io), the browser may block storage: tell the grown-ups.
+  const framed = (() => {
+    try {
+      return window.top !== window.self;
+    } catch {
+      return true;
+    }
+  })();
+  parent.setSaveUnavailable(saveUnavailableHere(framed, storage));
   const meter = new GlowMeter();
   const pulses = new PulseSystem();
   const bump = new BumpState();
@@ -147,8 +232,9 @@ async function boot() {
     const saved = localStorage.getItem('glowbelow.muted');
     if (saved !== null) muted = saved === '1';
   } catch { /* storage unavailable: keep the default */ }
-  let celebrated = false;
-  let twilightCelebrated = false;
+  // A continued game where everything was lit has already celebrated.
+  let celebrated = plants.allLit;
+  let twilightCelebrated = lanterns.lanterns.length > 0 && lanterns.allLit;
   let zoom = 0; // 0 on the title (closer), 1 in play
   let logicSteps = 0;
 
@@ -201,7 +287,7 @@ async function boot() {
   hud.album.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    hud.wiggleAlbum();
+    if (mode === 'play' && !parent.open) album.toggle();
   });
   // A world that already unlocked dash (a saved game, from iteration 3) shows it from the start.
   if (worldState.dashUnlocked) hud.showDash(false);
@@ -218,6 +304,8 @@ async function boot() {
 
   input.onKey = (code) => {
     if (code === 'KeyM') toggleMute();
+    // B opens the album (A steers left).
+    if (code === 'KeyB' && mode === 'play' && !parent.open) album.toggle();
     if (mode === 'title' && (code === 'Space' || code === 'Enter')) start('keyboard');
     if (DEBUG && code === 'KeyC') overlay.visible = !overlay.visible;
     if (DEBUG && code === 'KeyG') reach.visible = !reach.visible;
@@ -251,6 +339,9 @@ async function boot() {
   function touchLantern(id: string) {
     if (lanterns.touch(id)) {
       synth.lantern();
+      // The first lantern lit sends its stamp to the album.
+      const l = lanterns.lanterns.find((q) => q.id === id);
+      if (l) meetCreature('lantern-jelly', l);
       if (lanterns.allLit && !twilightCelebrated) celebrateTwilight();
     }
   }
@@ -283,6 +374,27 @@ async function boot() {
     setTimeout(() => hud.stickerFly(stage.toScreen(new THREE.Vector3(at.x, at.y + 1, 0)), STICKER_NAUTILUS), 700);
   }
 
+  function touchStarfish(id: string) {
+    starfish.wave(id);
+    if (!worldState.findStarfish(id)) return;
+    synth.starfish();
+    const star = starfish.stars.find((q) => q.id === id);
+    if (star) meetCreature('starfish', star);
+    // The last one in its zone: a wave of light across that zone's starfish and a chord.
+    const zoneIds = star ? starfish.idsIn(star.zone) : [];
+    if (zoneIds.length > 0 && worldState.starfishCount(zoneIds) === zoneIds.length) {
+      zoneIds.forEach((sid, i) => starfish.flashAfter(sid, 0.6 + i * 0.18));
+      setTimeout(() => synth.chord(), 700);
+    }
+  }
+
+  /** The first meeting with a sea creature: its stamp pops up and flies to the album. */
+  function meetCreature(name: CreatureName, at: { x: number; y: number }) {
+    if (!worldState.find(name)) return;
+    const from = stage.toScreen(new THREE.Vector3(at.x, at.y + 0.6, 0));
+    setTimeout(() => hud.stickerFly(from, stampArt(name)), 500);
+  }
+
   function discoverDumbo() {
     if (!brain.discover()) return;
     worldState.find('dumbo');
@@ -302,6 +414,7 @@ async function boot() {
     { id: 'cave', kind: 'cave', x: cave.x, y: cave.y, r: cave.r },
     ...(level.lanterns ?? []).map((l, i): GlowTarget => ({ id: lanternId(i), kind: 'lantern', x: l.x, y: l.y + 0.25, r: 0.6 })),
     ...swarm.groups.map((g, i): GlowTarget => ({ id: fireflyGroupId(i), kind: 'firefly', x: g.x, y: g.y, r: TUNING.firefly.groupRadius })),
+    ...(level.starfish ?? []).map((st, i): GlowTarget => ({ id: starIds[i], kind: 'starfish', x: st.x, y: st.y, r: 0.6 })),
   ];
   const fireflyGroupOf = new Map(swarm.groups.map((_g, i) => [fireflyGroupId(i), i]));
   const glowById = new Map(glowTargets.map((t) => [t.id, t]));
@@ -311,7 +424,8 @@ async function boot() {
   // ------------------------------------------------------------ logic (60 Hz)
   function logic(dt: number) {
     logicSteps++;
-    if (mode !== 'play' || paused) {
+    saver.tick(dt);
+    if (mode !== 'play' || paused || overlayOpen) {
       input.consume();
       return;
     }
@@ -331,12 +445,22 @@ async function boot() {
 
     // The optional dash: a burst along the steering (or facing), then steering eases back.
     dash.update(dt);
+    // Crossing into another zone is saved, so a continued game starts there.
+    const zoneHere = zoneAt(gameWorld.map, body.pos);
+    if (zoneHere && zoneHere !== zoneNow) {
+      zoneNow = zoneHere;
+      saver.request();
+    }
     // Dash unlocks the first time the squid reaches Twilight, and stays.
-    if (!worldState.dashUnlocked && zoneAt(gameWorld.map, body.pos) === 'twilight' && worldState.unlockDash()) hud.showDash(true);
+    if (!worldState.dashUnlocked && zoneHere === 'twilight' && worldState.unlockDash()) hud.showDash(true);
     if (ev.dash && worldState.dashUnlocked && !bump.locked && dash.trigger(body, dashDirection(body, steerIn, squidView.facing))) hud.dashFlash();
     steer(body, steerIn, dt, dash.params());
     const contact = collide(body, TUNING.squid.radius, built.world, dt);
     shaftPush(body, level.shaft, dt);
+    for (const e of rings.update(dt, body)) {
+      if (e.kind === 'ring') synth.ringNote(e.step);
+      else synth.flourish();
+    }
     if (jelly) {
       jelly.update(dt);
       // Touching the phantom jelly spills a few stars that float nearby, ready to catch again.
@@ -346,6 +470,7 @@ async function boot() {
         bump.lockBriefly();
         synth.jellyBoing();
         jellyView?.flash();
+        meetCreature('phantom-jelly', jelly.pos);
         const n = meter.spill(TUNING.jelly.spill);
         if (n > 0) {
           field.spill(at, n);
@@ -390,6 +515,7 @@ async function boot() {
       else if (kind === 'plant') touchPlant(id);
       else if (kind === 'lantern') touchLantern(id);
       else if (kind === 'firefly') joinFireflies(fireflyGroupOf.get(id) ?? -1);
+      else if (kind === 'starfish') touchStarfish(id);
     }
 
     const dumboEvent = brain.update(
@@ -447,6 +573,7 @@ async function boot() {
     plants.update(frameDt, lights);
     lanterns.update(frameDt, lights);
     fireflyView.update(frameDt, lights);
+    starfish.update(frameDt, lights);
     effects.update(frameDt, stage.camera, pulses.active, lights);
     lights.end(0.24 + 0.46 * lit + 0.06 * tw, rig.view());
     const wc = brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y));
@@ -465,6 +592,7 @@ async function boot() {
     dumboView.update(frameDt, brain);
     if (jelly && jellyView) jellyView.update(frameDt, jelly);
     if (nautilus && nautilusView) nautilusView.update(frameDt, nautilus);
+    ringsView.update(frameDt);
     sparkles.update(frameDt);
 
     // The camera eases in from the title close-up.
@@ -513,13 +641,14 @@ async function boot() {
       logic(STEP);
       acc -= STEP;
     }
+    parent.update(frameDt);
     render(paused ? 0 : frameDt);
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish } });
 }
 
 boot().catch((err) => {

@@ -6,6 +6,8 @@ import { buildLevel, type Level } from './level';
 import { placedCircles, type PieceName, type Placement } from './pieces';
 import { keepOutHits, pocketCells, unreachable } from './rules';
 import { findPath, resample, simplify, TRAIL_SPACING, wave } from './trails';
+import { placeRingChain } from './rings';
+import { placeStarfish } from './starfish';
 import { deriveSeed, MAX_ATTEMPTS } from './generateValid';
 import { ROCK_PIECES } from './zoneRecipe';
 
@@ -267,7 +269,28 @@ export function generateValidTwilight(recipe: TwilightRecipe, seed: number, maxA
     const first = groups.reduce((a, g) => (Math.hypot(g.x - layout.level.start.x, g.y - layout.level.start.y) < Math.hypot(a.x - layout.level.start.x, a.y - layout.level.start.y) ? g : a), groups[0]);
     const path = first ? findPath(fields, layout.level.start, first) : null;
     if (path && path.length > 1) layout.level.trails = [wave(fields, resample(simplify(fields, path), TRAIL_SPACING))];
+    // A chain of bubble rings, mostly upward, in the open middle, away from the entry and the nautilus.
+    const lv = layout.level;
+    const chain = placeRingChain(fields, s, {
+      count: 5,
+      spacing: 3.2,
+      angles: [Math.PI / 2, Math.PI / 2 - 0.35, Math.PI / 2 + 0.35, 0.3, Math.PI - 0.3],
+      avoid: [lv.start, ...(lv.nautilus ? [{ x: lv.nautilus.x, y: lv.nautilus.y0 }, { x: lv.nautilus.x, y: lv.nautilus.y1 }] : [])],
+      avoidRadius: 5,
+      within: { minX: 6, maxX: recipe.width - 6, minY: 10, maxY: recipe.height - 14 },
+    });
+    lv.rings = chain ? [chain] : [];
+    // Five starfish on the ledges and walls, spread up the shaft.
+    const stars = placeStarfish(fields, s, 'twilight', {
+      count: 5,
+      avoid: [lv.start, ...(lv.lanterns ?? []), ...(lv.fireflyGroups ?? []), ...(chain?.rings ?? [])],
+      avoidRadius: 3,
+      apart: 16,
+    });
+    lv.starfish = stars ?? [];
     const bad = checkTwilightRules(layout, fields);
+    if (!chain) bad.push('no-ring-chain');
+    if (!stars) bad.push('no-room-starfish');
     if (bad.length === 0) return { layout, fields, seed: s, attempts: attempt + 1, rejected };
     rejected.push({ seed: s, why: bad });
   }
