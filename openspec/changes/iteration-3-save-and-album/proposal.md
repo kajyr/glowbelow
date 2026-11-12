@@ -7,7 +7,7 @@ Depends on: `iteration-2-twilight`.
 ## What Changes
 
 - Progress is saved automatically in the browser; the title screen continues where the player left off
-- The album opens from the album button: one page per friend found (picture, name, the friend's sound on tap) and a starfish counter per zone
+- The album opens from the album button: one page with a stamp per planned friend and sea creature (starfish, phantom jelly, lantern jelly), four wide (picture, name and its sound on tap once found, a silhouette before) and a strip of starfish per zone underneath
 - A parent corner behind a long-press: reset progress, volume, (language arrives in iteration 6), and "open full page" when the itch.io frame blocks saving
 - Bubble rings: chains of bubble rings in Midnight home and Twilight to swim through for a whoosh of speed and a rising run of notes
 - Starfish: about five shy starfish per zone that light up and wave when glowed near; found ones are counted in the album

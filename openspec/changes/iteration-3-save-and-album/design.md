@@ -33,10 +33,13 @@
 - On load with an older `layout`: keep found friends, joined groups, found starfish and the dash unlock (they do not depend on positions); drop lit ids, so zones glow again as they are relit
 - Alternative: ids from positions (break on any nudge), or freezing the generator (blocks every later iteration)
 
-### Album as a DOM overlay with pre-rendered friend pictures
-- Friend pictures are the existing concept-art SVGs in `artwork/friends/`, imported as URLs
-- Silhouettes are the same SVG with a dark fill filter
-- Alternative: render live 3D models in the album (costly and unnecessary)
+### Album as one DOM page of stamps
+- A grid at least three by two (four wide past six stamps, a row more per four), with a stamp per planned friend and per sea creature (starfish, phantom jelly, lantern jelly) in zone order, and starfish strips per zone underneath; nothing to turn, so no swiping or arrows to learn
+- Creatures are stamped at the first meeting and share the friends' `found` / `viewed` sets in `WorldState` (a `StampName`), so the badge and save need nothing new
+- Friends whose zone is not built yet (cuttlefish, giant squid) are silhouettes from the start, so the album shows what is coming
+- Friend pictures are the existing concept-art SVGs in `artwork/friends/`, inlined (`?raw`) so a silhouette can hide the art's background card and darken only the friend
+- The book's width follows whichever is tighter, the screen's width or its height, so the whole page fits a phone in landscape
+- Alternative: one page per friend (more to navigate for a child, and a badge that only clears page by page); live 3D models in the album (costly and unnecessary)
 
 ### Pause by stopping the logic step
 - Opening the album or parent corner stops logic updates and audio ambience fades down; rendering continues so the background stays visible behind a dimmed layer
