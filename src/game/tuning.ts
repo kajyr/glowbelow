@@ -110,6 +110,12 @@ export const TUNING = {
     starRadius: 2.0,
     heartRadius: 2.1,
   },
+  rings: {
+    hitRadius: 0.75, // the squid's centre inside this counts as swimming through the hoop
+    push: 3.5, // extra speed along the swim when passing through
+    regrow: 3, // a popped ring forms again after this (spec: within about 5 s)
+    chainGap: 3, // passing the next ring within this long keeps the run of notes going
+  },
   nautilus: {
     /** The model is drawn at this scale: about 1.5 times the squid. */
     scale: 0.85,

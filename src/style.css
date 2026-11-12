@@ -410,3 +410,272 @@ button {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------- parent corner */
+
+/* Small and dim beside the mute button: a child has no reason to hold it for 3 s. */
+.parent-control {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: calc(max(14px, env(safe-area-inset-left)) + var(--hud-size) + 12px);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 44, 100, 0.35);
+  color: rgba(215, 232, 255, 0.4);
+  z-index: 3;
+  touch-action: none;
+}
+
+.parent-dots {
+  font: 700 14px/1 system-ui, sans-serif;
+  letter-spacing: 1px;
+}
+
+/* The ring fills during the hold. */
+.parent-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(rgba(215, 232, 255, 0.85) calc(var(--hold, 0) * 360deg), transparent 0);
+  -webkit-mask: radial-gradient(circle, transparent 58%, #000 61%);
+  mask: radial-gradient(circle, transparent 58%, #000 61%);
+  opacity: 0;
+}
+
+.parent-control.holding .parent-ring {
+  opacity: 1;
+}
+
+.parent-panel {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(4, 12, 34, 0.72);
+  z-index: 5;
+}
+
+.parent-panel.show {
+  display: grid;
+}
+
+.parent-card {
+  width: min(420px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow: auto;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: #102a5c;
+  color: #e6f1fb;
+  font: 16px/1.4 system-ui, sans-serif;
+  display: grid;
+  gap: 14px;
+}
+
+.parent-card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.parent-card label {
+  display: grid;
+  gap: 6px;
+}
+
+.parent-card input[type='range'] {
+  width: 100%;
+  min-height: 32px;
+}
+
+.parent-card button {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: rgba(215, 232, 255, 0.14);
+  color: inherit;
+  font: inherit;
+}
+
+.parent-card .erase {
+  background: #c2453a;
+  margin-right: 8px;
+}
+
+.parent-note,
+.parent-confirm {
+  display: none;
+  gap: 8px;
+}
+
+.parent-note.show,
+.parent-confirm.show {
+  display: grid;
+}
+
+.parent-note p,
+.parent-confirm p {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------- album */
+
+.album {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(4, 12, 34, 0.7);
+  z-index: 4;
+}
+
+.album.show {
+  display: grid;
+}
+
+/*
+ * One page: the stamp grid on top, the starfish strips underneath. The width
+ * comes from whichever is tighter, the screen's width or its height: square
+ * stamps get the height left after the starfish strips, so a short phone
+ * screen still shows the whole page.
+ */
+.album-book {
+  --icon: clamp(20px, 5vh, 38px);
+  --stars: calc(var(--zones, 2) * (var(--icon) + 16px) + (var(--zones, 2) - 1) * 8px);
+  --cell: calc((100dvh - 100px - var(--stars) - (var(--rows, 2) - 1) * 14px) / var(--rows, 2));
+  position: relative;
+  width: min(720px, calc(100% - 40px), calc(var(--cols, 3) * var(--cell) + (var(--cols, 3) - 1) * 14px + 44px));
+  max-height: calc(100% - 40px);
+  padding: 22px;
+  border-radius: 26px;
+  background: #fff8ec;
+  box-shadow: 0 0 0 6px #ffffff, 0 18px 60px rgba(0, 0, 0, 0.45);
+  display: grid;
+  gap: 16px;
+}
+
+.album-grid {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+}
+
+.stamp {
+  aspect-ratio: 1;
+  min-height: 0;
+  border-radius: 16px;
+  background: rgba(74, 58, 140, 0.07);
+  outline: 3px dashed rgba(74, 58, 140, 0.18);
+  outline-offset: -6px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.stamp.found {
+  background: #ffffff;
+  outline: none;
+  box-shadow: 0 3px 0 rgba(74, 58, 140, 0.18);
+  cursor: pointer;
+}
+
+/* A stamp seen for the first time pops in. */
+.stamp.new {
+  animation: stamp-new 0.8s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@keyframes stamp-new {
+  0% { transform: scale(0.4) rotate(-12deg); }
+}
+
+.friend-art {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.friend-art svg {
+  width: 100%;
+  height: 100%;
+  max-height: 22vh;
+}
+
+/* Not found yet: the friend's shape only, dark and quiet, without the art's background card. */
+.stamp:not(.found) .friend-art svg > rect:first-of-type {
+  display: none;
+}
+
+.stamp:not(.found) .friend-art svg {
+  filter: brightness(0) opacity(0.22);
+}
+
+.friend-name {
+  margin: 4px 0 0;
+  font: 700 clamp(13px, 2.2vh, 18px)/1.1 system-ui, sans-serif;
+  color: #4a3a8c;
+  text-align: center;
+}
+
+.album-close {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #4a3a8c;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px #fff8ec;
+  z-index: 1;
+}
+
+.album-close svg {
+  width: 55%;
+  height: 55%;
+}
+
+.album-stars {
+  display: grid;
+  gap: 8px;
+}
+
+.starfish-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+}
+
+.star-icon {
+  width: var(--icon);
+  height: var(--icon);
+  color: rgba(255, 255, 255, 0.14);
+}
+
+.star-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.star-icon svg circle {
+  opacity: 0;
+}
+
+.star-icon.found {
+  color: #f7a875;
+  filter: drop-shadow(0 0 6px rgba(255, 213, 143, 0.9));
+}
+
+.star-icon.found svg circle {
+  opacity: 1;
+}

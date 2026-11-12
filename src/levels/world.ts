@@ -61,6 +61,8 @@ export function translateLevel(level: Level, d: Vec2): Level {
     bubbleVents: level.bubbleVents.map((x) => x + d.x),
     jelly: level.jelly ? { start: move(level.jelly.start, d) } : null,
     lanterns: level.lanterns?.map((p) => move(p, d)),
+    rings: level.rings?.map((c) => ({ ...c, rings: c.rings.map((p) => move(p, d)) })),
+    starfish: level.starfish?.map((s) => ({ ...s, x: s.x + d.x, y: s.y + d.y })),
     fireflyGroups: level.fireflyGroups?.map((p) => move(p, d)),
     nautilus: level.nautilus ? { x: level.nautilus.x + d.x, y0: level.nautilus.y0 + d.y, y1: level.nautilus.y1 + d.y } : level.nautilus,
   };

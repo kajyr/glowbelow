@@ -1,7 +1,7 @@
 import type { Vec2 } from './vec';
 
 /** Kinds of things a glow pulse can reach. */
-export type GlowKind = 'plant' | 'lantern' | 'cave' | 'firefly' | 'nautilus';
+export type GlowKind = 'plant' | 'lantern' | 'cave' | 'firefly' | 'nautilus' | 'starfish';
 
 /**
  * Something a pulse can reach, anywhere in the world. Plants and lanterns can
@@ -16,7 +16,7 @@ export interface GlowTarget {
   r: number;
 }
 
-/** Kinds that count as "unlit things" friends point at. */
+/** Kinds that count as "unlit things" friends point at (starfish are hide and seek: never pointed at). */
 export const LIGHTABLE: GlowKind[] = ['plant', 'lantern'];
 
 /**

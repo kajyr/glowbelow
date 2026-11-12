@@ -3,6 +3,8 @@ import { Fields } from './clearance';
 import { generateLayout, type Layout } from './generate';
 import { checkRules } from './rules';
 import { layTrails } from './trails';
+import { placeRingChain } from './rings';
+import { placeStarfish } from './starfish';
 import { JellyFreeArea, pickJellyStart } from './jellyArea';
 import type { Vec2 } from '../game/vec';
 import type { ZoneRecipe } from './zoneRecipe';
@@ -46,14 +48,40 @@ export function generateValidZone(recipe: ZoneRecipe, seed: number, maxAttempts 
       rejected.push({ seed: s, why: [`no-room-${why.step}`] });
       continue;
     }
-    const fields = new Fields(buildLevel(layout.level).world, layout.level.start);
+    const built = buildLevel(layout.level);
+    const fields = new Fields(built.world, layout.level.start);
     const { trails, paths } = layTrails(layout, fields);
     layout.level.trails = trails;
     if (recipe.phantomJelly) {
       const start = pickJellyStart(layout, new JellyFreeArea(layout, fields), s);
       layout.level.jelly = start ? { start } : null;
     }
+    // A chain of bubble rings in open water, nearly level, away from the start, cave and shaft.
+    const lv = layout.level;
+    const shaftTop = { x: (lv.shaft.x0 + lv.shaft.x1) / 2, y: lv.shaft.softFrom };
+    const chain = placeRingChain(fields, s, {
+      count: 5,
+      spacing: 3.2,
+      angles: [0, Math.PI, 0.25, -0.25, Math.PI + 0.25, Math.PI - 0.25],
+      avoid: [lv.start, ...(lv.cave ? [lv.cave] : []), shaftTop],
+      avoidRadius: 5,
+    });
+    lv.rings = chain ? [chain] : [];
+    // Five shy starfish on rocks and the seabed, spread round the zone.
+    const stars = placeStarfish(fields, s, 'home', {
+      count: 5,
+      avoid: [lv.start, ...(lv.cave ? [lv.cave] : []), ...(chain?.rings ?? [])],
+      avoidRadius: 3,
+      // Not on top of a plant (built plants have their seabed height).
+      notOn: built.plants,
+      notOnRadius: 1.4,
+      apart: 14,
+      awayFromBounds: 2.5,
+    });
+    lv.starfish = stars ?? [];
     const bad = checkRules(layout, fields);
+    if (!chain) bad.push('no-ring-chain');
+    if (!stars) bad.push('no-room-starfish');
     if (bad.length === 0) return { layout, fields, paths, seed: s, attempts: attempt + 1, rejected };
     rejected.push({ seed: s, why: bad });
   }

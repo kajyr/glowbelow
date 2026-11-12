@@ -13,6 +13,10 @@ export class Synth {
   private master: GainNode | null = null;
   private padExtra: GainNode | null = null;
   private padTwilight: GainNode | null = null;
+  /** The pad (music) and every other sound (effects) have their own volume. */
+  private music: GainNode | null = null;
+  private effects: GainNode | null = null;
+  private volume = { music: 1, effects: 1 };
   private noise: AudioBuffer | null = null;
   private muted = false;
   private noteIndex = 3;
@@ -45,6 +49,12 @@ export class Synth {
     this.master = ctx.createGain();
     this.master.gain.value = this.muted ? 0 : 0.8;
     this.master.connect(comp);
+    this.music = ctx.createGain();
+    this.music.gain.value = this.volume.music;
+    this.music.connect(this.master);
+    this.effects = ctx.createGain();
+    this.effects.gain.value = this.volume.effects;
+    this.effects.connect(this.master);
 
     const len = ctx.sampleRate;
     this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
@@ -54,6 +64,21 @@ export class Synth {
     void ctx.resume();
     this.startPad();
     if (this.muted) void ctx.suspend();
+  }
+
+  /** Music (the pad) and effects volume, each 0 → 1. */
+  setVolumes(music: number, effects: number): void {
+    this.volume = { music, effects };
+    if (!this.ctx || !this.music || !this.effects) return;
+    const now = this.ctx.currentTime;
+    this.music.gain.setTargetAtTime(music, now, 0.05);
+    this.effects.gain.setTargetAtTime(effects, now, 0.05);
+  }
+
+  /** Music fades down while an overlay (album, parent corner) is open. */
+  setDucked(ducked: boolean): void {
+    if (!this.ctx || !this.music) return;
+    this.music.gain.setTargetAtTime(this.volume.music * (ducked ? 0.35 : 1), this.ctx.currentTime, 0.3);
   }
 
   setMuted(muted: boolean): void {
@@ -77,7 +102,7 @@ export class Synth {
     g.gain.setValueAtTime(0.0001, at);
     g.gain.exponentialRampToValueAtTime(peak, at + attack);
     g.gain.exponentialRampToValueAtTime(0.0001, at + attack + decay);
-    g.connect(this.master!);
+    g.connect(this.effects!);
     return g;
   }
 
@@ -200,6 +225,44 @@ export class Synth {
     this.tone(f, 'sine', now, 0.1, 0.02, 1.6);
     this.tone(f * 2, 'triangle', now + 0.03, 0.03, 0.02, 1.0);
     this.tone(f * 3, 'sine', now + 0.06, 0.02, 0.01, 0.7);
+  }
+
+  /** A bubble ring popping: a soft whoosh and the `step`-th note up the scale (a chain plays a rising run). */
+  ringNote(step: number): void {
+    const ctx = this.live();
+    if (!ctx || !this.noise) return;
+    const now = ctx.currentTime;
+    const f = PENTA[step % 5] * 2 ** Math.floor(step / 5);
+    this.tone(f, 'sine', now, 0.07, 0.01, 0.5);
+    this.tone(f * 2, 'triangle', now + 0.02, 0.015, 0.01, 0.25);
+    const air = ctx.createBufferSource();
+    air.buffer = this.noise;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(900, now);
+    bp.frequency.exponentialRampToValueAtTime(2600, now + 0.25);
+    air.connect(bp);
+    bp.connect(this.env(now, 0.025, 0.02, 0.25));
+    air.start(now);
+    air.stop(now + 0.35);
+  }
+
+  /** Every ring of a chain in a row: a quick sparkly run up to a high note. */
+  flourish(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime + 0.12;
+    [5, 6, 7, 8, 9].forEach((k, i) => this.tone(PENTA[k], 'sine', now + i * 0.06, 0.04, 0.005, 0.4));
+    this.tone(PENTA[9], 'triangle', now + 0.34, 0.03, 0.01, 0.9);
+  }
+
+  /** A starfish found: two soft, bright twinkles. */
+  starfish(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    this.tone(PENTA[7], 'sine', now, 0.05, 0.005, 0.35);
+    this.tone(PENTA[9], 'sine', now + 0.11, 0.045, 0.005, 0.5);
   }
 
   /** A firefly group joining: a quick, giggly run of high chimes. */
@@ -338,7 +401,7 @@ export class Synth {
     lfoDepth.connect(lp.frequency);
     lfo.start();
     lp.connect(pad);
-    pad.connect(this.master!);
+    pad.connect(this.music!);
     for (const [f, detune] of [
       [65.41, -6],
       [65.41, 6],
@@ -355,7 +418,7 @@ export class Synth {
 
     this.padExtra = ctx.createGain();
     this.padExtra.gain.value = 0;
-    this.padExtra.connect(this.master!);
+    this.padExtra.connect(this.music!);
     for (const f of [392.0, 523.25, 659.25]) {
       const o = ctx.createOscillator();
       o.type = 'sine';
@@ -377,7 +440,7 @@ export class Synth {
     // Twilight's layer: airy, high, slowly breathing fifths; fades in going up.
     this.padTwilight = ctx.createGain();
     this.padTwilight.gain.value = 0;
-    this.padTwilight.connect(this.master!);
+    this.padTwilight.connect(this.music!);
     for (const f of [523.25, 783.99, 1046.5]) {
       const o = ctx.createOscillator();
       o.type = 'sine';

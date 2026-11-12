@@ -1,6 +1,9 @@
 import { floorAt, type Block, type Ceiling, type CollisionWorld, type HeightLine } from '../game/collision';
 import type { Rect } from '../game/sparkleField';
 import type { Vec2 } from '../game/vec';
+import { plantId } from './ids';
+import type { RingChain } from './rings';
+import type { StarfishSpot } from './starfish';
 import { placedCircles, placedFloor, type Placement } from './pieces';
 
 export interface PlantSpot {
@@ -31,6 +34,10 @@ export interface Level {
   cave: { x: number; y: number; r: number; eyes: Vec2 } | null;
   /** Jellyfish lanterns (Twilight). */
   lanterns?: Vec2[];
+  /** Chains of bubble rings to swim through. */
+  rings?: RingChain[];
+  /** Starfish tucked on rocks and the seabed. */
+  starfish?: StarfishSpot[];
   /** Where the firefly groups hover (Twilight). */
   fireflyGroups?: Vec2[];
   /** The nautilus' vertical cruise (Twilight): its x and lowest and highest y. */
@@ -60,7 +67,7 @@ export function buildLevel(level: Level): BuiltLevel {
   const world: CollisionWorld = { circles, floor, bounds: level.bounds, ceilings: level.ceilings, blocks: level.blocks ?? [] };
   const floorFn = (x: number) => floorAt(floor, x);
   const plants = level.plants.map((p, i) => ({
-    id: `plant-${i}`,
+    id: plantId(i),
     x: p.x,
     y: p.y ?? floorFn(p.x) - 0.05,
     rot: p.rot ?? 0,
