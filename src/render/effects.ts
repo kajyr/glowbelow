@@ -105,12 +105,12 @@ export class Effects {
         void main() {
           float edge = smoothstep(0.0, 0.3, vUv.x) * smoothstep(1.0, 0.7, vUv.x);
           float streak = 0.6 + 0.4 * sin(vUv.x * 18.0 + uTime * 0.4) * sin(vUv.x * 7.0 - uTime * 0.25);
-          float a = edge * streak * smoothstep(0.0, 1.0, vUv.y) * 0.22;
-          gl_FragColor = vec4(vec3(0.45, 0.65, 0.95) * a, a);
+          float a = edge * streak * smoothstep(0.0, 1.0, vUv.y) * 0.4;
+          gl_FragColor = vec4(vec3(0.75, 0.85, 1.0) * a, a);
         }`,
     });
-    this.rays = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.3, 14), rayMat);
-    this.rays.position.set((shaft.x0 + shaft.x1) / 2, bounds.maxY - 5, -1.5);
+    this.rays = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.6, 22), rayMat);
+    this.rays.position.set((shaft.x0 + shaft.x1) / 2, bounds.maxY - 9, -1.5);
     this.group.add(this.rays);
   }
 

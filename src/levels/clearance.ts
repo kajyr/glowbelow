@@ -1,4 +1,4 @@
-import { ceilingAt, floorAt, type CollisionWorld } from '../game/collision';
+import { blockOverlap, ceilingAt, floorAt, type CollisionWorld } from '../game/collision';
 import type { Vec2 } from '../game/vec';
 
 /** Grid cell size in world units. */
@@ -78,6 +78,13 @@ export class Fields {
       for (let ix = x0; ix <= x1; ix++) {
         for (let iy = y0; iy <= y1; iy++) {
           if (Math.hypot(this.cx(ix) - c.x, this.cy(iy) - c.y) < reach) free[this.idx(ix, iy)] = 0;
+        }
+      }
+    }
+    for (const b of world.blocks ?? []) {
+      for (let ix = this.ix(b.minX - radius); ix <= this.ix(b.maxX + radius); ix++) {
+        for (let iy = this.iy(b.minY - radius); iy <= this.iy(b.maxY + radius); iy++) {
+          if (blockOverlap(this.cx(ix), this.cy(iy), radius, b)) free[this.idx(ix, iy)] = 0;
         }
       }
     }

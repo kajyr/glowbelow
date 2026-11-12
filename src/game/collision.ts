@@ -21,11 +21,42 @@ export interface Ceiling {
   y: number;
 }
 
+/** An axis-aligned solid block, for rock between and around zones. */
+export interface Block {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
 export interface CollisionWorld {
   circles: Circle[];
   floor: HeightLine;
   bounds: { minX: number; maxX: number; minY: number; maxY: number };
   ceilings: Ceiling[];
+  /** Solid rock blocks (the world around and between zones). */
+  blocks?: Block[];
+}
+
+/**
+ * How a circle overlaps a block: the push direction out of it and how deep
+ * it is, or null when they do not touch.
+ */
+export function blockOverlap(x: number, y: number, radius: number, b: Block): { nx: number; ny: number; depth: number } | null {
+  const cx = Math.min(b.maxX, Math.max(b.minX, x));
+  const cy = Math.min(b.maxY, Math.max(b.minY, y));
+  const dx = x - cx;
+  const dy = y - cy;
+  const d = Math.hypot(dx, dy);
+  if (d > 1e-9) return d < radius ? { nx: dx / d, ny: dy / d, depth: radius - d } : null;
+  // Centre inside the block: out through the nearest side.
+  const sides = [
+    { nx: -1, ny: 0, depth: x - b.minX + radius },
+    { nx: 1, ny: 0, depth: b.maxX - x + radius },
+    { nx: 0, ny: -1, depth: y - b.minY + radius },
+    { nx: 0, ny: 1, depth: b.maxY - y + radius },
+  ];
+  return sides.reduce((a, c) => (c.depth < a.depth ? c : a));
 }
 
 export interface Contact {
@@ -87,6 +118,11 @@ export function collide(body: Body, radius: number, world: CollisionWorld, dt: n
     // Dead centre: push straight up so there is always a way out.
     if (d < 1e-6) hit(0, 1, depth);
     else hit(dx / d, dy / d, depth);
+  }
+
+  for (const b of world.blocks ?? []) {
+    const o = blockOverlap(body.pos.x, body.pos.y, radius, b);
+    if (o) hit(o.nx, o.ny, o.depth);
   }
 
   const floor = floorAt(world.floor, body.pos.x);

@@ -4,6 +4,8 @@ import { BumpState } from './game/bump';
 import { collide } from './game/collision';
 import { DumboBrain } from './game/dumboBrain';
 import { GlowMeter } from './game/glowMeter';
+import { brighten, moodColor, twilightness, worldMood } from './game/mood';
+import { LIGHTABLE, type GlowTarget } from './game/glowTargets';
 import { Jelly } from './game/jelly';
 import { Hints, type InputKind } from './game/hints';
 import { PulseSystem } from './game/pulse';
@@ -11,11 +13,11 @@ import { shaftPush } from './game/shaft';
 import { SparkleField } from './game/sparkleField';
 import { steer, type Body, type SteerInput } from './game/steering';
 import { TUNING } from './game/tuning';
+import { WorldState } from './game/worldState';
 import { Input } from './input';
-import { generateValidZone } from './levels/generateValid';
+import { generateWorld } from './levels/assembleWorld';
 import { JellyFreeArea } from './levels/jellyArea';
 import { buildLevel, sparkleBounds } from './levels/level';
-import { MIDNIGHT_HOME } from './levels/zoneRecipe';
 import { CameraRig } from './render/cameraRig';
 import { colliderOverlay, reachOverlay } from './render/debug';
 import { DumboView } from './render/dumboView';
@@ -27,6 +29,8 @@ import { SparklesView } from './render/sparklesView';
 import { SquidView } from './render/squidView';
 import { CAMERA_DISTANCE, Stage } from './render/stage';
 import { buildWorld } from './render/world';
+import { buildRockFill } from './render/rockFill';
+import { LanternsView, lanternId } from './render/lanterns';
 import { Hud } from './ui/hud';
 import { JellyView } from './render/jellyView';
 
@@ -55,25 +59,36 @@ async function boot() {
   const seedParam = params.get('seed');
   const worldSeed = seedParam !== null && seedParam !== '' && !Number.isNaN(Number(seedParam)) ? Number(seedParam) >>> 0 : Math.floor(Math.random() * 2 ** 32);
   const genStart = performance.now();
-  const zone = generateValidZone(MIDNIGHT_HOME, worldSeed);
+  // The whole world: home, and Twilight above it through the shaft.
+  const gameWorld = generateWorld(worldSeed);
+  const zone = gameWorld.home;
   const genMs = performance.now() - genStart;
-  if (DEBUG) console.info(`[zone] seed ${worldSeed}${zone.seed !== worldSeed ? ` (layout from ${zone.seed}, ${zone.attempts} tries)` : ''}, generated in ${genMs.toFixed(1)} ms`);
-  const built = buildLevel(zone.layout.level);
+  if (DEBUG) console.info(`[world] seed ${worldSeed} (home from ${zone.seed}, ${zone.attempts} tries; twilight ${gameWorld.twilight.attempts} tries), generated in ${genMs.toFixed(1)} ms`);
+  const built = buildLevel(gameWorld.level);
   const level = built.level;
   const models = await loadModels();
 
   // ------------------------------------------------------------ scene
   const scene = stage.scene;
   scene.add(buildWorld(models, level.pieces, lights));
-  const plants = new PlantsView(models, built.plants, lights);
+  scene.add(buildRockFill(level.blocks ?? [], lights));
+  // Everything that changes as the player plays (lit things, found friends) lives here.
+  const worldState = new WorldState(worldSeed);
+  const plants = new PlantsView(models, built.plants, lights, worldState);
+  const lanterns = new LanternsView(models, level.lanterns ?? [], lights, worldState);
+  scene.add(lanterns.group);
   scene.add(plants.group);
   const squidView = new SquidView(models);
   scene.add(squidView.root);
-  const brain = new DumboBrain({ ...level.cave.eyes }, built.floor);
-  const dumboView = new DumboView(models, level.cave.eyes);
+  // Home always has the cave where dumbo hides.
+  const cave = level.cave;
+  if (!cave) throw new Error('Midnight home has no cave');
+  const brain = new DumboBrain({ ...cave.eyes }, built.floor);
+  const dumboView = new DumboView(models, cave.eyes);
   scene.add(dumboView.root, dumboView.caveEyes);
   const field = new SparkleField({
-    bounds: sparkleBounds(level),
+    // Sparkles drift in each zone's water, never in the rock between them.
+    bounds: [sparkleBounds(zone.layout.level), ...gameWorld.map.zones.filter((z) => z.name !== 'home').map((z) => ({ minX: z.rect.minX + 1, maxX: z.rect.maxX - 1, minY: z.rect.minY + 1, maxY: z.rect.maxY - 5 }))],
     floor: built.floor,
     trails: level.trails.flat(),
     // ?sparkles=N (debug) sets the number of drifting sparkles, for load checks.
@@ -91,7 +106,12 @@ async function boot() {
   const overlay = colliderOverlay(built);
   const reach = reachOverlay(zone.fields, zone.paths, jellyArea?.cells ?? null);
   scene.add(overlay, reach);
-  const fog = scene.fog;
+  const fog = scene.fog as THREE.Fog;
+  // Water colour by height: home's navy up to Twilight's lavender.
+  const homeTop = gameWorld.map.zones[1].rect.minY;
+  const moodStops = worldMood(homeTop, gameWorld.map.bounds.maxY);
+  const water = new THREE.Color();
+  scene.background = water;
   let overview = false;
   const rig = new CameraRig(stage, level.cameraBounds);
 
@@ -107,6 +127,7 @@ async function boot() {
   let idle = 0;
   let muted = false;
   let celebrated = false;
+  let twilightCelebrated = false;
   let zoom = 0; // 0 on the title (closer), 1 in play
   let logicSteps = 0;
 
@@ -169,7 +190,10 @@ async function boot() {
       overview = !overview;
       scene.fog = overview ? null : fog;
     }
-    if (DEBUG && code === 'KeyL') plants.plants.forEach((p, i) => setTimeout(() => touchPlant(p.id), i * 60));
+    if (DEBUG && code === 'KeyL') {
+      plants.plants.forEach((p, i) => setTimeout(() => touchPlant(p.id), i * 60));
+      lanterns.lanterns.forEach((l, i) => setTimeout(() => touchLantern(l.id), i * 60));
+    }
   };
 
   // ------------------------------------------------------------ events
@@ -189,8 +213,24 @@ async function boot() {
     if (brain.state === 'following') setTimeout(() => dumboView.happySpin(), 1200);
   }
 
+  function touchLantern(id: string) {
+    if (lanterns.touch(id)) {
+      synth.lantern();
+      if (lanterns.allLit && !twilightCelebrated) celebrateTwilight();
+    }
+  }
+
+  function celebrateTwilight() {
+    twilightCelebrated = true;
+    // A wave of light runs up and down Twilight from the squid.
+    for (const l of lanterns.lanterns) lanterns.flashAfter(l.id, 1 + Math.abs(l.y - body.pos.y) / 18);
+    setTimeout(() => synth.chord(), 900);
+    if (brain.state === 'following') setTimeout(() => dumboView.happySpin(), 1200);
+  }
+
   function discoverDumbo() {
     if (!brain.discover()) return;
+    worldState.find('dumbo');
     synth.flute();
     dumboView.happySpin();
     setTimeout(() => {
@@ -199,8 +239,17 @@ async function boot() {
     }, 700);
   }
 
-  const plantTargets = built.plants.map((p) => ({ id: p.id, x: p.x, y: p.y + 0.8, r: 0.5 }));
-  const caveTarget = { id: 'cave', x: level.cave.x, y: level.cave.y, r: level.cave.r };
+  // Everything a glow pulse can reach, in one list: plants, the cave (and,
+  // as they arrive, lanterns and friends). Friends that point at unlit
+  // things use the same list.
+  const glowTargets: GlowTarget[] = [
+    ...built.plants.map((p): GlowTarget => ({ id: p.id, kind: 'plant', x: p.x, y: p.y + 0.8, r: 0.5 })),
+    { id: 'cave', kind: 'cave', x: cave.x, y: cave.y, r: cave.r },
+    ...(level.lanterns ?? []).map((l, i): GlowTarget => ({ id: lanternId(i), kind: 'lantern', x: l.x, y: l.y + 0.25, r: 0.6 })),
+  ];
+  const glowById = new Map(glowTargets.map((t) => [t.id, t]));
+  const unlitThings = () =>
+    glowTargets.filter((t) => LIGHTABLE.includes(t.kind)).map((t) => ({ id: t.id, x: t.x, y: t.y, lit: worldState.isLit(t.id) }));
 
   // ------------------------------------------------------------ logic (60 Hz)
   function logic(dt: number) {
@@ -268,15 +317,17 @@ async function boot() {
       }
     }
     pulses.update(dt);
-    for (const id of pulses.sweep([...plantTargets, caveTarget])) {
-      if (id === 'cave') discoverDumbo();
-      else touchPlant(id);
+    for (const id of pulses.sweep(glowTargets)) {
+      const kind = glowById.get(id)?.kind;
+      if (kind === 'cave') discoverDumbo();
+      else if (kind === 'plant') touchPlant(id);
+      else if (kind === 'lantern') touchLantern(id);
     }
 
     const dumboEvent = brain.update(
       dt,
       { pos: body.pos, vel: body.vel, facing: squidView.facing },
-      plants.plants.map((p) => ({ id: p.id, x: p.x, y: p.y, lit: p.state !== 'unlit' })),
+      unlitThings(),
       brain.state === 'following' ? field.drifting() : [],
     );
     if (dumboEvent?.kind === 'point') synth.flute();
@@ -312,12 +363,20 @@ async function boot() {
   let statT = 0;
 
   function render(frameDt: number) {
-    const lit = plants.litCount / plants.plants.length;
+    const plantsLit = plants.litCount / plants.plants.length;
+    const lanternsLit = lanterns.lanterns.length > 0 ? lanterns.litCount / lanterns.lanterns.length : 0;
+    // How much the squid is in Twilight: lighting, water and sound follow its zone.
+    const tw = twilightness(homeTop, body.pos.y);
+    const lit = plantsLit + (lanternsLit - plantsLit) * tw;
     lights.begin();
     lights.add(body.pos.x, body.pos.y, 1.2, 2.8, SQUID_LIGHT, 0.2 + 0.4 * meter.value, 0, true);
     plants.update(frameDt, lights);
+    lanterns.update(frameDt, lights);
     effects.update(frameDt, stage.camera, pulses.active, lights);
-    lights.end(0.24 + 0.46 * lit, rig.view());
+    lights.end(0.24 + 0.46 * lit + 0.06 * tw, rig.view());
+    const wc = brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y));
+    water.setRGB(wc[0], wc[1], wc[2], THREE.SRGBColorSpace);
+    fog.color.copy(water);
 
     squidView.update(frameDt, {
       x: body.pos.x,
@@ -350,6 +409,7 @@ async function boot() {
     hud.setMeter(meter.value, play && (meter.full || hints.glowVisible));
     hud.setHints(play && hints.moveVisible, play && hints.glowVisible, hints.icons, squidScreen);
     synth.setBrightness(lit);
+    synth.setZone(tw);
 
     stage.render(frameDt);
 
@@ -382,7 +442,7 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, worldSeed, genMs, jelly } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState } });
 }
 
 boot().catch((err) => {

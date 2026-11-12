@@ -1,4 +1,4 @@
-import { floorAt, type Ceiling, type CollisionWorld, type HeightLine } from '../game/collision';
+import { floorAt, type Block, type Ceiling, type CollisionWorld, type HeightLine } from '../game/collision';
 import type { Rect } from '../game/sparkleField';
 import type { Vec2 } from '../game/vec';
 import { placedCircles, placedFloor, type Placement } from './pieces';
@@ -27,7 +27,16 @@ export interface Level {
   pieces: Placement[];
   plants: PlantSpot[];
   trails: Vec2[][];
-  cave: { x: number; y: number; r: number; eyes: Vec2 };
+  /** Where dumbo hides; null in zones without a cave. */
+  cave: { x: number; y: number; r: number; eyes: Vec2 } | null;
+  /** Jellyfish lanterns (Twilight). */
+  lanterns?: Vec2[];
+  /** Where the firefly groups hover (Twilight). */
+  fireflyGroups?: Vec2[];
+  /** The nautilus' vertical cruise (Twilight): its x and lowest and highest y. */
+  nautilus?: { x: number; y0: number; y1: number } | null;
+  /** Solid rock blocks between and around zones (the assembled world). */
+  blocks?: Block[];
   /** Spots on the seabed where bubbles rise. */
   bubbleVents: number[];
   /** Where the phantom jelly starts roaming, if the zone has one. */
@@ -43,10 +52,12 @@ export interface BuiltLevel {
 
 /** Builds the collision world and resolves plant heights. */
 export function buildLevel(level: Level): BuiltLevel {
-  const circles = level.pieces.flatMap(placedCircles);
+  // Lanterns are drawn on their own (they bob), but their bells are soft obstacles too.
+  const lanternColliders = (level.lanterns ?? []).flatMap((l) => placedCircles({ piece: 'jellyfish-lantern', x: l.x, y: l.y }));
+  const circles = [...level.pieces.flatMap(placedCircles), ...lanternColliders];
   const lines = level.pieces.map(placedFloor).filter((l): l is HeightLine => l !== null);
   const floor = mergeLines(lines);
-  const world: CollisionWorld = { circles, floor, bounds: level.bounds, ceilings: level.ceilings };
+  const world: CollisionWorld = { circles, floor, bounds: level.bounds, ceilings: level.ceilings, blocks: level.blocks ?? [] };
   const floorFn = (x: number) => floorAt(floor, x);
   const plants = level.plants.map((p, i) => ({
     id: `plant-${i}`,

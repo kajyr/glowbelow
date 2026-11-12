@@ -12,6 +12,7 @@ export class Synth {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private padExtra: GainNode | null = null;
+  private padTwilight: GainNode | null = null;
   private noise: AudioBuffer | null = null;
   private muted = false;
   private noteIndex = 3;
@@ -190,6 +191,17 @@ export class Synth {
     });
   }
 
+  /** A jellyfish lantern lighting up: a warm, round bell note with a soft shimmer. */
+  lantern(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const f = PENTA[Math.floor(Math.random() * 5)] / 2;
+    this.tone(f, 'sine', now, 0.1, 0.02, 1.6);
+    this.tone(f * 2, 'triangle', now + 0.03, 0.03, 0.02, 1.0);
+    this.tone(f * 3, 'sine', now + 0.06, 0.02, 0.01, 0.7);
+  }
+
   /** The phantom jelly's soft, low boing: lower and slower than the bump boing. */
   jellyBoing(): void {
     const ctx = this.live();
@@ -330,6 +342,34 @@ export class Synth {
       o.start();
       trem.start();
     }
+
+    // Twilight's layer: airy, high, slowly breathing fifths; fades in going up.
+    this.padTwilight = ctx.createGain();
+    this.padTwilight.gain.value = 0;
+    this.padTwilight.connect(this.master!);
+    for (const f of [523.25, 783.99, 1046.5]) {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f;
+      const breathe = ctx.createOscillator();
+      breathe.frequency.value = 0.08 + Math.random() * 0.06;
+      const g = ctx.createGain();
+      g.gain.value = 0.5;
+      const bd = ctx.createGain();
+      bd.gain.value = 0.45;
+      breathe.connect(bd);
+      bd.connect(g.gain);
+      o.connect(g);
+      g.connect(this.padTwilight);
+      o.start();
+      breathe.start();
+    }
+  }
+
+  /** How much the squid is in Twilight (0 home … 1 Twilight): the airy layer follows it. */
+  setZone(twilight: number): void {
+    if (!this.ctx || !this.padTwilight) return;
+    this.padTwilight.gain.setTargetAtTime(0.016 * Math.min(1, Math.max(0, twilight)), this.ctx.currentTime, 1.2);
   }
 
   /** 0 → 1: how lit the zone is. The extra layer comes in from half lit. */

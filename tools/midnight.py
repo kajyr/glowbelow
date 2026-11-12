@@ -35,3 +35,7 @@ def lumpy_ring(rng, n, rx, ry, z, jitter, offset=0.0):
 
 def seeded(seed):
     return random.Random(seed)
+
+# Twilight: blue-grey rock that reads against blue-to-lavender water.
+TWILIGHT_ROCK = ("#6F80BC", "#56679E", "#3E4C7C")
+TWILIGHT_ROCK_ALT = ("#7C7FC0", "#6265A2", "#474A80")

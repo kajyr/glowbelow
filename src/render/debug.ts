@@ -25,6 +25,18 @@ export function colliderOverlay(built: BuiltLevel): THREE.Group {
   }
   line(world.floor.xs.map((x, i) => new THREE.Vector3(x, world.floor.ys[i], 1)), '#ffd84a');
   for (const c of world.ceilings) line([new THREE.Vector3(c.x0, c.y, 1), new THREE.Vector3(c.x1, c.y, 1)], '#ffd84a');
+  for (const b of world.blocks ?? []) {
+    line(
+      [
+        new THREE.Vector3(b.minX, b.minY, 1),
+        new THREE.Vector3(b.maxX, b.minY, 1),
+        new THREE.Vector3(b.maxX, b.maxY, 1),
+        new THREE.Vector3(b.minX, b.maxY, 1),
+        new THREE.Vector3(b.minX, b.minY, 1),
+      ],
+      '#ff9a4a',
+    );
+  }
   const b = world.bounds;
   line(
     [
@@ -39,6 +51,7 @@ export function colliderOverlay(built: BuiltLevel): THREE.Group {
   const s = built.level.shaft;
   line([new THREE.Vector3(s.x0, s.softFrom, 1), new THREE.Vector3(s.x1, s.softFrom, 1)], '#4ac8ff');
   const cave = built.level.cave;
+  if (cave)
   line(
     Array.from({ length: 33 }, (_, i) => {
       const a = (i / 32) * Math.PI * 2;

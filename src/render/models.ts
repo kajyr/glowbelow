@@ -15,6 +15,10 @@ import caveUrl from '../../models/cave.glb?url';
 import plantUrl from '../../models/glow-plant.glb?url';
 import sparkleUrl from '../../models/sparkle.glb?url';
 import jellyUrl from '../../models/phantom-jelly.glb?url';
+import lanternUrl from '../../models/jellyfish-lantern.glb?url';
+import ledge1Url from '../../models/ledge-1.glb?url';
+import ledge2Url from '../../models/ledge-2.glb?url';
+import ledge3Url from '../../models/ledge-3.glb?url';
 
 /** Every model the game uses, imported from models/ so Vite gives each a relative URL. */
 export const MODEL_URLS = {
@@ -32,6 +36,10 @@ export const MODEL_URLS = {
   'glow-plant': plantUrl,
   sparkle: sparkleUrl,
   'phantom-jelly': jellyUrl,
+  'jellyfish-lantern': lanternUrl,
+  'ledge-1': ledge1Url,
+  'ledge-2': ledge2Url,
+  'ledge-3': ledge3Url,
 } as const;
 
 export type ModelName = keyof typeof MODEL_URLS;
