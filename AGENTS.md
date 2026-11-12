@@ -14,6 +14,7 @@ Glow Below: a peaceful low-poly 3D browser game (TypeScript, Vite, Three.js) for
 - `npm test` — Vitest; run after every logic change
 - `npm run build` — type-check + build; must pass before committing
 - `npm run dev` — play at `localhost:5173`; `?seed=N` fixes the world, `?debug` exposes `window.game`
+- `just release` — publish to itch.io; run after each archived iteration (needs `butler login`)
 
 ## Code layout
 

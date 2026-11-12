@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:itch": "npm run build && rm -rf release && mkdir -p release && cd dist && zip -qrX ../release/glowbelow-itch.zip . -x '*.DS_Store'",
     "preview": "vite preview",
     "test": "vitest run"
   },

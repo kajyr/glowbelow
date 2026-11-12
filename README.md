@@ -62,12 +62,14 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
-| Command           | What it does                               |
-| ----------------- | ------------------------------------------ |
-| `npm run dev`     | Vite dev server                            |
-| `npm test`        | Vitest unit tests                          |
-| `npm run build`   | Type-check + production build into `dist/` |
-| `npm run preview` | Serve the production build                 |
+| Command              | What it does                                                    |
+| -------------------- | --------------------------------------------------------------- |
+| `npm run dev`        | Vite dev server                                                 |
+| `npm test`           | Vitest unit tests                                               |
+| `npm run build`      | Type-check + production build into `dist/`                      |
+| `npm run preview`    | Serve the production build                                      |
+| `npm run build:itch` | Build and zip for itch.io into `release/glowbelow-itch.zip`     |
+| `just release`       | Test, build and push to itch.io with `butler`; run after each archived iteration |
 
 Useful URL parameters:
 
