@@ -13,7 +13,7 @@
 
 - [ ] 2.1 Tag animated parts in `tools/make_giant_squid.py` and rebuild; verify in the viewer
 - [ ] 2.2 Place the sleeping giant squid behind the skull with breathing and stirring on small pulses; verify
-- [ ] 2.3 Wake on a big pulse with rise, sound and sticker; add its album page; verify
+- [ ] 2.3 Wake on a big pulse with rise, sound and sticker; add its album page and its fun fact in `en.json`; verify the speaker icon plays it
 - [ ] 2.4 Make dumbo point at the sleeping giant squid when nothing else is unlit nearby; verify
 - [ ] 2.5 Extract the nautilus ride into a shared carrier behaviour; verify existing nautilus tests still pass
 - [ ] 2.6 Add the arm ride to the top of the world and back; verify both directions and hopping off

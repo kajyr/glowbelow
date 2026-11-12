@@ -10,7 +10,7 @@
 
 **Non-Goals:**
 - No more languages yet, though adding one should be one new file
-- No voice-over (iteration 7)
+- No new voice-over: fun-fact playback exists from `iteration-4-offline-and-voice`; this iteration only translates the facts
 
 ## Decisions
 

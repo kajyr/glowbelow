@@ -2,7 +2,7 @@
 
 The Sunlit reef is the reward zone at the top of the world: bright, colourful and full of colour play. It completes the first version's four zones and five friends, and the cuttlefish's colour game is the natural place to add the first cosmetics.
 
-Depends on: `iteration-4-whale-fall`.
+Depends on: `iteration-5-whale-fall`.
 
 ## What Changes
 

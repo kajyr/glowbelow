@@ -15,11 +15,11 @@ Every friend SHALL have one short fun fact (one or two sentences, true about the
 If a recorded voice file exists for a friend's fun fact in the chosen language, it SHALL be played. Otherwise the device's built-in speech voice for that language SHALL read the fact text.
 
 #### Scenario: Recording present
-- **WHEN** a recording of dumbo's fact in Italian exists and the language is Italian
+- **WHEN** a recording of dumbo's fact in English exists and the language is English
 - **THEN** the recording plays
 
 #### Scenario: Recording missing
-- **WHEN** no recording exists for the cuttlefish's fact in English
+- **WHEN** no recording exists for the firefly squid's fact in English
 - **THEN** the device's English speech voice reads the fact
 
 ### Requirement: Facts respect sound settings

@@ -449,10 +449,10 @@ One zone, one friend, the full core loop.
 
 1. Twilight + nautilus elevator + firefly swarm
 2. Album, save, cosmetics
-3. Whale fall + giant squid; Sunlit reef + cuttlefish color game
-4. Later friends and zones (Vent garden, Shipwreck) with their mini-games
+3. PWA / offline, voice-over
+4. Whale fall + giant squid; Sunlit reef + cuttlefish color game
 5. Italian translation
-6. PWA / offline, voice-over
+6. Later friends and zones (Vent garden, Shipwreck) with their mini-games
 7. Maybe: mild challenges (see Deferred)
 
 ---

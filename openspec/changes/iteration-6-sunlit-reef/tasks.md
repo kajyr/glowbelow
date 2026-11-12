@@ -18,13 +18,13 @@
 
 - [ ] 3.1 Tag animated parts in `tools/make_cuttlefish.py` and rebuild; verify in the viewer
 - [ ] 3.2 Add the disguise flicker among corals; verify it is noticeable but not obvious
-- [ ] 3.3 Add the reveal on pulse with sound, sticker and album page; verify
+- [ ] 3.3 Add the reveal on pulse with sound, sticker, album page and its fun fact in `en.json`; verify the speaker icon plays it
 - [ ] 3.4 Implement the colour game state machine; verify Vitest tests that wrong touches never fail and three rounds finish
 - [ ] 3.5 Add colour cycling while swimming; verify by observation
 
 ## 4. Cosmetics
 
-- [ ] 4.1 Add `cosmetics` to the save with teal unlocked, plus the upgrade; verify a Vitest test upgrading an iteration 4 save
+- [ ] 4.1 Add `cosmetics` to the save with teal unlocked, plus the upgrade; verify a Vitest test upgrading an iteration 5 save
 - [ ] 4.2 Unlock a colour when the colour game finishes; verify
 - [ ] 4.3 Drive glow tips, pulse ring and glow button from the chosen colour; verify each changes
 - [ ] 4.4 Add the squid page to the album with a colour row usable by touch and keys; verify switching

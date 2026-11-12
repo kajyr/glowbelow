@@ -16,7 +16,7 @@
 
 ### Ride as a shared "carrier" behaviour
 - The nautilus seat and the giant squid arm both become carriers: a path, a seat point, hop-off on input
-- The giant squid's path targets "top of the world", resolved from the zone graph, so it reaches the reef automatically in iteration 5
+- The giant squid's path targets "top of the world", resolved from the zone graph, so it reaches the reef automatically in iteration 6
 
 ### Giant squid animation by parts
 - Body sways slowly; arms are separate nodes with a gentle wave; the offering arm is one tentacle node rotated toward the squid

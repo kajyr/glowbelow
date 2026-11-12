@@ -1,8 +1,8 @@
 ## Why
 
-The game is English first, but the family also speaks Italian. Gameplay has no text, so translating is small: the title, the album names, the parent corner and accessibility labels. Doing it after the four zones and five friends exist means every string is known.
+The game is English first, but the family also speaks Italian. Gameplay has no text, so translating is small: the title, the album names, the fun facts, the parent corner and accessibility labels. Doing it after the four zones and five friends exist means every string is known.
 
-Depends on: `iteration-5-sunlit-reef`.
+Depends on: `iteration-6-sunlit-reef`.
 
 ## What Changes
 

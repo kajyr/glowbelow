@@ -2,7 +2,7 @@
 
 The first version has four zones and five friends. The design keeps two more zones and five more friends for later, each waiting on something (a mechanic, a model or a zone) that now exists or can be added. This iteration builds them all so the world and the album are complete.
 
-Depends on: `iteration-7-offline-and-voice`.
+Depends on: `iteration-7-italian`.
 
 ## What Changes
 
