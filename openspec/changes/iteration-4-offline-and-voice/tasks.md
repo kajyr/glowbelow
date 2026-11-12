@@ -15,7 +15,6 @@
 - [x] 3.1 Write one true fun fact in `en.json` for each friend that can be found today; verify every found-able friend has a `facts.<friend>` key
 - [ ] 3.2 Implement fact playback: recording if present, else `speechSynthesis` in the chosen language, stopped on close, page turn and mute; verify each case
 - [ ] 3.3 Add the speaker icon to found friends' album pages; verify it plays the fact and is absent on silhouette pages
-- [ ] 3.4 Add any voice recordings the user provides under `voice/<lang>/`; verify they play instead of the device voice
 
 ## 4. Verification
 

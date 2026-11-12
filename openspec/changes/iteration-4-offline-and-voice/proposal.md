@@ -12,7 +12,7 @@ Depends on: `iteration-3-save-and-album`.
 - The itch.io build registers no service worker; offline install stays on the game's own address
 - Each friend's album page gains a spoken fun fact, played by tapping a speaker icon, in the chosen language (English for now)
 - Facts cover the friends that can be found today; `iteration-5-whale-fall`, `iteration-6-sunlit-reef` and `iteration-8-later-friends-and-zones` add facts for their friends, and `iteration-7-italian` translates them all
-- Fun facts use recorded voice files where provided (for example recorded by a parent), and the device's speech voice otherwise
+- Fun facts use recorded voice files where provided (for example recorded by a parent), and the device's speech voice otherwise; making the recordings is `voice-recordings`
 
 ## Capabilities
 
