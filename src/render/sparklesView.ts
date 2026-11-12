@@ -25,7 +25,7 @@ export class SparklesView {
   constructor(models: Models, private readonly field: SparkleField) {
     const [p] = modelParts(models.sparkle);
     const material = p.material.clone();
-    material.emissiveIntensity = 0.75;
+    material.emissiveIntensity = 0.5;
     this.mesh = new THREE.InstancedMesh(p.geometry, material, field.sparkles.length + FX_MAX);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.mesh.frustumCulled = false;
