@@ -15,6 +15,7 @@ Glow Below: a peaceful low-poly 3D browser game (TypeScript, Vite, Three.js) for
 - `npm run build` — type-check + build; must pass before committing
 - `npm run dev` — play at `localhost:5173`; `?seed=N` fixes the world, `?debug` exposes `window.game`
 - `just release` — publish to itch.io; run after each archived iteration (needs `butler login`)
+- itch.io page: text lives in `docs/itch/description.md`; after each release, update it to match the game, then apply it to the live page: paste description, AI statement and tags into the itch.io editor (the user does this by hand unless a browser tool is connected; the Claude in Chrome extension must be signed in to the same account)
 - Versioning: every feature release (each iteration) bumps a minor; `just release` does it, then commit `package.json` + lockfile
 
 ## Code layout
