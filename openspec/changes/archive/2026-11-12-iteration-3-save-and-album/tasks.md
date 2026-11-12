@@ -36,6 +36,6 @@
 
 ## 6. Verification
 
-- [ ] 6.1 Play a full session on a tablet, close the tab, reopen and continue; verify everything found is still there and the album matches
-- [ ] 6.2 Push to itch.io and play there in Safari on an iPad, close Safari, reopen; verify the game still works; the parent-corner note appears only if storage was blocked, and progress lost to Safari clearing the frame's storage is expected
+- [x] 6.1 Play a full session on a tablet, close the tab, reopen and continue; verify everything found is still there and the album matches
+- [x] 6.2 Push to itch.io and play there in Safari on an iPad, close Safari, reopen; verify the game still works; the parent-corner note appears only if storage was blocked, and progress lost to Safari clearing the frame's storage is expected
 - [x] 6.3 Run `npm test` and `npm run build`; verify both pass
