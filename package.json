@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:itch": "npm run build && rm -rf release && mkdir -p release && cd dist && zip -qrX ../release/glowbelow-itch.zip . -x '*.DS_Store'",
+    "build:itch": "VITE_TARGET=itch npm run build && rm -rf release && mkdir -p release && cd dist && zip -qrX ../release/glowbelow-itch.zip . -x '*.DS_Store'",
     "preview": "vite preview",
     "test": "vitest run"
   },
@@ -17,6 +17,7 @@
     "@types/three": "^0.160.0",
     "typescript": "^5.9.3",
     "vite": "^5.4.21",
+    "vite-plugin-pwa": "^0.21.2",
     "vitest": "^2.1.9"
   }
 }

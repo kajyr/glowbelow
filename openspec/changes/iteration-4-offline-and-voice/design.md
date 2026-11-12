@@ -29,8 +29,8 @@
 - Alternative: Netlify (equally fine; choose whichever the user already uses)
 
 ### Fun facts: text in language files, audio optional
-- Text keys `facts.<friend>` in `en.json` now, `it.json` from `iteration-7-italian`; recordings at `public/voice/<lang>/<friend>.mp3`
-- At run time, check the precache manifest for the recording; fall back to `speechSynthesis` with the matching language voice
+- Text keys `facts.<friend>` in `en.json` now, `it.json` from `iteration-7-italian`; recordings at `voice/<lang>/<friend>.mp3`
+- Recordings are found at build time with `import.meta.glob`, like the models: hashed, precached, and in the itch zip too; no recording falls back to `speechSynthesis` with the matching language voice
 
 ## Risks / Trade-offs
 

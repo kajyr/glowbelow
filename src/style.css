@@ -616,6 +616,42 @@ button {
   filter: brightness(0) opacity(0.22);
 }
 
+/* The fun-fact speaker: a 64 px hit area in the stamp's corner around a smaller round icon. */
+.stamp {
+  position: relative;
+}
+
+.fact-speaker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  background: none;
+}
+
+.fact-speaker span {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #4a3a8c;
+  color: #ffffff;
+  box-shadow: 0 3px 0 rgba(74, 58, 140, 0.3);
+}
+
+.fact-speaker svg {
+  width: 62%;
+  height: 62%;
+}
+
+.fact-speaker:active span {
+  transform: scale(0.9);
+}
+
 .friend-name {
   margin: 4px 0 0;
   font: 700 clamp(13px, 2.2vh, 18px)/1.1 system-ui, sans-serif;
