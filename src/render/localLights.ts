@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { selectLights, type LightCandidate } from '../game/lightCulling';
+import type { Rect } from '../game/sparkleField';
 
 export const MAX_LOCAL_LIGHTS = 32;
 
@@ -19,25 +21,30 @@ export class LocalLights {
     uLightCount: { value: 0 },
     uAmbient: { value: 0.4 },
   };
-  private count = 0;
+  private candidates: (LightCandidate & { z: number; color: THREE.Color; intensity: number; edge: number })[] = [];
 
   begin(): void {
-    this.count = 0;
+    this.candidates = [];
   }
 
   /**
-   * Adds a light for this frame. `edge` 0 gives a soft falloff over the whole
-   * radius; closer to 1 gives a flat disk with a soft rim (pulses).
+   * Asks for a light this frame. `edge` 0 gives a soft falloff over the whole
+   * radius; closer to 1 gives a flat disk with a soft rim (pulses). `priority`
+   * lights (the squid, pulses) are always used first.
    */
-  add(x: number, y: number, z: number, radius: number, color: THREE.Color, intensity: number, edge = 0): void {
-    if (this.count >= MAX_LOCAL_LIGHTS || intensity <= 0.001) return;
-    this.pos[this.count].set(x, y, z, radius);
-    this.col[this.count].set(color.r * intensity, color.g * intensity, color.b * intensity, edge);
-    this.count++;
+  add(x: number, y: number, z: number, radius: number, color: THREE.Color, intensity: number, edge = 0, priority = false): void {
+    if (intensity <= 0.001) return;
+    this.candidates.push({ x, y, z, radius, color, intensity, edge, priority });
   }
 
-  end(ambient: number): void {
-    this.uniforms.uLightCount.value = this.count;
+  /** Uses the lights near the camera view, up to the slot limit. */
+  end(ambient: number, view?: Rect): void {
+    const chosen = view ? selectLights(this.candidates, view, MAX_LOCAL_LIGHTS) : this.candidates.slice(0, MAX_LOCAL_LIGHTS);
+    chosen.forEach((l, i) => {
+      this.pos[i].set(l.x, l.y, l.z, l.radius);
+      this.col[i].set(l.color.r * l.intensity, l.color.g * l.intensity, l.color.b * l.intensity, l.edge);
+    });
+    this.uniforms.uLightCount.value = chosen.length;
     this.uniforms.uAmbient.value = ambient;
   }
 }

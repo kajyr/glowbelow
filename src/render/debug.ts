@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import type { CollisionWorld } from '../game/collision';
+import type { Vec2 } from '../game/vec';
+import type { Fields } from '../levels/clearance';
 import type { BuiltLevel } from '../levels/level';
 
 /**
@@ -45,6 +47,35 @@ export function colliderOverlay(built: BuiltLevel): THREE.Group {
     '#ffa04a',
   );
   group.renderOrder = 999;
+  group.visible = false;
+  return group;
+}
+
+/**
+ * Debug overlay (?debug=1, press G): the comfortably reachable water (the
+ * validator's wide field, green dots) and the routes the sparkle trails follow
+ * (yellow lines).
+ */
+export function reachOverlay(fields: Fields, paths: Vec2[][]): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'debug-reach';
+  const pts: number[] = [];
+  for (let iy = 0; iy < fields.rows; iy++) {
+    for (let ix = 0; ix < fields.cols; ix++) {
+      if (fields.wideReach[fields.idx(ix, iy)]) pts.push(fields.cx(ix), fields.cy(iy), 0.9);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  group.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: '#3cff9a', size: 2, sizeAttenuation: false, depthTest: false, transparent: true, opacity: 0.5 })));
+  for (const path of paths) {
+    const line = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(path.map((p) => new THREE.Vector3(p.x, p.y, 1))),
+      new THREE.LineBasicMaterial({ color: '#ffe14a', depthTest: false }),
+    );
+    group.add(line);
+  }
+  group.renderOrder = 998;
   group.visible = false;
   return group;
 }

@@ -57,7 +57,7 @@ export function buildLevel(level: Level): BuiltLevel {
 }
 
 /** Joins seabed segment lines into one line, highest point wins on overlaps. */
-function mergeLines(lines: HeightLine[]): HeightLine {
+export function mergeLines(lines: HeightLine[]): HeightLine {
   const xs = [...new Set(lines.flatMap((l) => l.xs))].sort((a, b) => a - b);
   const ys = xs.map((x) => {
     let best = -Infinity;
@@ -65,4 +65,10 @@ function mergeLines(lines: HeightLine[]): HeightLine {
     return best;
   });
   return { xs, ys };
+}
+
+/** Where drifting sparkles live: the whole zone below its ceiling (and above the seabed). */
+export function sparkleBounds(level: Level): Rect {
+  const ceiling = level.ceilings.length > 0 ? Math.min(...level.ceilings.map((c) => c.y)) : level.bounds.maxY;
+  return { minX: level.bounds.minX, maxX: level.bounds.maxX, minY: 0.5, maxY: ceiling - 1 };
 }

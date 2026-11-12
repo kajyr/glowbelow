@@ -140,7 +140,7 @@ export class Effects {
       // The area the ring has passed stays lit for a few seconds, then fades.
       const fade = 1 - THREE.MathUtils.smoothstep(p.age, p.duration + TUNING.pulse.lightTime * 0.4, p.duration + TUNING.pulse.lightTime);
       const flash = Math.max(0, 1 - p.age * 3) * 0.8;
-      lights.add(p.x, p.y, 1.0, r + 0.5, PULSE_COLOR, (0.55 * strength + flash) * fade, 0.75);
+      lights.add(p.x, p.y, 1.0, r + 0.5, PULSE_COLOR, (0.55 * strength + flash) * fade, 0.75, true);
     });
   }
 

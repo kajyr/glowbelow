@@ -11,10 +11,11 @@ import { SparkleField } from './game/sparkleField';
 import { steer, type Body, type SteerInput } from './game/steering';
 import { TUNING } from './game/tuning';
 import { Input } from './input';
-import { buildLevel } from './levels/level';
-import { MIDNIGHT_HOME } from './levels/midnightHome';
+import { generateValidZone } from './levels/generateValid';
+import { buildLevel, sparkleBounds } from './levels/level';
+import { MIDNIGHT_HOME } from './levels/zoneRecipe';
 import { CameraRig } from './render/cameraRig';
-import { colliderOverlay } from './render/debug';
+import { colliderOverlay, reachOverlay } from './render/debug';
 import { DumboView } from './render/dumboView';
 import { Effects } from './render/effects';
 import { LocalLights } from './render/localLights';
@@ -47,7 +48,14 @@ async function boot() {
   const hud = new Hud(container);
   const synth = new Synth();
   const lights = new LocalLights();
-  const built = buildLevel(MIDNIGHT_HOME);
+  // The world's seed: ?seed= picks one (testing, sharing a favourite world), otherwise a new one per game.
+  const seedParam = params.get('seed');
+  const worldSeed = seedParam !== null && seedParam !== '' && !Number.isNaN(Number(seedParam)) ? Number(seedParam) >>> 0 : Math.floor(Math.random() * 2 ** 32);
+  const genStart = performance.now();
+  const zone = generateValidZone(MIDNIGHT_HOME, worldSeed);
+  const genMs = performance.now() - genStart;
+  if (DEBUG) console.info(`[zone] seed ${worldSeed}${zone.seed !== worldSeed ? ` (layout from ${zone.seed}, ${zone.attempts} tries)` : ''}, generated in ${genMs.toFixed(1)} ms`);
+  const built = buildLevel(zone.layout.level);
   const level = built.level;
   const models = await loadModels();
 
@@ -62,7 +70,7 @@ async function boot() {
   const dumboView = new DumboView(models, level.cave.eyes);
   scene.add(dumboView.root, dumboView.caveEyes);
   const field = new SparkleField({
-    bounds: { ...level.bounds, minY: 0.5, maxY: 17 },
+    bounds: sparkleBounds(level),
     floor: built.floor,
     trails: level.trails.flat(),
     // ?sparkles=N (debug) sets the number of drifting sparkles, for load checks.
@@ -73,7 +81,10 @@ async function boot() {
   const effects = new Effects(level.bounds, level.bubbleVents, level.shaft);
   scene.add(effects.group);
   const overlay = colliderOverlay(built);
-  scene.add(overlay);
+  const reach = reachOverlay(zone.fields, zone.paths);
+  scene.add(overlay, reach);
+  const fog = scene.fog;
+  let overview = false;
   const rig = new CameraRig(stage, level.cameraBounds);
 
   // ------------------------------------------------------------ state
@@ -145,6 +156,11 @@ async function boot() {
     if (code === 'KeyM') toggleMute();
     if (mode === 'title' && (code === 'Space' || code === 'Enter')) start('keyboard');
     if (DEBUG && code === 'KeyC') overlay.visible = !overlay.visible;
+    if (DEBUG && code === 'KeyG') reach.visible = !reach.visible;
+    if (DEBUG && code === 'KeyO') {
+      overview = !overview;
+      scene.fog = overview ? null : fog;
+    }
     if (DEBUG && code === 'KeyL') plants.plants.forEach((p, i) => setTimeout(() => touchPlant(p.id), i * 60));
   };
 
@@ -263,10 +279,10 @@ async function boot() {
   function render(frameDt: number) {
     const lit = plants.litCount / plants.plants.length;
     lights.begin();
-    lights.add(body.pos.x, body.pos.y, 1.2, 2.8, SQUID_LIGHT, 0.2 + 0.4 * meter.value);
+    lights.add(body.pos.x, body.pos.y, 1.2, 2.8, SQUID_LIGHT, 0.2 + 0.4 * meter.value, 0, true);
     plants.update(frameDt, lights);
     effects.update(frameDt, stage.camera, pulses.active, lights);
-    lights.end(0.24 + 0.46 * lit);
+    lights.end(0.24 + 0.46 * lit, rig.view());
 
     squidView.update(frameDt, {
       x: body.pos.x,
@@ -285,6 +301,13 @@ async function boot() {
     if (mode === 'play') rig.follow(body.pos, frameDt, input.holding);
     else rig.centreOn({ x: body.pos.x, y: body.pos.y - 0.3 });
     stage.camera.position.z = CAMERA_DISTANCE * (0.62 + 0.38 * zoom);
+    if (overview) {
+      // Debug: the whole zone at once.
+      const b = level.cameraBounds;
+      const span = Math.max(b.maxY - b.minY, (b.maxX - b.minX) / stage.camera.aspect) * 1.05;
+      stage.camera.position.set((b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, (CAMERA_DISTANCE * span) / 11);
+      stage.camera.lookAt((b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, 0);
+    }
 
     const squidScreen = stage.toScreen(new THREE.Vector3(body.pos.x, body.pos.y, 0));
     const play = mode === 'play';
@@ -298,7 +321,7 @@ async function boot() {
       frames++;
       statT += frameDt;
       if (statT >= 1) {
-        debugText.textContent = `fps ${Math.round(frames / statT)}  logic ${Math.round(logicSteps / statT)} Hz  bloom ${stage.bloomOn ? 'on' : 'off'}\nlit ${plants.litCount}/${plants.plants.length}  meter ${meter.value.toFixed(2)}  dumbo ${brain.state}  [C] colliders  [L] light all`;
+        debugText.textContent = `fps ${Math.round(frames / statT)}  logic ${Math.round(logicSteps / statT)} Hz  bloom ${stage.bloomOn ? 'on' : 'off'}\nlit ${plants.litCount}/${plants.plants.length}  meter ${meter.value.toFixed(2)}  dumbo ${brain.state}  [C] colliders  [G] reach  [O] overview  [L] light all`;
         frames = 0;
         logicSteps = 0;
         statT = 0;
@@ -323,7 +346,7 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, worldSeed, genMs } });
 }
 
 boot().catch((err) => {

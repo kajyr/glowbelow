@@ -18,7 +18,7 @@ export const WATER = new THREE.Color('#041233');
 export class Stage {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(FOV, 16 / 9, 0.5, 120);
+  readonly camera = new THREE.PerspectiveCamera(FOV, 16 / 9, 0.5, 300);
   readonly composer: EffectComposer;
   private readonly bloom: UnrealBloomPass;
   bloomOn: boolean;
@@ -54,7 +54,9 @@ export class Stage {
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     // High threshold: the water is dark, so only emissive things bloom.
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.6, 0.8);
+    // Low radius: the coarsest blur levels turn small glowing things (the
+    // stars) into soft squares, so keep the halo on the finer levels.
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.2, 0.8);
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
     this.bloomOn = opts.bloom;
