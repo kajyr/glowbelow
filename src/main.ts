@@ -125,7 +125,12 @@ async function boot() {
   let mode: 'title' | 'play' = 'title';
   let paused = false;
   let idle = 0;
-  let muted = false;
+  // A remembered choice wins; otherwise debug sessions start silent.
+  let muted = DEBUG;
+  try {
+    const saved = localStorage.getItem('glowbelow.muted');
+    if (saved !== null) muted = saved === '1';
+  } catch { /* storage unavailable: keep the default */ }
   let celebrated = false;
   let twilightCelebrated = false;
   let zoom = 0; // 0 on the title (closer), 1 in play
@@ -178,7 +183,14 @@ async function boot() {
   hud.glow.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     e.stopPropagation();
+    try {
+      localStorage.setItem('glowbelow.muted', muted ? '1' : '0');
+    } catch { /* storage unavailable: the choice just won't persist */ }
     input.glow(e.pointerType === 'mouse' ? input.last : 'touch');
+  if (muted) {
+    synth.setMuted(true);
+    hud.setMuted(true);
+  }
   });
 
   input.onKey = (code) => {
