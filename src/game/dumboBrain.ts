@@ -183,6 +183,19 @@ export class DumboBrain {
   }
 }
 
+/**
+ * What dumbo may point at. In Whale fall: the ribs while any is unlit; once
+ * they are all lit, the sleeping giant squid (the way up); once it is awake,
+ * nothing, so dumbo spins happily. Elsewhere: every unlit thing.
+ */
+export function dumboTargets(zone: string | null, things: PlantInfo[], giant: { x: number; y: number; awake: boolean } | null): PlantInfo[] {
+  if (zone !== 'whale-fall' || !giant) return things;
+  // Rib ids, see levels/ids.ts.
+  const ribs = things.filter((t) => t.id.startsWith('rib-'));
+  if (ribs.some((r) => !r.lit)) return ribs;
+  return giant.awake ? [] : [{ id: 'giant-squid', x: giant.x, y: giant.y, lit: false }];
+}
+
 export function nearestUnlit(from: Vec2, plants: PlantInfo[]): PlantInfo | null {
   let best: PlantInfo | null = null;
   let bestD = Infinity;

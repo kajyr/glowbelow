@@ -64,4 +64,9 @@
 
 ## Migration Plan
 
-Save format version 1 → 2: adds Whale fall ids (ribs, starfish, rings), whether the whale song was played and the giant squid's awake state; the upgrade fills them with "not found". Home's layout does not change, so the layout version stays.
+No save format bump turned out to be needed (decided while building):
+- Lit ribs go in the existing `lit` list (`rib-0` … `rib-6`), Whale fall starfish in `starfish`
+- The giant squid is awake exactly when its stamp is found
+- The first whale song has played exactly when every rib is lit (like the zone celebrations)
+- An older save just has none of these ids: ribs dark, giant squid asleep
+- Home and Twilight lay out as before (Whale fall has its own seed), so the layout version stays too

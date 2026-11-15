@@ -3,7 +3,7 @@ import { factSource, factText } from './facts';
 import type { StampName } from '../game/worldState';
 
 /** Stamps that can be found in the game today; each later zone adds its own. */
-const FINDABLE: StampName[] = ['dumbo', 'starfish', 'phantom-jelly', 'firefly', 'lantern-jelly', 'nautilus'];
+const FINDABLE: StampName[] = ['dumbo', 'starfish', 'phantom-jelly', 'firefly', 'lantern-jelly', 'nautilus', 'giant-squid'];
 
 describe('fun facts', () => {
   test('every stamp that can be found has a short fact', () => {

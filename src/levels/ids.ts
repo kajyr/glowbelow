@@ -1,4 +1,5 @@
 import type { GameWorld } from './assembleWorld';
+import { RIB_COUNT } from './skeleton';
 
 /**
  * The ids saved things have in the world state and the glow list. They come
@@ -8,6 +9,8 @@ import type { GameWorld } from './assembleWorld';
 export const plantId = (i: number): string => `plant-${i}`;
 export const lanternId = (i: number): string => `lantern-${i}`;
 export const fireflyGroupId = (i: number): string => `firefly-${i}`;
+/** Whale fall's ribs, numbered from the tail to the head. */
+export const ribId = (i: number): string => `rib-${i}`;
 /** Starfish ids name their zone, so the album can count them per zone. */
 export const starfishId = (zone: string, i: number): string => `starfish-${zone}-${i}`;
 
@@ -24,6 +27,7 @@ export function worldIds(w: GameWorld): string[] {
     ...l.plants.map((_p, i) => plantId(i)),
     ...(l.lanterns ?? []).map((_p, i) => lanternId(i)),
     ...(l.fireflyGroups ?? []).map((_p, i) => fireflyGroupId(i)),
+    ...(l.skeleton ? Array.from({ length: RIB_COUNT }, (_v, i) => ribId(i)) : []),
     ...starfishIds(l.starfish ?? []),
   ];
 }

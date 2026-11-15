@@ -56,4 +56,22 @@ describe('pulse', () => {
     }
     expect(order).toEqual(['near', 'far']);
   });
+
+  test('sweepHits says which kind of pulse reached each target', () => {
+    const small = new PulseSystem();
+    small.trigger(at, false);
+    const big = new PulseSystem();
+    big.trigger(at, true);
+    const target = [{ id: 'giant', x: 2, y: 0, r: 1 }];
+    const hits = (p: PulseSystem) => {
+      const out: { id: string; kind: string }[] = [];
+      for (let t = 0; t < 2; t += DT) {
+        p.update(DT);
+        out.push(...p.sweepHits(target));
+      }
+      return out;
+    };
+    expect(hits(small)).toEqual([{ id: 'giant', kind: 'small' }]);
+    expect(hits(big)).toEqual([{ id: 'giant', kind: 'big' }]);
+  });
 });

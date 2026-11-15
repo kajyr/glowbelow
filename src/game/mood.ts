@@ -22,6 +22,19 @@ export function worldMood(homeTop: number, twilightTop: number): MoodStop[] {
   ];
 }
 
+/** Whale fall's water: a soft blue, gentler and a little lighter than home's navy. */
+export const WHALE_FALL_WATER: [number, number, number] = hex('#123a6b');
+
+/** 0 in home, 1 in Whale fall, blending across the passage; `wallX` is home's left edge. */
+export function whaleFallness(wallX: number, x: number): number {
+  return Math.min(1, Math.max(0, (wallX + 3 - x) / 10));
+}
+
+/** Two colours mixed: 0 gives `a`, 1 gives `b`. */
+export function mix(a: [number, number, number], b: [number, number, number], t: number): [number, number, number] {
+  return [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * t) as [number, number, number];
+}
+
 /** Water colour at a height: linear between stops, flat beyond the ends. */
 export function moodColor(stops: MoodStop[], y: number): [number, number, number] {
   if (y <= stops[0].y) return [...stops[0].color];

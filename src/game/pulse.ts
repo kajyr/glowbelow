@@ -65,14 +65,21 @@ export class PulseSystem {
 
   /** Targets newly reached by any pulse since the last sweep. */
   sweep(targets: PulseTarget[]): string[] {
-    const reached: string[] = [];
+    return this.sweepHits(targets).map((h) => h.id);
+  }
+
+  /** Like `sweep`, with the kind of pulse that reached each target (big wins when both do). */
+  sweepHits(targets: PulseTarget[]): { id: string; kind: PulseKind }[] {
+    const reached: { id: string; kind: PulseKind }[] = [];
     for (const p of this.active) {
       const radius = ringRadius(p);
       for (const t of targets) {
         if (p.hit.has(t.id)) continue;
         if (Math.hypot(t.x - p.x, t.y - p.y) - (t.r ?? 0) <= radius) {
           p.hit.add(t.id);
-          if (!reached.includes(t.id)) reached.push(t.id);
+          const known = reached.find((h) => h.id === t.id);
+          if (!known) reached.push({ id: t.id, kind: p.kind });
+          else if (p.kind === 'big') known.kind = 'big';
         }
       }
     }

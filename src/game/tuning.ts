@@ -131,4 +131,22 @@ export const TUNING = {
     trailDrift: 0.35, // trail sparkles drift away behind it this fast
     callPause: 4, // waits this long at the squid's height when called
   },
+  whaleFall: {
+    songTime: 7, // the whale song; it cannot start again while playing
+    runGap: 4, // passing the next rib within this long keeps a tail-to-head swim going
+    bandAbove: 5, // a swim counts up to this far above the spine
+    songGlow: 4, // the whole skeleton glows this long
+  },
+  giant: {
+    /** The model is drawn at this scale: several times the squid. */
+    scale: 1.5,
+    riseTime: 3.5, // from asleep behind the skull to hovering above it
+    stirTime: 1.6, // a small pulse makes it stir this long
+    boardRadius: 1.5, // touching the arm's tip within this boards
+    rearm: 3.5, // after a ride, the squid must swim this far from the arm before it boards again
+    rideSpeed: 11, // well over twice the squid's top speed
+    rideEase: 1.5, // seconds to get up to speed, and the slow-down at the end
+    returnDelay: 1.5, // waits at the top before sinking home
+    returnSpeed: 18,
+  },
 } as const;

@@ -48,7 +48,25 @@ export interface Level {
   bubbleVents: number[];
   /** Where the phantom jelly starts roaming, if the zone has one. */
   jelly: { start: Vec2 } | null;
+  /** The whale skeleton (Whale fall): where its seabed origin is, and whether its head points left. */
+  skeleton?: SkeletonPlacement | null;
+  /** Small fish schools, set dressing (Whale fall). */
+  fishSchools?: Vec2[];
 }
+
+export interface SkeletonPlacement {
+  x: number;
+  y: number;
+  mirror: boolean;
+}
+
+/** A point in the skeleton's own units (src/levels/skeleton.ts), where it lies in the level. */
+export function onSkeleton(s: SkeletonPlacement, p: Vec2): Vec2 {
+  return { x: s.x + (s.mirror ? -p.x : p.x), y: s.y + p.y };
+}
+
+/** The skeleton as a placed piece, for its colliders. */
+export const skeletonPiece = (s: SkeletonPlacement): Placement => ({ piece: 'whale-skeleton', x: s.x, y: s.y, mirror: s.mirror });
 
 export interface BuiltLevel {
   level: Level;
@@ -61,7 +79,8 @@ export interface BuiltLevel {
 export function buildLevel(level: Level): BuiltLevel {
   // Lanterns are drawn on their own (they bob), but their bells are soft obstacles too.
   const lanternColliders = (level.lanterns ?? []).flatMap((l) => placedCircles({ piece: 'jellyfish-lantern', x: l.x, y: l.y }));
-  const circles = [...level.pieces.flatMap(placedCircles), ...lanternColliders];
+  const skeleton = level.skeleton ? placedCircles(skeletonPiece(level.skeleton)) : [];
+  const circles = [...level.pieces.flatMap(placedCircles), ...lanternColliders, ...skeleton];
   const lines = level.pieces.map(placedFloor).filter((l): l is HeightLine => l !== null);
   const floor = mergeLines(lines);
   const world: CollisionWorld = { circles, floor, bounds: level.bounds, ceilings: level.ceilings, blocks: level.blocks ?? [] };

@@ -150,4 +150,30 @@ describe('save', () => {
     expect(storageWorks(memory())).toBe(true);
     expect(storageWorks(null)).toBe(false);
   });
+
+  test('a save from before Whale fall keeps everything; its ribs start unlit and the giant squid asleep', () => {
+    const s = memory();
+    // Exactly what iteration 4 wrote: no rib ids, no giant squid.
+    const old = { version: 1, layout: LAYOUT, zone: 'home', state: played().toJSON() };
+    s.setItem(SAVE_KEY, JSON.stringify(old));
+    const back = loadSave(s)!;
+    expect(back.state.toJSON()).toEqual(old.state);
+    expect(back.state.isLit('rib-0')).toBe(false);
+    expect(back.state.hasFound('giant-squid')).toBe(false);
+  });
+
+  test('lit ribs and the woken giant squid are saved, and so is being in Whale fall', () => {
+    const s = memory();
+    const w = played();
+    w.light('rib-0');
+    w.light('rib-6');
+    w.find('giant-squid');
+    w.findStarfish('starfish-whale-fall-2');
+    writeSave(s, w, 'whale-fall');
+    const back = loadSave(s)!;
+    expect(back.zone).toBe('whale-fall');
+    expect(back.state.isLit('rib-6')).toBe(true);
+    expect(back.state.hasFound('giant-squid')).toBe(true);
+    expect(back.state.hasFoundStarfish('starfish-whale-fall-2')).toBe(true);
+  });
 });

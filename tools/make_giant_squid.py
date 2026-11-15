@@ -7,6 +7,12 @@ Writes models/giant-squid.glb and artwork/giant-squid-model-preview.svg.
 Built in profile: the body lies along X, the head and arms point right (+X),
 and the camera (-Y) sees its side. The game flips it when it swims left and
 scales it up to several times the vampire squid.
+
+Parts, for animation: `body` (body, head, fins and the far eye), `arms`
+(the eight arms, pivoted at the head), `tentacle` (the lower long tentacle,
+the arm it offers for a ride, pivoted at the head), `tentacle-far` (the
+upper long tentacle) and `eye` (the near eye, pivoted at
+its base so the game can close it while asleep).
 """
 
 import math
@@ -60,7 +66,7 @@ def build():
     for face in faces:
         pts = [verts[v] for v in face]
         palette = BELLY if face_normal(pts)[2] < -0.3 else BACK
-        model.add(pts, [tuple(range(len(pts)))], palette)
+        model.add(pts, [tuple(range(len(pts)))], palette, part="body")
 
     # Arrowhead tail fins, standing up so they read from the side.
     for side in (-1, 1):
@@ -70,7 +76,7 @@ def build():
             (-2.75, 0.09, side * 0.17),
             (-1.6, 0.09, side * 0.6),
         ]
-        model.add(*pyramid(fin_base, (-2.35, 0.0, side * 1.5)), FIN)
+        model.add(*pyramid(fin_base, (-2.35, 0.0, side * 1.5)), FIN, part="body")
 
     # Eight arms fanning out in front of the head.
     for k in range(8):
@@ -84,7 +90,8 @@ def build():
         ]
         parts, _tip = ridge(path, around, (0.17, 0.13, 0.06), tip_length=0.18)
         for part_v, part_f in parts:
-            model.add(part_v, part_f, ARM)
+            model.add(part_v, part_f, ARM, part="arms")
+    model.pivot("arms", (1.08, 0.0, 0.0))
 
     # Two much longer tentacles ending in pale clubs.
     for side in (-1, 1):
@@ -95,14 +102,17 @@ def build():
             (3.7, 0.0, side * 0.85),
         ]
         parts, tip = ridge(path, (0.0, 1.0, 0.0), (0.12, 0.105, 0.09, 0.075), tip_length=0.1)
+        name = "tentacle" if side < 0 else "tentacle-far"
         for part_v, part_f in parts:
-            model.add(part_v, part_f, ARM)
-        model.add(*gem(tip, 0.26), CLUB)
+            model.add(part_v, part_f, ARM, part=name)
+        model.add(*gem(tip, 0.26), CLUB, part=name)
+        model.pivot(name, (1.1, side * 0.08, side * 0.12))
 
     # One huge eye on each side of the head.
     for side in (-1, 1):
         add_eye(model, (0.88, side * 0.57, 0.12), (0.0, float(side), 0.1), -1,
-                0.42, EYE, PUPIL, SHINE, pupil_size=0.58)
+                0.42, EYE, PUPIL, SHINE, pupil_size=0.58, part="eye" if side < 0 else "body")
+    model.pivots.pop("body", None)
 
     return model
 

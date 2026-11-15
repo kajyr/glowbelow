@@ -13,7 +13,7 @@ describe('album grid', () => {
 
   test('has every stamp once, zone by zone, in a 4 by 2 grid today', () => {
     const names = ALBUM_STAMPS.map((f) => f.name);
-    expect(names).toEqual(['dumbo', 'starfish', 'phantom-jelly', 'firefly', 'lantern-jelly', 'nautilus', 'cuttlefish', 'giant-squid']);
+    expect(names).toEqual(['dumbo', 'starfish', 'phantom-jelly', 'firefly', 'lantern-jelly', 'nautilus', 'giant-squid', 'cuttlefish']);
     expect([...names].sort()).toEqual([...STAMP_NAMES].sort());
     expect(gridSize(ALBUM_STAMPS.length)).toEqual({ cols: 4, rows: 2 });
   });

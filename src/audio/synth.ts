@@ -13,6 +13,7 @@ export class Synth {
   private master: GainNode | null = null;
   private padExtra: GainNode | null = null;
   private padTwilight: GainNode | null = null;
+  private padWhale: GainNode | null = null;
   /** The pad (music) and every other sound (effects) have their own volume. */
   private music: GainNode | null = null;
   private effects: GainNode | null = null;
@@ -256,6 +257,89 @@ export class Synth {
     this.tone(PENTA[9], 'triangle', now + 0.34, 0.03, 0.01, 0.9);
   }
 
+  /**
+   * A rib of the whale skeleton: a soft, woody xylophone note, `step` up the
+   * scale from the tail (the ribs rise toward the head).
+   */
+  ribNote(step: number): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const f = PENTA[step % 5] * 2 ** Math.floor(step / 5) / 2;
+    this.tone(f, 'triangle', now, 0.11, 0.004, 0.7);
+    this.tone(f * 4, 'sine', now, 0.025, 0.002, 0.12);
+    this.tone(f * 2, 'sine', now + 0.01, 0.03, 0.004, 0.4);
+  }
+
+  /**
+   * The whale song: long, low notes that glide up and fall back like a
+   * whale's call, with a soft chime of the rib notes over it.
+   */
+  whaleSong(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const calls: [number, number, number, number][] = [
+      // start, from Hz, to Hz, length
+      [0, 196, 293.66, 2.2],
+      [1.9, 261.63, 220, 1.8],
+      [3.4, 220, 329.63, 2.4],
+    ];
+    for (const [at, f0, f1, len] of calls) {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f0, now + at);
+      o.frequency.exponentialRampToValueAtTime(f1, now + at + len * 0.6);
+      o.frequency.exponentialRampToValueAtTime(f1 * 0.92, now + at + len);
+      const vib = ctx.createOscillator();
+      vib.frequency.value = 4.5;
+      const vd = ctx.createGain();
+      vd.gain.value = 3;
+      vib.connect(vd);
+      vd.connect(o.frequency);
+      o.connect(this.env(now + at, 0.13, len * 0.35, len * 0.65));
+      o.start(now + at);
+      vib.start(now + at);
+      o.stop(now + at + len + 0.1);
+      vib.stop(now + at + len + 0.1);
+      // A soft octave above, for warmth.
+      this.tone(f1 * 2, 'sine', now + at + len * 0.4, 0.02, len * 0.2, len * 0.5);
+    }
+    [0, 2, 4, 5, 7, 9].forEach((k, i) => this.tone(PENTA[k], 'sine', now + 0.4 + i * 0.55, 0.03, 0.01, 1.2));
+  }
+
+  /** The giant squid waking: a deep, slow, gentle rising hum. */
+  giantSquid(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    for (const [f, k] of [[55, 1], [82.41, 0.5], [110, 0.25]] as const) {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f, now);
+      o.frequency.exponentialRampToValueAtTime(f * 1.5, now + 2.4);
+      o.connect(this.env(now, 0.2 * k, 0.8, 2.6));
+      o.start(now);
+      o.stop(now + 3.6);
+    }
+    this.tone(PENTA[0], 'sine', now + 1.6, 0.04, 0.2, 1.6);
+    this.tone(PENTA[2], 'sine', now + 2.0, 0.035, 0.2, 1.6);
+  }
+
+  /** The giant squid stirring in its sleep: a low, sleepy murmur. */
+  giantStir(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(70, now);
+    o.frequency.exponentialRampToValueAtTime(58, now + 1.1);
+    o.connect(this.env(now, 0.12, 0.25, 1));
+    o.start(now);
+    o.stop(now + 1.4);
+  }
+
   /** A starfish found: two soft, bright twinkles. */
   starfish(): void {
     const ctx = this.live();
@@ -458,6 +542,38 @@ export class Synth {
       o.start();
       breathe.start();
     }
+
+    // Whale fall's layer: deep, round notes that swell and fade very slowly, like far-off whale song.
+    this.padWhale = ctx.createGain();
+    this.padWhale.gain.value = 0;
+    this.padWhale.connect(this.music!);
+    for (const [f, rate] of [
+      [98.0, 0.05],
+      [146.83, 0.07],
+      [196.0, 0.04],
+    ]) {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f;
+      const swell = ctx.createOscillator();
+      swell.frequency.value = rate;
+      const g = ctx.createGain();
+      g.gain.value = 0.5;
+      const sd = ctx.createGain();
+      sd.gain.value = 0.5;
+      swell.connect(sd);
+      sd.connect(g.gain);
+      o.connect(g);
+      g.connect(this.padWhale);
+      o.start();
+      swell.start();
+    }
+  }
+
+  /** How much the squid is in Whale fall (0 … 1): its deep, slow layer follows it. */
+  setWhaleFall(amount: number): void {
+    if (!this.ctx || !this.padWhale) return;
+    this.padWhale.gain.setTargetAtTime(0.03 * Math.min(1, Math.max(0, amount)), this.ctx.currentTime, 1.2);
   }
 
   /** How much the squid is in Twilight (0 home … 1 Twilight): the airy layer follows it. */

@@ -40,7 +40,7 @@ Glow Below: a peaceful low-poly 3D browser game (TypeScript, Vite, Three.js) for
 - No game over, no timers, nothing lost for good, nothing scary
 - No text needed to play: icons, sound and animation only
 - Touch first (hit areas ≥ 64 px), arrow keys + Space fully supported
-- Friends never gate progress
+- Friends never gate progress, with one exception: the giant squid's arm is the only way up into the Sunlit reef (waking it only needs a full glow meter, and dumbo points at it)
 
 ## Conventions
 

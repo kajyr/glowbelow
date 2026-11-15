@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { DumboBrain, nearestUnlit, POP_TIME, type DumboEvent, type PlantInfo, type SparkleInfo, type SquidInfo } from './dumboBrain';
+import { DumboBrain, dumboTargets, nearestUnlit, POP_TIME, type DumboEvent, type PlantInfo, type SparkleInfo, type SquidInfo } from './dumboBrain';
 import { TUNING } from './tuning';
 
 const DT = 1 / 60;
@@ -204,5 +204,36 @@ describe('dumbo brain', () => {
       const events = rest(d, field(), 10);
       expect(events).toHaveLength(0);
     });
+  });
+});
+
+describe('dumbo in Whale fall', () => {
+  const giant = { x: 40, y: 12, awake: false };
+  const things = [
+    { id: 'plant-0', x: 80, y: 2, lit: false },
+    { id: 'rib-0', x: 10, y: 6, lit: true },
+    { id: 'rib-1', x: 14, y: 6, lit: false },
+  ];
+
+  test('points at unlit ribs, not plants back home', () => {
+    expect(dumboTargets('whale-fall', things, giant).map((t) => t.id)).toEqual(['rib-0', 'rib-1']);
+  });
+
+  test('once every rib is lit, points at the sleeping giant squid', () => {
+    const lit = things.map((t) => ({ ...t, lit: true }));
+    expect(dumboTargets('whale-fall', lit, giant)).toEqual([{ id: 'giant-squid', x: 40, y: 12, lit: false }]);
+  });
+
+  test('once the giant squid is awake, there is nothing to point at: a happy spin', () => {
+    const lit = things.map((t) => ({ ...t, lit: true }));
+    const brain = new DumboBrain({ x: 20, y: 6 });
+    brain.restore({ x: 20, y: 6 });
+    let ev = null;
+    for (let t = 0; t < 3 && !ev; t += 1 / 60) ev = brain.update(1 / 60, { pos: { x: 22, y: 6 }, vel: { x: 0, y: 0 }, facing: 1 }, dumboTargets('whale-fall', lit, { ...giant, awake: true }));
+    expect(ev).toEqual({ kind: 'spin' });
+  });
+
+  test('elsewhere, everything unlit counts', () => {
+    expect(dumboTargets('home', things, giant)).toBe(things);
   });
 });

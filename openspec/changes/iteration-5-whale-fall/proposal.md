@@ -15,7 +15,7 @@ Depends on: `iteration-3-save-and-album`.
 - Once awake, the giant squid offers an arm and carries the squid up to the top of the world: the top of Twilight for now, the Sunlit reef from iteration 6
 - The arm ride is the game's first ride, built as a shared carrier behaviour
 - Starfish (five) and one bubble-ring chain in Whale fall, following iteration 3's rules
-- Save format version 1 → 2
+- Saved: lit ribs, Whale fall starfish and the giant squid's stamp (no save format bump needed)
 
 ### The reef gate (agreed exception)
 

@@ -1,4 +1,5 @@
 import type { Circle, HeightLine } from '../game/collision';
+import { skeletonCircles } from './skeleton';
 
 /**
  * Every environment piece the levels can place, with its model and its
@@ -21,7 +22,8 @@ export type PieceName =
   | 'ledge-1'
   | 'ledge-2'
   | 'ledge-3'
-  | 'jellyfish-lantern';
+  | 'jellyfish-lantern'
+  | 'whale-skeleton';
 
 export interface PieceDef {
   circles: Circle[];
@@ -101,6 +103,8 @@ export const PIECES: Record<PieceName, PieceDef> = {
   'ledge-3': { circles: ledge(5.4, 1.2, 0.5, -0.2) },
   // tools/make_jellyfish_lantern.py: the bell is a soft bump; tentacles are not solid.
   'jellyfish-lantern': { circles: [{ x: 0, y: 0.25, r: 0.6 }] },
+  // tools/make_whale_skeleton.py: spine, ribs, the high part of the tail and the skull (src/levels/skeleton.ts).
+  'whale-skeleton': { circles: skeletonCircles() },
 };
 
 export interface Placement {

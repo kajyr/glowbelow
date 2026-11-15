@@ -23,8 +23,8 @@ export const ALBUM_STAMPS: { name: StampName; art: string }[] = [
   { name: 'firefly', art: fireflyArt },
   { name: 'lantern-jelly', art: lanternJellyArt },
   { name: 'nautilus', art: nautilusArt },
-  { name: 'cuttlefish', art: cuttlefishArt },
   { name: 'giant-squid', art: giantSquidArt },
+  { name: 'cuttlefish', art: cuttlefishArt },
 ];
 
 /** A stamp's art (the creatures' flying sticker uses it too). */

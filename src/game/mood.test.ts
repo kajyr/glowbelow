@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { brighten, moodColor, twilightness, worldMood } from './mood';
+import { brighten, mix, moodColor, twilightness, whaleFallness, worldMood } from './mood';
 
 const stops = worldMood(44.5, 154.5);
 const lum = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
@@ -31,5 +31,21 @@ describe('mood across zones', () => {
     const c = moodColor(stops, 90);
     expect(lum(brighten(c, 1))).toBeGreaterThan(lum(brighten(c, 0.5)));
     expect(lum(brighten(c, 0.5))).toBeGreaterThan(lum(c));
+  });
+});
+
+describe('whale fall mood', () => {
+  test('home on its side of the passage, Whale fall on the other, blending across it', () => {
+    expect(whaleFallness(0, 10)).toBe(0);
+    expect(whaleFallness(0, -12)).toBe(1);
+    const mid = whaleFallness(0, -2);
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(1);
+    // Never jumps: small steps across the passage change it a little at a time.
+    for (let x = 5; x > -10; x -= 0.5) expect(Math.abs(whaleFallness(0, x) - whaleFallness(0, x - 0.5))).toBeLessThanOrEqual(0.05 + 1e-9);
+  });
+
+  test('mixing water colours', () => {
+    expect(mix([0, 0, 0], [1, 0.5, 0.2], 0.5)).toEqual([0.5, 0.25, 0.1]);
   });
 });

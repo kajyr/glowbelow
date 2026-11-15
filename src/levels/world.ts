@@ -65,5 +65,7 @@ export function translateLevel(level: Level, d: Vec2): Level {
     starfish: level.starfish?.map((s) => ({ ...s, x: s.x + d.x, y: s.y + d.y })),
     fireflyGroups: level.fireflyGroups?.map((p) => move(p, d)),
     nautilus: level.nautilus ? { x: level.nautilus.x + d.x, y0: level.nautilus.y0 + d.y, y1: level.nautilus.y1 + d.y } : level.nautilus,
+    skeleton: level.skeleton ? { ...level.skeleton, x: level.skeleton.x + d.x, y: level.skeleton.y + d.y } : level.skeleton,
+    fishSchools: level.fishSchools?.map((p) => move(p, d)),
   };
 }

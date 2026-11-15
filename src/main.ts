@@ -4,9 +4,9 @@ import { FactPlayer } from './audio/facts';
 import { BumpState } from './game/bump';
 import { Dash, dashDirection } from './game/dash';
 import { collide } from './game/collision';
-import { DumboBrain } from './game/dumboBrain';
+import { DumboBrain, dumboTargets } from './game/dumboBrain';
 import { GlowMeter } from './game/glowMeter';
-import { brighten, moodColor, twilightness, worldMood } from './game/mood';
+import { brighten, mix, moodColor, twilightness, WHALE_FALL_WATER, whaleFallness, worldMood } from './game/mood';
 import { LIGHTABLE, type GlowTarget } from './game/glowTargets';
 import { Jelly } from './game/jelly';
 import { Hints, type InputKind } from './game/hints';
@@ -17,6 +17,9 @@ import { steer, type Body, type SteerInput } from './game/steering';
 import { fireflyGroupId, Swarm } from './game/swarm';
 import { Nautilus } from './game/nautilus';
 import { BubbleRings } from './game/bubbleRings';
+import { GiantSquid } from './game/giantSquid';
+import { ribOrder, WhaleSong } from './game/ribs';
+import type { Vec2 } from './game/vec';
 import { TUNING } from './game/tuning';
 import { WorldState, type CreatureName, type StampName } from './game/worldState';
 import { browserStorage, clearSave, loadSave, Saver, saveUnavailableHere } from './game/save';
@@ -24,7 +27,9 @@ import { loadVolumes, saveVolumes } from './game/settings';
 import { ParentCorner } from './ui/parentCorner';
 import { Album, stampArt } from './ui/album';
 import { Input } from './input';
-import { generateWorld } from './levels/assembleWorld';
+import { generateWorld, ridePath } from './levels/assembleWorld';
+import { whaleFallSpots } from './levels/whaleFall';
+import { SPINE_Y } from './levels/skeleton';
 import { JellyFreeArea } from './levels/jellyArea';
 import { buildLevel, sparkleBounds } from './levels/level';
 import { CameraRig } from './render/cameraRig';
@@ -44,7 +49,10 @@ import { FireflyView } from './render/fireflyView';
 import { NautilusView } from './render/nautilusView';
 import { RingsView } from './render/ringsView';
 import { StarfishView } from './render/starfishView';
-import { starfishIds } from './levels/ids';
+import { ribId, starfishIds } from './levels/ids';
+import { SkeletonView } from './render/skeletonView';
+import { GiantSquidView } from './render/giantSquidView';
+import { FishView } from './render/fishView';
 import { zoneAt } from './levels/world';
 import { Hud } from './ui/hud';
 import { STICKER_DUMBO, STICKER_FIREFLY, STICKER_NAUTILUS } from './ui/icons';
@@ -86,7 +94,7 @@ async function boot() {
   const gameWorld = generateWorld(worldSeed);
   const zone = gameWorld.home;
   const genMs = performance.now() - genStart;
-  if (DEBUG) console.info(`[world] seed ${worldSeed} (home from ${zone.seed}, ${zone.attempts} tries; twilight ${gameWorld.twilight.attempts} tries), generated in ${genMs.toFixed(1)} ms`);
+  if (DEBUG) console.info(`[world] seed ${worldSeed} (home from ${zone.seed}, ${zone.attempts} tries; twilight ${gameWorld.twilight.attempts} tries; whale fall ${gameWorld.whaleFall.attempts} tries), generated in ${genMs.toFixed(1)} ms`);
   const built = buildLevel(gameWorld.level);
   const level = built.level;
   const models = await loadModels();
@@ -126,6 +134,22 @@ async function boot() {
   const starIds = starfishIds(level.starfish ?? []);
   const starfish = new StarfishView(models, level.starfish ?? [], starIds, lights, worldState);
   scene.add(starfish.group);
+  // Whale fall: the skeleton and its ribs, the giant squid behind the skull, small fish.
+  const skeleton = level.skeleton;
+  if (!skeleton) throw new Error('the world has no whale fall');
+  const wfSpots = whaleFallSpots(skeleton);
+  const ribIds = wfSpots.ribs.map((_r, i) => ribId(i));
+  const skeletonView = new SkeletonView(models, skeleton, ribIds, wfSpots.ribs, lights, worldState);
+  scene.add(skeletonView.root);
+  const whaleSong = new WhaleSong(wfSpots.ribs.map((r) => r.x), skeleton.y + SPINE_Y + TUNING.whaleFall.bandAbove, skeletonView.allLit);
+  // The way up is searched once, when first needed (it covers the whole world).
+  let ride: Vec2[] | null = null;
+  const getRide = () => (ride ??= ridePath(gameWorld));
+  const giant = new GiantSquid(wfSpots, getRide);
+  const giantView = new GiantSquidView(models);
+  scene.add(giantView.root);
+  const fishView = new FishView(models, level.fishSchools ?? []);
+  scene.add(fishView.group);
   const field = new SparkleField({
     // Sparkles drift in each zone's water, never in the rock between them.
     bounds: [sparkleBounds(zone.layout.level), ...gameWorld.map.zones.filter((z) => z.name !== 'home').map((z) => ({ minX: z.rect.minX + 1, maxX: z.rect.maxX - 1, minY: z.rect.minY + 1, maxY: z.rect.maxY - 5 }))],
@@ -148,7 +172,8 @@ async function boot() {
   scene.add(overlay, reach);
   const fog = scene.fog as THREE.Fog;
   // Water colour by height: home's navy up to Twilight's lavender.
-  const homeTop = gameWorld.map.zones[1].rect.minY;
+  const homeTop = gameWorld.map.zones.find((z) => z.name === 'twilight')!.rect.minY;
+  const homeLeft = gameWorld.map.zones.find((z) => z.name === 'home')!.rect.minX;
   const moodStops = worldMood(homeTop, gameWorld.map.bounds.maxY);
   const water = new THREE.Color();
   scene.background = water;
@@ -157,13 +182,16 @@ async function boot() {
 
   // ------------------------------------------------------------ state
   // A continued game starts at the entry of the zone it was left in.
-  const passage = gameWorld.map.passages[0].rect;
-  const twilightEntry = { x: (passage.minX + passage.maxX) / 2, y: gameWorld.map.zones[1].rect.minY + 3 };
-  const entry = saved?.zone === 'twilight' ? twilightEntry : level.start;
+  const entry = (saved && gameWorld.entries[saved.zone]) || level.start;
   const body: Body = { pos: { ...entry }, vel: { x: 0, y: 0 } };
   // Friends already found come back with the squid.
   if (worldState.hasFound('dumbo')) brain.restore({ x: entry.x - 1.8, y: entry.y + 0.5 });
   if (nautilus && worldState.hasFound('nautilus')) nautilus.found = true;
+  if (worldState.hasFound('giant-squid')) {
+    giant.restore();
+    // Find the way up while the title shows, not in the middle of play.
+    setTimeout(getRide, 300);
+  }
   swarm.groups.forEach((_g, i) => worldState.hasJoined(fireflyGroupId(i)) && swarm.restore(i, { x: entry.x - 2, y: entry.y - 0.4 }));
   // Saves about a second after any change, at once when the page is hidden.
   let zoneNow = zoneAt(gameWorld.map, body.pos) ?? 'home';
@@ -207,6 +235,7 @@ async function boot() {
     starfish: () => synth.starfish(),
     'phantom-jelly': () => synth.jellyBoing(),
     'lantern-jelly': () => synth.lantern(),
+    'giant-squid': () => synth.giantSquid(),
   };
   const album = new Album(container, worldState, {
     onStampSound: (s) => stampSounds[s]?.(),
@@ -217,6 +246,7 @@ async function boot() {
   }, [
     { zone: 'home', tint: '#0b2150', ids: starfish.idsIn('home') },
     { zone: 'twilight', tint: '#3b3f8f', ids: starfish.idsIn('twilight') },
+    { zone: 'whale-fall', tint: '#1f4a73', ids: starfish.idsIn('whale-fall') },
   ]);
   // Inside another site's frame (itch.io), the browser may block storage: tell the grown-ups.
   const framed = (() => {
@@ -327,6 +357,7 @@ async function boot() {
     if (DEBUG && code === 'KeyL') {
       plants.plants.forEach((p, i) => setTimeout(() => touchPlant(p.id), i * 60));
       lanterns.lanterns.forEach((l, i) => setTimeout(() => touchLantern(l.id), i * 60));
+      ribIds.forEach((id, i) => setTimeout(() => touchRib(id), i * 120));
     }
   };
 
@@ -363,6 +394,34 @@ async function boot() {
     for (const l of lanterns.lanterns) lanterns.flashAfter(l.id, 1 + Math.abs(l.y - body.pos.y) / 18);
     setTimeout(() => synth.chord(), 900);
     if (brain.state === 'following') setTimeout(() => dumboView.happySpin(), 1200);
+  }
+
+  /** A rib reached by a glow: its note (rising from the tail), and it stays lit. */
+  function touchRib(id: string) {
+    synth.ribNote(ribIds.indexOf(id));
+    if (skeletonView.touch(id) && whaleSong.lit(skeletonView.litCount)) setTimeout(singWhaleSong, 700);
+  }
+
+  /** The whale song: the skeleton glows, sparkles burst out of it, and the glow meter fills. */
+  function singWhaleSong() {
+    synth.whaleSong();
+    skeletonView.sing();
+    wfSpots.ribs.forEach((r, i) => setTimeout(() => sparkles.cloud(r.x, r.y, 10), 200 + i * 160));
+    setTimeout(() => {
+      while (!meter.full) meter.add();
+      hud.glowFlash();
+    }, 1400);
+    if (brain.state === 'following') setTimeout(() => dumboView.happySpin(), 1800);
+  }
+
+  function wakeGiant() {
+    synth.giantSquid();
+    if (worldState.find('giant-squid')) {
+      const at = giant.pos;
+      setTimeout(() => hud.stickerFly(stage.toScreen(new THREE.Vector3(at.x, at.y + 2, 0)), stampArt('giant-squid')), 2200);
+    }
+    // Find the way up while it rises (a calm moment), before the first ride.
+    setTimeout(getRide, 1500);
   }
 
   function joinFireflies(group: number) {
@@ -426,7 +485,11 @@ async function boot() {
     ...(level.lanterns ?? []).map((l, i): GlowTarget => ({ id: lanternId(i), kind: 'lantern', x: l.x, y: l.y + 0.25, r: 0.6 })),
     ...swarm.groups.map((g, i): GlowTarget => ({ id: fireflyGroupId(i), kind: 'firefly', x: g.x, y: g.y, r: TUNING.firefly.groupRadius })),
     ...(level.starfish ?? []).map((st, i): GlowTarget => ({ id: starIds[i], kind: 'starfish', x: st.x, y: st.y, r: 0.6 })),
+    ...wfSpots.ribs.map((r, i): GlowTarget => ({ id: ribIds[i], kind: 'rib', x: r.x, y: r.y, r: r.r })),
   ];
+  // The giant squid moves once awake; its target follows it (see logic).
+  const giantTarget: GlowTarget = { id: 'giant-squid', kind: 'giant', x: giant.pos.x, y: giant.pos.y, r: 3 };
+  glowTargets.push(giantTarget);
   const fireflyGroupOf = new Map(swarm.groups.map((_g, i) => [fireflyGroupId(i), i]));
   const glowById = new Map(glowTargets.map((t) => [t.id, t]));
   const unlitThings = () =>
@@ -464,16 +527,37 @@ async function boot() {
     }
     // Dash unlocks the first time the squid reaches Twilight, and stays.
     if (!worldState.dashUnlocked && zoneHere === 'twilight' && worldState.unlockDash()) hud.showDash(true);
-    if (ev.dash && worldState.dashUnlocked && !bump.locked && dash.trigger(body, dashDirection(body, steerIn, squidView.facing))) hud.dashFlash();
-    steer(body, steerIn, dt, dash.params());
-    const contact = collide(body, TUNING.squid.radius, built.world, dt);
-    shaftPush(body, level.shaft, dt);
+    // The giant squid: while it carries the squid, the squid just sits on its arm.
+    const giantEvent = giant.update(dt, body.pos, steering);
+    giantTarget.x = giant.pos.x;
+    giantTarget.y = giant.pos.y;
+    if (giantEvent?.kind === 'board') synth.flourish();
+    if (giantEvent?.kind === 'drop') setTimeout(() => synth.chord(), 300);
+    let contact: ReturnType<typeof collide> = null;
+    if (giant.riding) {
+      const seat = giant.armTip;
+      if (giantEvent?.kind !== 'board') {
+        body.vel.x = (seat.x - body.pos.x) / dt;
+        body.vel.y = (seat.y - body.pos.y) / dt;
+      } else body.vel.x = body.vel.y = 0;
+      body.pos.x = seat.x;
+      body.pos.y = seat.y;
+    } else {
+      if (ev.dash && worldState.dashUnlocked && !bump.locked && dash.trigger(body, dashDirection(body, steerIn, squidView.facing))) hud.dashFlash();
+      steer(body, steerIn, dt, dash.params());
+      contact = collide(body, TUNING.squid.radius, built.world, dt);
+      shaftPush(body, level.shaft, dt);
+    }
+    // Swimming along the lit ribs from tail to head sings the whale song again.
+    if (whaleSong.update(dt, body.pos, skeletonView.allLit)) singWhaleSong();
     for (const e of rings.update(dt, body)) {
       if (e.kind === 'ring') synth.ringNote(e.step);
       else synth.flourish();
     }
     if (jelly) {
       jelly.update(dt);
+    }
+    if (jelly && !giant.riding) {
       // Touching the phantom jelly spills a few stars that float nearby, ready to catch again.
       const at = jelly.touch(body, TUNING.squid.radius, contact !== null, dt);
       if (at) {
@@ -520,19 +604,29 @@ async function boot() {
       }
     }
     pulses.update(dt);
-    for (const id of pulses.sweep(glowTargets)) {
+    const ribsReached: GlowTarget[] = [];
+    for (const { id, kind: pulseKind } of pulses.sweepHits(glowTargets)) {
       const kind = glowById.get(id)?.kind;
       if (kind === 'cave') discoverDumbo();
       else if (kind === 'plant') touchPlant(id);
       else if (kind === 'lantern') touchLantern(id);
       else if (kind === 'firefly') joinFireflies(fireflyGroupOf.get(id) ?? -1);
       else if (kind === 'starfish') touchStarfish(id);
+      else if (kind === 'rib') ribsReached.push(glowById.get(id)!);
+      else if (kind === 'giant') {
+        const e = giant.pulse(pulseKind);
+        if (e?.kind === 'stir') synth.giantStir();
+        if (e?.kind === 'wake') wakeGiant();
+      }
     }
+    // Several ribs reached at once ring nearest first, in a quick run.
+    ribOrder(ribsReached, body.pos).forEach((id, i) => (i === 0 ? touchRib(id) : setTimeout(() => touchRib(id), i * 90)));
 
     const dumboEvent = brain.update(
       dt,
       { pos: body.pos, vel: body.vel, facing: squidView.facing },
-      unlitThings(),
+      // In Whale fall: the ribs, then the sleeping giant squid (the way up).
+      dumboTargets(zoneHere, unlitThings(), { x: giant.pos.x, y: giant.pos.y, awake: giant.state !== 'asleep' }),
       brain.state === 'following' ? field.drifting() : [],
     );
     swarm.update(dt, { pos: body.pos, vel: body.vel, facing: squidView.facing }, unlitThings());
@@ -578,16 +672,22 @@ async function boot() {
     const lanternsLit = lanterns.lanterns.length > 0 ? lanterns.litCount / lanterns.lanterns.length : 0;
     // How much the squid is in Twilight: lighting, water and sound follow its zone.
     const tw = twilightness(homeTop, body.pos.y);
-    const lit = plantsLit + (lanternsLit - plantsLit) * tw;
+    const wf = whaleFallness(homeLeft, body.pos.x);
+    const ribsLit = skeletonView.litCount / skeletonView.ribs.length;
+    const homeOrTwilight = plantsLit + (lanternsLit - plantsLit) * tw;
+    const lit = homeOrTwilight + (ribsLit - homeOrTwilight) * wf;
     lights.begin();
     lights.add(body.pos.x, body.pos.y, 1.2, 2.8, SQUID_LIGHT, 0.2 + 0.4 * meter.value, 0, true);
     plants.update(frameDt, lights);
     lanterns.update(frameDt, lights);
     fireflyView.update(frameDt, lights);
     starfish.update(frameDt, lights);
+    skeletonView.update(frameDt, lights);
+    giantView.update(frameDt, giant, body.pos, lights);
     effects.update(frameDt, stage.camera, pulses.active, lights);
     lights.end(0.24 + 0.46 * lit + 0.06 * tw, rig.view());
-    const wc = brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y));
+    const camWf = whaleFallness(homeLeft, stage.camera.position.x);
+    const wc = mix(brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y)), brighten(WHALE_FALL_WATER, ribsLit * 0.45), camWf);
     water.setRGB(wc[0], wc[1], wc[2], THREE.SRGBColorSpace);
     fog.color.copy(water);
 
@@ -604,6 +704,7 @@ async function boot() {
     if (jelly && jellyView) jellyView.update(frameDt, jelly);
     if (nautilus && nautilusView) nautilusView.update(frameDt, nautilus);
     ringsView.update(frameDt);
+    fishView.update(frameDt);
     sparkles.update(frameDt);
 
     // The camera eases in from the title close-up.
@@ -626,6 +727,7 @@ async function boot() {
     hud.setHints(play && hints.moveVisible, play && hints.glowVisible, hints.icons, squidScreen);
     synth.setBrightness(lit);
     synth.setZone(tw);
+    synth.setWhaleFall(wf);
 
     stage.render(frameDt);
 
@@ -659,7 +761,7 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish, giant, skeletonView, whaleSong } });
 }
 
 boot().catch((err) => {
