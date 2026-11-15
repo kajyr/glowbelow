@@ -14,13 +14,17 @@ Swim, catch drifting sparkles and give a pulse of light: sea plants bloom, jelly
 
 You are not alone down here. A dumbo octopus flaps along beside you, a phantom jelly drifts through the dark, a swarm of firefly squid follows you and makes shapes, and a very old nautilus cruises up and down the Twilight waters leaving sparkles behind. Every friend you find goes into a sticker album. Your progress is saved, so you can pick up where you left off.
 
+Beside your home lies Whale fall, where an old whale skeleton rests on the seabed. Glow at its ribs and they play notes like a xylophone; light them all for the whale song. Behind the skull sleeps a giant squid: wake it with a big glow and ride its arm all the way up to the top of the world.
+
+![Whale fall: the giant squid holds out its arm for a ride](devlog/whale-fall-giant-squid.jpg)
+
 ![Twilight: the swarm makes a heart between phantom jellies](shot-twilight-swarm.jpg)
 
 It is made for young children (around 6): no dying, no timers, nothing lost, no reading needed. Play by touch on a tablet, or with the arrow keys, Space to glow and Shift to dash on a laptop. Every new game is a freshly generated world, and a grown-up corner (hold the button for a moment) holds volume and reset.
 
 ![The sticker album](shot-album.jpg)
 
-**Early version.** More is coming: a whale fall with a giant squid, a sunlit reef, and an Italian translation.
+**Early version.** More is coming: a sunlit reef at the top of the world, and an Italian translation.
 
 Which friend will you find first?
 
@@ -67,10 +71,10 @@ Check before pasting: that the cover art and "art direction is mine" are true.
 In the gallery, in this order (3–5 is itch's sweet spot):
 
 1. `shot-midnight.jpg`
-2. `shot-twilight-swarm.jpg`
-3. `shot-album.jpg`
-4. dumbo in the cave (older shot, only on itch.io)
-5. title screen (older shot, only on itch.io)
+2. `whale-fall-giant-squid.jpg` (from `devlog/`)
+3. `shot-twilight-swarm.jpg`
+4. `shot-album.jpg`
+5. dumbo in the cave (older shot, only on itch.io)
 
 ## Theme
 
