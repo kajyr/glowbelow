@@ -1,6 +1,6 @@
 ## Purpose
 
-The giant squid is the enormous, gentle friend asleep in Whale fall: woken by a big glow, it gives the squid express rides up through the world on its arm.
+The giant squid is the enormous, gentle friend asleep in Whale fall: woken by a big glow, it carries the squid on its arm up to the top of the world, and it is the only way into the Sunlit reef.
 
 ## ADDED Requirements
 
@@ -12,7 +12,7 @@ Before it is woken, the giant squid SHALL lie asleep behind the whale skull, mos
 - **THEN** it stirs and settles back to sleep
 
 ### Requirement: Woken by a big glow
-A big (full-meter) pulse reaching the giant squid SHALL wake it: it opens its eye, rises slowly, plays its deep gentle sound, and a sticker flies to the album button.
+A big (full-meter) pulse reaching the giant squid SHALL wake it: it opens its eye, rises slowly, plays its deep gentle sound, and a sticker flies to the album button. Its album page SHALL show its fun fact as text.
 
 #### Scenario: Waking
 - **WHEN** a big pulse reaches the sleeping giant squid
@@ -25,16 +25,27 @@ The awake giant squid SHALL move slowly, keep its eye looking at the vampire squ
 - **WHEN** the vampire squid swims around the awake giant squid
 - **THEN** the giant squid's eye follows it
 
-### Requirement: Riding the arm
-Touching the awake giant squid's offered arm SHALL let the squid ride it up to the highest zone that exists (the top of Twilight until the reef is built, then the Sunlit reef) and set it down there. Steering away during the ride SHALL hop off. The ride SHALL never be required.
+### Requirement: The way up
+Touching the awake giant squid's offered arm SHALL let the squid ride it up to the top of the world and set it down there: the top of Twilight until the Sunlit reef exists, then the Sunlit reef. Steering away during the ride SHALL hop off. After setting the squid down, the giant squid SHALL sink back to its spot in Whale fall, and the squid swims back down by itself. Once the Sunlit reef exists, the ride SHALL be the only way into it; this is the one place where a friend gates progress.
 
 #### Scenario: Express lift
 - **WHEN** the squid touches the offered arm
 - **THEN** the arm carries the squid up and sets it down at the top of the world
 
-#### Scenario: Ride back
-- **WHEN** the squid glows near the giant squid's arm at the top of the world
-- **THEN** the arm can carry it back down to Whale fall
+#### Scenario: Hopping off
+- **WHEN** the player steers away during the ride
+- **THEN** the squid hops off where it is and swims on
+
+#### Scenario: Going home
+- **WHEN** the giant squid has set the squid down
+- **THEN** it sinks back to Whale fall, where it can be ridden again
+
+### Requirement: Never stuck behind the gate
+The way to the giant squid SHALL always be findable: dumbo SHALL point at it while it sleeps (as defined in `dumbo-octopus`), and the whale song SHALL fill the glow meter needed to wake it.
+
+#### Scenario: Dumbo shows the way
+- **WHEN** every rib is lit, the giant squid is asleep and the squid hovers still
+- **THEN** dumbo points at the giant squid
 
 ### Requirement: Saved
 The giant squid's awake state SHALL be saved, so it stays awake in later sessions.

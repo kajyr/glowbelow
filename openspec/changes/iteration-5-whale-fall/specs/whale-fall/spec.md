@@ -5,11 +5,15 @@ Whale fall is a mysterious but friendly zone beside Midnight home, built around 
 ## ADDED Requirements
 
 ### Requirement: Whale fall layout
-Whale fall SHALL be about 3 screens wide and 2 screens tall, joined to the left side of Midnight home by a wide passage, with a whale skeleton lying along the seabed that the squid can swim over, under and through between the ribs.
+Whale fall SHALL be about 4 screens wide and 3 screens tall, shorter than Midnight home, joined to the left side of Midnight home near the seabed by a wide passage. It SHALL be generated from the world's seed as defined in `zone-generation`, with a whale skeleton lying along the seabed that the squid can swim over, under and through between the ribs.
 
 #### Scenario: Swimming through the ribs
 - **WHEN** the squid swims along the skeleton between the ribs
 - **THEN** it can pass through without getting stuck
+
+#### Scenario: Different worlds
+- **WHEN** two games are started with different seeds
+- **THEN** both have the skeleton and the giant squid, with rocks, trails and starfish placed differently
 
 ### Requirement: Friendly mood
 Whale fall SHALL use bone white and soft blue tones and SHALL look gentle rather than spooky: rounded bones, soft light, small fish and drifting particles.
@@ -24,6 +28,17 @@ Each rib SHALL play its own note when reached by a glow pulse, with the notes ri
 #### Scenario: Playing several ribs
 - **WHEN** a big pulse reaches five ribs
 - **THEN** five notes play in a quick run and the ribs stay softly lit
+
+### Requirement: Whale song
+The first time every rib is lit, in any order, a soft whale song SHALL play, the whole skeleton SHALL glow brighter for a few seconds, sparkles SHALL burst out of it, and the squid's glow meter SHALL fill. After that, swimming along the lit ribs from tail to head SHALL play the whale song again with the same reward.
+
+#### Scenario: Last rib
+- **WHEN** a pulse lights the last unlit rib
+- **THEN** the whale song plays, the skeleton glows, sparkles burst out and the glow meter is full
+
+#### Scenario: Playing it again
+- **WHEN** every rib is lit and the squid swims along the skeleton from the tail to the head
+- **THEN** the whale song plays again and the glow meter fills
 
 ### Requirement: Whale fall extras
 Whale fall SHALL contain five starfish and one bubble-ring chain, behaving as defined in `starfish` and `bubble-rings`.

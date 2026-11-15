@@ -1,6 +1,7 @@
 ## Context
 
-- Zone graph, carriers (giant squid arm), album pages and saving exist from earlier iterations
+- Zone graph, zone generation, the carrier behaviour (giant squid arm), album pages and saving exist from earlier iterations
+- The giant squid's ride already targets "top of the world" from the zone graph
 - The cuttlefish model's colour patches are fixed vertex colours, so colour change must happen at render time
 - The album gains a squid page in this iteration to hold the colour picker
 
@@ -15,6 +16,16 @@
 
 ## Decisions
 
+### The reef is reached only on the giant squid's arm
+- Agreed exception to "friends never gate progress" (recorded in iteration 5)
+- Twilight's top passage is one-way: a soft wall going up, open going down, so the squid can always leave the reef by swimming
+- The giant squid's ride passes through the passage and sets the squid down in the reef
+- The reef's light and shimmer show through the passage from below, as a hint
+
+### The reef is a generated zone
+- A recipe like Twilight's and Whale fall's: coral garden along the bottom, surface soft wall, five starfish, one bubble-ring chain, the cuttlefish's spot among the corals
+- Extra rule: a clear landing spot where the ride sets the squid down, and a clear way down to the passage
+
 ### Hue shift in a material patch
 - The cuttlefish and coral materials get a small `onBeforeCompile` patch that rotates vertex-colour hue by a uniform; the cuttlefish disguise and cycling animate that uniform
 - Alternative: swap whole vertex-colour arrays per colour (more memory, abrupt switches)
@@ -22,7 +33,7 @@
 ### Corals are `.glb` models from the Python pipeline
 - `tools/make_corals.py` writes 5 coral types: branching, fan, brain, tube cluster and soft mushroom, each in 2 sizes
 - Each coral is built in a neutral base colour so the hue-shift patch can turn it into any colour in the cycle; the cuttlefish's disguise uses the same coral shapes
-- Placed from the reef level file with `InstancedMesh`, with per-instance hue so one model gives many colours
+- Placed by the reef generator with `InstancedMesh`, with per-instance hue so one model gives many colours
 - Colliders per coral type in `src/levels/pieces.ts`, like the other environment pieces
 
 ### Glow colour as one shared uniform
@@ -44,4 +55,4 @@
 
 ## Migration Plan
 
-Save version bump adds reef ids and `cosmetics` with teal unlocked and equipped.
+Save format version 2 → 3 adds reef ids and `cosmetics` with teal unlocked and equipped.

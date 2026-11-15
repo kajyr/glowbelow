@@ -6,12 +6,13 @@ Depends on: `iteration-5-whale-fall`.
 
 ## What Changes
 
-- Sunlit reef at the top of Twilight: a bright pastel coral garden under a shimmering surface; Twilight's top passage opens
+- Sunlit reef at the top of Twilight: a bright pastel coral garden under a shimmering surface, generated from the seed like the other zones
+- The giant squid's arm is the only way into the reef; Twilight's top passage becomes one-way, so the squid can swim down out of the reef but not up into it
+- From the top of Twilight, the reef's light shimmers through the passage, so the child knows something is up there
 - Corals that change colour when touched
 - Silly sunglasses that the squid puts on automatically in the bright reef (a vampire squid lives in the dark)
 - Cuttlefish disguised as a coral that flickers the wrong colour; glowing reveals it, then a three-round colour-matching game that cannot be failed
 - Glow colours as the first cosmetic: each finished colour game unlocks the colour shown and paints the squid's glow; colours can be switched by visiting the cuttlefish again
-- The giant squid's arm ride now reaches the reef
 - Five starfish and one bubble-ring chain in the reef
 
 ## Capabilities
@@ -24,13 +25,15 @@ Depends on: `iteration-5-whale-fall`.
 
 ### Modified Capabilities
 
-- `twilight`: the top passage opens to the Sunlit reef (new requirement)
+- `twilight`: the top passage becomes one-way, down from the reef only (replaces "Top passage closed until the reef exists"; layout wording updated)
+- `giant-squid`: the ride ends in the reef, the only way in (modified "The way up")
 - `glow-pulse`: the pulse and glow tips use the chosen glow colour (new requirement)
 
 ## Impact
 
-- New level file and zone-graph entry above Twilight
+- New reef recipe and generator in `src/levels/` and a zone-graph entry above Twilight
+- One-way passage: open going down, a soft wall going up
 - Uses `models/cuttlefish.glb` with colour shifting done in a shader, since the model's patches are fixed vertex colours
 - New `tools/make_corals.py` and coral `.glb` models (five types, two sizes each), recoloured in the game by the same hue shift
 - Squid materials gain a tint for the glow colour; a new `sunglasses.glb` attaches to the squid head
-- Save format gains reef ids, unlocked colours and the selected colour
+- Save format version 2 → 3 gains reef ids, unlocked colours and the selected colour

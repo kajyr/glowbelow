@@ -5,7 +5,11 @@ The Sunlit reef is the bright, colourful party zone at the top of the world, whe
 ## ADDED Requirements
 
 ### Requirement: Reef layout
-The Sunlit reef SHALL be about 4 screens wide and 2 screens tall, directly above Twilight, with a coral garden on the bottom and a shimmering water surface at the top that the squid cannot leave through.
+The Sunlit reef SHALL be about 4 screens wide and 2 screens tall, directly above Twilight, generated from the world's seed, with a coral garden on the bottom and a shimmering water surface at the top that the squid cannot leave through. The squid SHALL arrive only on the giant squid's arm, and SHALL be able to leave by swimming down into Twilight.
+
+#### Scenario: Leaving
+- **WHEN** the squid swims down through the bottom passage of the reef
+- **THEN** it continues into the top of Twilight
 
 #### Scenario: Surface
 - **WHEN** the squid swims up to the surface
@@ -15,7 +19,7 @@ The Sunlit reef SHALL be about 4 screens wide and 2 screens tall, directly above
 The reef SHALL be the brightest zone, using the full pastel palette, with light patterns dancing on the seabed and a cheerful ambient layer.
 
 #### Scenario: Arriving
-- **WHEN** the squid enters the reef from Twilight
+- **WHEN** the giant squid sets the squid down in the reef
 - **THEN** the water becomes bright and colourful and the music becomes more cheerful
 
 ### Requirement: Corals change colour when touched
@@ -29,7 +33,7 @@ The reef SHALL contain coral clusters that switch to the next colour in a fixed 
 When the squid enters the reef it SHALL put on a pair of sunglasses with a little flourish, and SHALL take them off when it leaves.
 
 #### Scenario: Sunglasses on and off
-- **WHEN** the squid swims from Twilight into the reef and back
+- **WHEN** the squid arrives in the reef and later swims down into Twilight
 - **THEN** sunglasses appear on entering and disappear on leaving
 
 ### Requirement: Reef extras
