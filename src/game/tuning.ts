@@ -119,8 +119,8 @@ export const TUNING = {
   nautilus: {
     /** The model is drawn at this scale: about 1.5 times the squid. */
     scale: 0.85,
-    // Bottom to top and back in about a minute, pauses included (the squid swims at 4.5).
-    speed: 3.4,
+    // Bottom to top and back in a little over a minute, pauses included (the squid swims at 4.5).
+    speed: 2.8,
     pauseTime: 3, // at the top and bottom of its path
     turnTime: 1.2, // easing into and out of a pause
     touchRadius: 1.1, // the shell, around its position

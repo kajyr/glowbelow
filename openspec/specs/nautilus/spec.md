@@ -10,7 +10,7 @@ The nautilus is an old, slow, wise friend that cruises up and down Twilight, lea
 The nautilus SHALL cruise slowly up and down Twilight, turning to face its direction of travel and pausing for a few seconds at the top and bottom. It SHALL never block or trap the squid.
 
 #### Scenario: Cruising
-- **WHEN** the player watches Twilight for a minute
+- **WHEN** the player watches Twilight for a little over a minute
 - **THEN** the nautilus travels from the bottom to the top and back
 
 #### Scenario: Swimming past

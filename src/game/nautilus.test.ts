@@ -10,7 +10,7 @@ const run = (n: Nautilus, seconds: number, squid = away, onEvent?: (e: NautilusE
 };
 
 describe('nautilus path', () => {
-  it('goes from the bottom to the top and back in about a minute', () => {
+  it('goes from the bottom to the top and back in a little over a minute', () => {
     const n = new Nautilus(path);
     let topAt = -1;
     let backAt = -1;
@@ -21,7 +21,8 @@ describe('nautilus path', () => {
     }
     expect(topAt).toBeGreaterThan(0);
     expect(backAt).toBeGreaterThan(topAt);
-    expect(backAt).toBeLessThan(70);
+    expect(backAt).toBeGreaterThan(55);
+    expect(backAt).toBeLessThan(85);
   });
 
   it('pauses at the top, then turns to head down', () => {
