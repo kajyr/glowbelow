@@ -53,7 +53,7 @@ export const WHALE_FALL: WhaleFallRecipe = {
   ],
   hangingRocks: 3,
   decorRocks: 16,
-  fishSchools: 3,
+  fishSchools: 6,
   ventCount: 4,
 };
 
@@ -178,18 +178,17 @@ export function generateWhaleFallLayout(recipe: WhaleFallRecipe, seed: number, w
     rocks.push(p);
   }
 
-  // ---- fish schools: open water, spread out
+  // ---- fish schools: open water, spread out (decoration: fewer is fine when there is no room)
   const schools: Vec2[] = [];
   for (let i = 0; i < recipe.fishSchools; i++) {
     let found: Vec2 | null = null;
-    for (let t = 0; t < 40 && !found; t++) {
+    for (let t = 0; t < 80 && !found; t++) {
       const p = { x: q(rand(6, W - 6)), y: q(rand(11, H - 5)) };
       if ([...solids, ...bones].some((s) => Math.hypot(p.x - s.x, p.y - s.y) < s.r + 3)) continue;
-      if (schools.some((s) => Math.hypot(s.x - p.x, s.y - p.y) < 14)) continue;
+      if (schools.some((s) => Math.hypot(s.x - p.x, s.y - p.y) < 10)) continue;
       found = p;
     }
-    if (!found) return (why.step = 'fish'), null;
-    schools.push(found);
+    if (found) schools.push(found);
   }
 
   // ---- decoration: big rocks further back, rock columns along the wall between the zones

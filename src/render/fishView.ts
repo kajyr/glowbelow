@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Vec2 } from '../game/vec';
 import { modelParts, type Models } from './models';
 
-const PER_SCHOOL = 7;
+const PER_SCHOOL = 9;
 
 /**
  * Small schools of tiny fish drifting in loose loops around their spots:
