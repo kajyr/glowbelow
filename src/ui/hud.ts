@@ -120,6 +120,12 @@ export class Hud {
     this.dash.classList.add('flash');
   }
 
+  /** The chosen glow colour (a #rrggbb), for the glow button. */
+  setGlowColour(hex: string): void {
+    const n = parseInt(hex.slice(1), 16);
+    this.root.style.setProperty('--glow-rgb', `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`);
+  }
+
   /** Quick flash on the button when the squid glows. */
   glowFlash(): void {
     this.glow.classList.remove('flash');

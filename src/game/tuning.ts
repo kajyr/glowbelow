@@ -150,4 +150,21 @@ export const TUNING = {
     returnDelay: 1.5, // waits at the top before sinking home
     returnSpeed: 18,
   },
+  cuttlefish: {
+    /** The model is drawn at this scale: about the squid's size. */
+    scale: 0.55,
+    flickerEvery: [3.5, 6] as const, // seconds between the disguise's wrong-colour flickers
+    flickerTime: 0.8, // one flicker: two quick flashes of the wrong colour
+    revealTime: 1.6, // swimming out of the garden with a flourish
+    hoverAbove: 2.6, // its spot: this far above where it hid
+    swimRadius: 4, // idle, it swims a lazy loop this wide around its spot
+    swimSpeed: 0.35, // how fast it goes round the loop (radians per second)
+    touchRadius: 1.4, // the squid touching it within this starts the colour game
+    rearm: 3, // after a game, the squid swims this far away before touching starts another
+    nearby: 10, // the colours it shows are on corals within this of its spot
+    rounds: 3,
+    cheerTime: 1.3, // a happy spin after a right coral, before the next colour
+    wiggleTime: 0.6, // a wrong coral: a little wiggle
+    cycleSpeed: 0.25, // colour cycling while it swims (hue turns per second)
+  },
 } as const;

@@ -13,7 +13,9 @@ import { Hints, type InputKind } from './game/hints';
 import { PulseSystem } from './game/pulse';
 import { shaftPush, surfacePush, type Gate } from './game/shaft';
 import { CoralTouch, coralId } from './game/corals';
-import { CORAL_COLOURS } from './game/colours';
+import { CORAL_COLOURS, COLOUR_HEX, GLOW_BRIGHT, type CoralColour, type GlowColour } from './game/colours';
+import { ColourGame, Cuttlefish, pickColour } from './game/cuttlefish';
+import { makeRng } from './game/rng';
 import { SparkleField } from './game/sparkleField';
 import { steer, type Body, type SteerInput } from './game/steering';
 import { fireflyGroupId, Swarm } from './game/swarm';
@@ -59,6 +61,7 @@ import { GiantSquidView } from './render/giantSquidView';
 import { FishView } from './render/fishView';
 import { CoralsView } from './render/coralsView';
 import { ReefView } from './render/reefView';
+import { CuttlefishView } from './render/cuttlefishView';
 import { zoneAt } from './levels/world';
 import { Hud } from './ui/hud';
 import { STICKER_DUMBO, STICKER_FIREFLY, STICKER_NAUTILUS } from './ui/icons';
@@ -66,6 +69,7 @@ import { JellyView } from './render/jellyView';
 import { registerOffline } from './pwa';
 
 const STEP = 1 / 60;
+/** The squid's own light: its glow colour (see `wearGlow`). */
 const SQUID_LIGHT = new THREE.Color('#5dcaa5');
 
 const params = new URLSearchParams(location.search);
@@ -171,6 +175,19 @@ async function boot() {
   // Twilight's top passage lets the squid down from the reef, never up into it.
   const gate: Gate = { fromAbove: false };
   const surface = { x0: reefRect.minX, x1: reefRect.maxX, y: reefRect.maxY };
+  // The cuttlefish, disguised as a coral in the garden. It shows colours of the corals near it.
+  const hide = level.cuttlefish;
+  if (!hide) throw new Error('the reef has no cuttlefish');
+  const nearCorals = coralSpots.map((c, i) => ({ i, d: Math.abs(c.x - hide.x) })).filter((n) => n.d < TUNING.cuttlefish.nearby);
+  const nearbyColours = () => nearCorals.map(({ i }) => worldState.coralColour(coralIds[i], coralSpots[i].colour));
+  const choiceRng = makeRng((worldSeed ^ 0x3c7a11e5) >>> 0);
+  const colourGame = new ColourGame((prev) => pickColour(nearbyColours(), (c) => worldState.isUnlocked(c), prev, choiceRng));
+  const cuttlefish = new Cuttlefish({ x: hide.x, y: hide.y }, colourGame, choiceRng);
+  // Its disguise wears its neighbours' colour and flickers one that matches neither.
+  const neighbours = [...nearCorals].sort((a, b) => a.d - b.d).slice(0, 2).map(({ i }) => coralSpots[i].colour);
+  const disguise = { base: neighbours[0] ?? 'pink', odd: CORAL_COLOURS.find((c) => !neighbours.includes(c))! };
+  const cuttlefishView = new CuttlefishView(models, hide, disguise, lights);
+  scene.add(cuttlefishView.root, cuttlefishView.disguise);
   const field = new SparkleField({
     // Sparkles drift in each zone's water, never in the rock between them.
     bounds: [sparkleBounds(zone.layout.level), ...gameWorld.map.zones.filter((z) => z.name !== 'home').map((z) => ({ minX: z.rect.minX + 1, maxX: z.rect.maxX - 1, minY: z.rect.minY + 1, maxY: z.rect.maxY - 5 }))],
@@ -209,6 +226,7 @@ async function boot() {
   // Friends already found come back with the squid.
   if (worldState.hasFound('dumbo')) brain.restore({ x: entry.x - 1.8, y: entry.y + 0.5 });
   if (nautilus && worldState.hasFound('nautilus')) nautilus.found = true;
+  if (worldState.hasFound('cuttlefish')) cuttlefish.restore();
   if (worldState.hasFound('giant-squid')) {
     giant.restore();
     // Find the way up while the title shows, not in the middle of play.
@@ -258,6 +276,7 @@ async function boot() {
     'phantom-jelly': () => synth.jellyBoing(),
     'lantern-jelly': () => synth.lantern(),
     'giant-squid': () => synth.giantSquid(),
+    cuttlefish: () => synth.cuttlefish(),
   };
   const album = new Album(container, worldState, {
     onStampSound: (s) => stampSounds[s]?.(),
@@ -265,6 +284,9 @@ async function boot() {
     onFact: (s) => !muted && facts.play(s),
     onOpenChange: overlayChanged,
     onBadge: (show) => hud.setBadge(show),
+    onChooseGlow: (c) => {
+      if (worldState.chooseGlow(c)) wearGlow(c);
+    },
   }, [
     { zone: 'home', tint: '#0b2150', ids: starfish.idsIn('home') },
     { zone: 'twilight', tint: '#3b3f8f', ids: starfish.idsIn('twilight') },
@@ -488,13 +510,71 @@ async function boot() {
     setTimeout(() => hud.stickerFly(from, stampArt(name)), 500);
   }
 
-  /** A coral touched or reached by a glow: it steps to its next colour and chimes. */
-  function touchCoral(id: string, chime = true) {
+  /**
+   * A coral touched or reached by a glow: it steps to its next colour and
+   * chimes. In the cuttlefish's game, a touched coral is judged by its colour
+   * before the touch: the right one flashes and keeps its colour.
+   */
+  function touchCoral(id: string, chime = true, touched = false) {
     const i = coralIndex.get(id);
     if (i === undefined) return;
+    if (touched && cuttlefish.state === 'playing') {
+      const ev = colourGame.touch(worldState.coralColour(id, coralSpots[i].colour));
+      if (ev?.kind === 'right') {
+        coralsView.flash(i);
+        cuttlefishView.cheerUp();
+        synth.flourish();
+        return;
+      }
+      if (ev?.kind === 'wrong') {
+        cuttlefishView.wiggleNo();
+        synth.wiggle();
+      }
+    }
     const colour = worldState.stepCoral(id, coralSpots[i].colour);
     coralsView.setColour(i, colour);
     if (chime) synth.coral(CORAL_COLOURS.indexOf(colour));
+  }
+
+  /** A glow found the cuttlefish: it swims out, plays its sound, and its sticker flies to the album. */
+  function revealCuttlefish() {
+    if (!cuttlefish.pulse()) return;
+    synth.cuttlefish();
+    sparkles.cloud(hide!.x, hide!.y + 0.8, 8);
+    if (worldState.find('cuttlefish')) {
+      setTimeout(() => hud.stickerFly(stage.toScreen(new THREE.Vector3(cuttlefish.pos.x, cuttlefish.pos.y + 1, 0)), stampArt('cuttlefish')), 1400);
+    }
+  }
+
+  /** The colour game's events: a new colour to find, and the prize at the end. */
+  function colourGameEvent(ev: ReturnType<ColourGame['update']>) {
+    if (!ev) return;
+    if (ev.kind === 'show') {
+      cuttlefishView.setShow(ev.colour);
+      synth.colourCall(CORAL_COLOURS.indexOf(ev.colour));
+    } else if (ev.kind === 'finish') {
+      cuttlefishView.setShow(null);
+      winColour(ev.colour);
+    }
+  }
+
+  /** Finishing the colour game paints the squid's glow in the last colour shown, and unlocks it for good. */
+  function winColour(colour: CoralColour) {
+    worldState.unlockColour(colour);
+    worldState.chooseGlow(colour);
+    wearGlow(colour);
+    synth.chord();
+    squidView.pulse(true);
+    sparkles.cloud(body.pos.x, body.pos.y, 12);
+    hud.glowFlash();
+  }
+
+  /** The squid's glow in a colour: its tips, its light, the pulse ring and the glow button. */
+  function wearGlow(colour: GlowColour) {
+    squidView.setGlowColour(new THREE.Color(COLOUR_HEX[colour]));
+    SQUID_LIGHT.set(COLOUR_HEX[colour]);
+    effects.setGlowColour(new THREE.Color(GLOW_BRIGHT[colour]));
+    hud.setGlowColour(GLOW_BRIGHT[colour]);
   }
 
   function discoverDumbo() {
@@ -519,12 +599,15 @@ async function boot() {
     ...(level.starfish ?? []).map((st, i): GlowTarget => ({ id: starIds[i], kind: 'starfish', x: st.x, y: st.y, r: 0.6 })),
     ...wfSpots.ribs.map((r, i): GlowTarget => ({ id: ribIds[i], kind: 'rib', x: r.x, y: r.y, r: r.r })),
     ...coralSpots.map((c, i): GlowTarget => ({ id: coralIds[i], kind: 'coral', ...coralTop(c), r: 0.5 })),
+    { id: 'cuttlefish', kind: 'cuttlefish', x: hide.x, y: hide.y + 0.7, r: 0.7 },
   ];
   // The giant squid moves once awake; its target follows it (see logic).
   const giantTarget: GlowTarget = { id: 'giant-squid', kind: 'giant', x: giant.pos.x, y: giant.pos.y, r: 3 };
   glowTargets.push(giantTarget);
   const fireflyGroupOf = new Map(swarm.groups.map((_g, i) => [fireflyGroupId(i), i]));
   const glowById = new Map(glowTargets.map((t) => [t.id, t]));
+  // A continued game wears the glow colour it chose.
+  wearGlow(worldState.glowColour);
   const unlitThings = () =>
     glowTargets.filter((t) => LIGHTABLE.includes(t.kind)).map((t) => ({ id: t.id, x: t.x, y: t.y, lit: worldState.isLit(t.id) }));
 
@@ -583,7 +666,14 @@ async function boot() {
       surfacePush(body, surface, dt);
     }
     // Corals: swimming into one steps it to its next colour.
-    for (const id of coralTouch.update(body.pos, TUNING.squid.radius)) touchCoral(id);
+    for (const id of coralTouch.update(body.pos, TUNING.squid.radius)) touchCoral(id, true, true);
+    // The cuttlefish: touching it starts its colour game.
+    if (cuttlefish.update(dt, body.pos)?.kind === 'start') {
+      const first = colourGame.start();
+      if (first) colourGameEvent(first);
+      else cuttlefish.state = 'idle';
+    }
+    colourGameEvent(colourGame.update(dt));
     // Sunglasses in the bright reef.
     squidView.setSunglasses(zoneHere === 'sunlit-reef');
     // Swimming along the lit ribs from tail to head sings the whale song again.
@@ -653,6 +743,7 @@ async function boot() {
       else if (kind === 'starfish') touchStarfish(id);
       else if (kind === 'rib') ribsReached.push(glowById.get(id)!);
       else if (kind === 'coral') coralsReached.push(id);
+      else if (kind === 'cuttlefish') revealCuttlefish();
       else if (kind === 'giant') {
         const e = giant.pulse(pulseKind);
         if (e?.kind === 'stir') synth.giantStir();
@@ -735,6 +826,7 @@ async function boot() {
     const camRf = reefness(reefFloor, stage.camera.position.y);
     const wc = mix(brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y) * (1 - camRf)), brighten(WHALE_FALL_WATER, ribsLit * 0.45), camWf);
     stage.setBrightWater(camRf);
+    effects.brightWater = camRf > 0.5;
     water.setRGB(wc[0], wc[1], wc[2], THREE.SRGBColorSpace);
     fog.color.copy(water);
 
@@ -753,6 +845,7 @@ async function boot() {
     ringsView.update(frameDt);
     fishView.update(frameDt);
     coralsView.update(frameDt);
+    cuttlefishView.update(frameDt, cuttlefish);
     sparkles.update(frameDt);
 
     // The camera eases in from the title close-up.
@@ -810,7 +903,7 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish, giant, skeletonView, whaleSong, coralsView } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish, giant, skeletonView, whaleSong, coralsView, cuttlefish, colourGame } });
 }
 
 boot().catch((err) => {

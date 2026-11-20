@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { factSource, factText } from './facts';
-import type { StampName } from '../game/worldState';
+import { STAMP_NAMES, type StampName } from '../game/worldState';
 
-/** Stamps that can be found in the game today; each later zone adds its own. */
-const FINDABLE: StampName[] = ['dumbo', 'starfish', 'phantom-jelly', 'firefly', 'lantern-jelly', 'nautilus', 'giant-squid'];
+/** Stamps that can be found in the game today: every stamp, now the reef has the cuttlefish. */
+const FINDABLE: StampName[] = [...STAMP_NAMES];
 
 describe('fun facts', () => {
   test('every stamp that can be found has a short fact', () => {
@@ -25,6 +25,6 @@ describe('fun facts', () => {
   });
 
   test('a stamp with no fact yet stays silent', () => {
-    expect(factSource('cuttlefish', 'en', {})).toBeNull();
+    expect(factSource('sea-dragon' as StampName, 'en', {})).toBeNull();
   });
 });

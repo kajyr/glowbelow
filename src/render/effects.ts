@@ -4,8 +4,10 @@ import { TUNING } from '../game/tuning';
 import type { Rect } from '../game/sparkleField';
 import type { LocalLights } from './localLights';
 
+/** The pulse ring's colour: the chosen glow colour (see `setGlowColour`). */
 const PULSE_COLOR = new THREE.Color('#7ff0d0');
 const SUN_IN = new THREE.Color('#ffe8b0');
+const WHITE = new THREE.Color('#ffffff');
 
 /** Soft round points (drifting particles and bubbles), drawn additively. */
 function pointsMaterial(color: string, size: number, opacity: number, ring = false): THREE.ShaderMaterial {
@@ -144,7 +146,14 @@ export class Effects {
       ring.scale.setScalar(r);
       const mat = ring.material as THREE.MeshBasicMaterial;
       const strength = p.kind === 'big' ? 1.6 : 1;
-      mat.color.copy(PULSE_COLOR).multiplyScalar(strength * 1.8);
+      // Added light vanishes in bright water (the reef): there the ring is drawn as solid colour.
+      const blending = this.brightWater ? THREE.NormalBlending : THREE.AdditiveBlending;
+      if (mat.blending !== blending) {
+        mat.blending = blending;
+        mat.needsUpdate = true;
+      }
+      if (this.brightWater) mat.color.copy(PULSE_COLOR).lerp(WHITE, 0.25);
+      else mat.color.copy(PULSE_COLOR).multiplyScalar(strength * 1.8);
       mat.opacity = (1 - t) * 0.9;
 
       // The area the ring has passed stays lit for a few seconds, then fades.
@@ -185,6 +194,14 @@ export class Effects {
 
     (this.rays.material as THREE.ShaderMaterial).uniforms.uTime.value = this.time;
     if (this.sunIn) lights.add(this.sunIn.x, this.sunIn.y, 1, 6, SUN_IN, 0.7 + 0.15 * Math.sin(this.time * 1.6));
+  }
+
+  /** Whether the camera is in bright water (the reef), where rings are drawn as solid colour. */
+  brightWater = false;
+
+  /** The chosen glow colour, for the pulse rings and the light they leave. */
+  setGlowColour(color: THREE.Color): void {
+    PULSE_COLOR.copy(color);
   }
 
   /** Point sizes are in pixels; keep them the same on any screen size. */

@@ -20,6 +20,16 @@ export const COLOUR_HEX: Record<GlowColour, string> = {
   sky: '#7cc8f2',
 };
 
+/** Brighter versions, for the glow itself: the pulse ring and the glow button. */
+export const GLOW_BRIGHT: Record<GlowColour, string> = {
+  teal: '#7ff0d0',
+  pink: '#ffb3d6',
+  amber: '#ffd98a',
+  lavender: '#cdb9ff',
+  coral: '#ffa48f',
+  sky: '#9adcff',
+};
+
 /** The colour after `c` in the coral cycle. */
 export function nextColour(c: CoralColour): CoralColour {
   return CORAL_COLOURS[(CORAL_COLOURS.indexOf(c) + 1) % CORAL_COLOURS.length];

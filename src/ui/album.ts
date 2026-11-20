@@ -2,6 +2,7 @@ import { t, type StringKey } from '../i18n';
 import { factText } from '../audio/facts';
 import { ICON_SOUND_ON } from './icons';
 import type { StampName, WorldState } from '../game/worldState';
+import { COLOUR_HEX, GLOW_COLOURS, type GlowColour } from '../game/colours';
 import dumboArt from '../../artwork/friends/dumbo-octopus.svg?raw';
 import fireflyArt from '../../artwork/friends/firefly-squid.svg?raw';
 import nautilusArt from '../../artwork/friends/nautilus.svg?raw';
@@ -55,6 +56,24 @@ export interface AlbumActions {
   onOpenChange: (open: boolean) => void;
   /** The new-sticker badge should show or hide. */
   onBadge: (show: boolean) => void;
+  /** An unlocked glow colour was chosen. */
+  onChooseGlow: (colour: GlowColour) => void;
+}
+
+/** The glow-colour dots, in the cycle's order: teal first. */
+export function colourDots(world: Pick<WorldState, 'isUnlocked' | 'glowColour'>): { colour: GlowColour; unlocked: boolean; chosen: boolean }[] {
+  return GLOW_COLOURS.map((colour) => ({ colour, unlocked: world.isUnlocked(colour), chosen: world.glowColour === colour }));
+}
+
+/** The dots sit in rows of this many. */
+export const DOTS_PER_ROW = 3;
+
+/** Moving between the dots with the arrow keys (rows of three, no wrapping): the dot to go to. */
+export function dotAfter(index: number, key: string, count: number = GLOW_COLOURS.length): number {
+  const col = index % DOTS_PER_ROW;
+  const step: Record<string, number> = { ArrowLeft: col > 0 ? -1 : 0, ArrowRight: col < DOTS_PER_ROW - 1 ? 1 : 0, ArrowUp: -DOTS_PER_ROW, ArrowDown: DOTS_PER_ROW };
+  const next = index + (step[key] ?? 0);
+  return next >= 0 && next < count ? next : index;
 }
 
 /** The fun-fact speaker is hidden until the facts sound good (see `voice-recordings`). */
@@ -66,8 +85,10 @@ const STAR_ICON = `<svg viewBox="-50 -50 100 100" aria-hidden="true"><path d="M0
 /**
  * The sticker album, on one page: a grid of stamps, one per planned friend
  * and sea creature (picture, name, its sound on tap and a speaker for its fun
- * fact once found; a dark silhouette before), with a strip of starfish per zone underneath. Nothing to
- * turn; closed by the big X, a tap outside, B or Escape. Opening it shows
+ * fact once found; a dark silhouette before), with a strip of starfish per
+ * zone underneath, and beside the strips the squid's glow colours: unlocked
+ * ones in their colour, the rest dark, a ring round the chosen one. Nothing
+ * to turn; closed by the big X, a tap outside, B or Escape. Opening it shows
  * every stamp, so it clears the new-sticker badge; a stamp seen for the first
  * time pops.
  */
@@ -75,6 +96,7 @@ export class Album {
   private readonly overlay: HTMLElement;
   private readonly grid: HTMLElement;
   private readonly stars: HTMLElement;
+  private readonly colours: HTMLElement;
   open = false;
 
   constructor(
@@ -89,12 +111,17 @@ export class Album {
       <div class="album-book">
         <button type="button" class="album-close" aria-label="${t('close')}">${CLOSE}</button>
         <div class="album-grid"></div>
-        <div class="album-stars"></div>
+        <div class="album-bottom">
+          <div class="album-stars"></div>
+          <div class="album-colours"></div>
+        </div>
       </div>`;
     this.grid = this.overlay.querySelector('.album-grid')!;
     this.stars = this.overlay.querySelector('.album-stars')!;
+    this.colours = this.overlay.querySelector('.album-colours')!;
     const { cols, rows } = gridSize(ALBUM_STAMPS.length);
-    this.grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    // Never bigger than the height allows (the book may be wider than the stamps need).
+    this.grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, var(--cell)))`;
     this.grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     // The book sizes itself so the whole page fits short screens too (see the CSS).
     const book0 = this.overlay.querySelector('.album-book') as HTMLElement;
@@ -111,6 +138,15 @@ export class Album {
     });
     this.overlay.querySelector('.album-close')!.addEventListener('click', () => this.setOpen(false));
     window.addEventListener('keydown', (e) => this.open && e.code === 'Escape' && this.setOpen(false));
+    // Arrows move between the glow colours; Space or Enter picks one (the dots are buttons).
+    window.addEventListener('keydown', (e) => {
+      if (!this.open || !e.code.startsWith('Arrow')) return;
+      e.preventDefault();
+      const dots = [...this.colours.querySelectorAll<HTMLButtonElement>('.colour-dot')];
+      const at = dots.indexOf(document.activeElement as HTMLButtonElement);
+      const from = at >= 0 ? at : Math.max(0, dots.findIndex((d) => d.classList.contains('chosen')));
+      dots[at >= 0 ? dotAfter(from, e.code) : from]?.focus();
+    });
     this.updateBadge();
   }
 
@@ -124,6 +160,33 @@ export class Album {
 
   toggle(): void {
     this.setOpen(!this.open);
+  }
+
+  /** The glow colours: tapping an unlocked one wears it; a dark one only wiggles. */
+  private showColours(): void {
+    this.colours.innerHTML = '';
+    for (const d of colourDots(this.world)) {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = `colour-dot${d.unlocked ? '' : ' locked'}${d.chosen ? ' chosen' : ''}`;
+      dot.style.setProperty('--dot', d.unlocked ? COLOUR_HEX[d.colour] : '#3b3f5e');
+      dot.setAttribute('aria-label', t('glowColour'));
+      dot.setAttribute('aria-pressed', String(d.chosen));
+      dot.innerHTML = '<span></span>';
+      dot.addEventListener('click', () => {
+        if (!d.unlocked) {
+          dot.classList.remove('wiggle');
+          void dot.offsetWidth;
+          dot.classList.add('wiggle');
+          return;
+        }
+        this.actions.onChooseGlow(d.colour);
+        const focused = document.activeElement === dot;
+        this.showColours();
+        if (focused) this.colours.querySelectorAll<HTMLButtonElement>('.colour-dot')[GLOW_COLOURS.indexOf(d.colour)]?.focus();
+      });
+      this.colours.appendChild(dot);
+    }
   }
 
   /** The badge shows while a found stamp has not been seen. */
@@ -165,6 +228,7 @@ export class Album {
       row.innerHTML = z.ids.map((id) => `<span class="star-icon${this.world.hasFoundStarfish(id) ? ' found' : ''}">${STAR_ICON}</span>`).join('');
       this.stars.appendChild(row);
     }
+    this.showColours();
     // Every stamp is in view now: nothing is unseen any more.
     for (const f of this.world.unviewed) this.world.view(f);
     this.updateBadge();

@@ -17,18 +17,18 @@
 
 ## 3. Cuttlefish
 
-- [ ] 3.1 Tag animated parts in `tools/make_cuttlefish.py` and rebuild; verify in the viewer
-- [ ] 3.2 Add the disguise flicker among corals; verify it is noticeable but not obvious
-- [ ] 3.3 Add the reveal on pulse with sound, sticker, album page and its fun fact in `en.json`; verify the album page shows it (speaker only if `voice-recordings` is done)
-- [ ] 3.4 Implement the colour game state machine (coral judged by its colour before the touch, colours chosen from nearby corals, not-yet-unlocked first); verify Vitest tests that wrong touches never fail, one coral tapped repeatedly always matches, and three rounds finish
-- [ ] 3.5 Add colour cycling while swimming; verify by observation
+- [x] 3.1 Tag animated parts in `tools/make_cuttlefish.py` and rebuild; verify in the viewer
+- [x] 3.2 Add the disguise flicker among corals; verify it is noticeable but not obvious
+- [x] 3.3 Add the reveal on pulse with sound, sticker, album page and its fun fact in `en.json`; verify the album page shows it (speaker only if `voice-recordings` is done)
+- [x] 3.4 Implement the colour game state machine (coral judged by its colour before the touch, colours chosen from nearby corals, not-yet-unlocked first); verify Vitest tests that wrong touches never fail, one coral tapped repeatedly always matches, and three rounds finish
+- [x] 3.5 Add colour cycling while swimming; verify by observation
 
 ## 4. Cosmetics
 
 - [x] 4.1 Add coral colours and `cosmetics` to the save with teal unlocked (save version 1 → 2), plus the upgrade; verify a Vitest test upgrading a version 1 save
-- [ ] 4.2 Unlock a colour when the colour game finishes; verify
-- [ ] 4.3 Drive glow tips, pulse ring and glow button from the chosen colour; verify each changes
-- [ ] 4.4 Add a colour row at the bottom of the album page (dark dots for locked colours) usable by touch and keys; verify switching and that the page still fits a phone in landscape
+- [x] 4.2 Unlock a colour when the colour game finishes; verify
+- [x] 4.3 Drive glow tips, pulse ring and glow button from the chosen colour; verify each changes
+- [x] 4.4 Add the colour dots at the bottom of the album page, beside the starfish strips (dark dots for locked colours) usable by touch and keys; verify switching and that the page still fits a phone in landscape
 
 ## 5. Ending (issue #2)
 

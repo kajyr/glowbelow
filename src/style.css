@@ -3,6 +3,8 @@
   --ink: #0b1f4a;
   --pale: #d7e8ff;
   --glow: #7ff0d0;
+  /* The chosen glow colour (set by the game), for the glow button. */
+  --glow-rgb: 127, 240, 208;
   --hud-size: 72px;
   --gap: max(14px, env(safe-area-inset-right));
 }
@@ -177,7 +179,7 @@ button {
   bottom: max(16px, env(safe-area-inset-bottom));
   overflow: hidden;
   background: rgba(16, 40, 92, 0.7);
-  box-shadow: inset 0 0 0 4px rgba(127, 240, 208, 0.45);
+  box-shadow: inset 0 0 0 4px rgba(var(--glow-rgb), 0.45);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s, box-shadow 0.3s;
@@ -193,7 +195,7 @@ button {
   inset: 0;
   transform-origin: 50% 100%;
   transform: scaleY(0);
-  background: linear-gradient(to top, rgba(127, 240, 208, 0.95), rgba(160, 255, 230, 0.55));
+  background: linear-gradient(to top, rgba(var(--glow-rgb), 0.95), rgba(var(--glow-rgb), 0.45));
   transition: transform 0.25s ease-out;
 }
 
@@ -204,7 +206,7 @@ button {
   width: 62%;
   height: 62%;
   color: #e8fff8;
-  filter: drop-shadow(0 0 6px rgba(127, 240, 208, 0.9));
+  filter: drop-shadow(0 0 6px rgba(var(--glow-rgb), 0.9));
 }
 
 .glow-icon svg {
@@ -213,7 +215,7 @@ button {
 }
 
 .glow-button.full {
-  box-shadow: inset 0 0 0 4px #c8fff0, 0 0 30px rgba(127, 240, 208, 0.8);
+  box-shadow: inset 0 0 0 4px #c8fff0, 0 0 30px rgba(var(--glow-rgb), 0.8);
 }
 
 .glow-button.invite {
@@ -223,7 +225,7 @@ button {
 @keyframes invite {
   50% {
     transform: scale(1.12);
-    box-shadow: inset 0 0 0 4px #ffffff, 0 0 46px rgba(127, 240, 208, 1);
+    box-shadow: inset 0 0 0 4px #ffffff, 0 0 46px rgba(var(--glow-rgb), 1);
   }
 }
 
@@ -545,8 +547,10 @@ button {
   --icon: clamp(20px, 5vh, 38px);
   --stars: calc(var(--zones, 2) * (var(--icon) + 16px) + (var(--zones, 2) - 1) * 8px);
   --cell: calc((100dvh - 100px - var(--stars) - (var(--rows, 2) - 1) * 14px) / var(--rows, 2));
+  /* The strips and the glow colours side by side: five starfish, three 64 px dots. */
+  --bottom: calc(5 * var(--icon) + 4 * 10px + 24px + 16px + 3 * 64px + 2 * 8px);
   position: relative;
-  width: min(720px, calc(100% - 40px), calc(var(--cols, 3) * var(--cell) + (var(--cols, 3) - 1) * 14px + 44px));
+  width: min(720px, calc(100% - 40px), max(calc(var(--cols, 3) * var(--cell) + (var(--cols, 3) - 1) * 14px + 44px), calc(var(--bottom) + 44px)));
   max-height: calc(100% - 40px);
   padding: 22px;
   border-radius: 26px;
@@ -560,6 +564,7 @@ button {
   display: grid;
   gap: 14px;
   min-height: 0;
+  justify-content: center;
 }
 
 .stamp {
@@ -679,9 +684,68 @@ button {
   height: 55%;
 }
 
+.album-bottom {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
 .album-stars {
+  flex: 1;
   display: grid;
   gap: 8px;
+}
+
+/* Glow colours: rows of three dots, each a 64 px touch area. */
+.album-colours {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  gap: 8px;
+}
+
+.colour-dot {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.colour-dot span {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.colour-dot.locked span {
+  width: 30px;
+  height: 30px;
+  opacity: 0.55;
+}
+
+.colour-dot.chosen span {
+  box-shadow: 0 0 0 4px #fff8ec, 0 0 0 8px var(--dot), 0 0 18px var(--dot);
+}
+
+.colour-dot:focus-visible {
+  outline: 4px dashed #8aa0d0;
+  outline-offset: -2px;
+}
+
+.colour-dot.wiggle span {
+  animation: dot-wiggle 0.45s ease-in-out;
+}
+
+@keyframes dot-wiggle {
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
 }
 
 .starfish-row {

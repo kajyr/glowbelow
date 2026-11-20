@@ -7,6 +7,11 @@ Writes models/cuttlefish.glb and artwork/cuttlefish-model-preview.svg.
 Built in profile like the nautilus: the body lies along X, the head and arms
 point right (+X), and the camera (-Y) sees its side. The game flips it when
 it swims left.
+
+Parts, for animation in the game: body (mantle and head with its colour
+patches), fin-l and fin-r (the frilly side fins, pivoted along the mantle so
+they ripple), arms (pivoted where they join the head) and eye-l, eye-r
+(pivoted at their base, to blink).
 """
 
 import math
@@ -77,7 +82,7 @@ def build():
             palette = BELLY
         else:
             palette = BACK
-        model.add(pts, [tuple(range(len(pts)))], palette)
+        model.add(pts, [tuple(range(len(pts)))], palette, part="body")
 
     # Frilly fin: a wavy ribbon hanging along each side of the mantle.
     steps = 9
@@ -91,9 +96,11 @@ def build():
             inner.append((x, side * w * 0.92, -0.08))
             outer.append((x, side * (w + 0.2 * taper), -0.12 - (0.2 + wave) * taper))
         strip = inner + outer
+        fin = "fin-l" if side < 0 else "fin-r"
         for i in range(steps - 1):
             quad = (i, i + 1, steps + i + 1, steps + i)
-            model.add(strip, [quad, tuple(reversed(quad))], FIN)
+            model.add(strip, [quad, tuple(reversed(quad))], FIN, part=fin)
+        model.pivot(fin, (-0.35, side * width_at(-0.35) * 0.92, -0.08))
 
     # Eight short arms bunched together at the front.
     for k in range(8):
@@ -107,12 +114,14 @@ def build():
         ]
         parts, _tip = ridge(path, around, (0.11, 0.09, 0.05), tip_length=0.12)
         for part_v, part_f in parts:
-            model.add(part_v, part_f, ARM)
+            model.add(part_v, part_f, ARM, part="arms")
+    model.pivot("arms", (0.95, 0.0, 0.0))
 
     # One eye on each side of the head.
     for side in (-1, 1):
         add_eye(model, (0.8, side * 0.46, 0.12), (0.0, float(side), 0.12), -1,
-                0.25, EYE, PUPIL, SHINE, pupil_size=0.6)
+                0.25, EYE, PUPIL, SHINE, pupil_size=0.6,
+                part="eye-l" if side < 0 else "eye-r")
 
     return model
 

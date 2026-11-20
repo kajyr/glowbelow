@@ -261,6 +261,38 @@ export class Synth {
     this.tone(f * 3, 'sine', now, 0.012, 0.005, 0.35);
   }
 
+  /** The cuttlefish: three bubbly blips that bend upward, a playful hello. */
+  cuttlefish(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [392.0, 523.25, 659.25].forEach((f, i) => {
+      const o = this.tone(f, 'sine', now + i * 0.11, 0.06, 0.01, 0.22);
+      o.frequency.setValueAtTime(f * 0.8, now + i * 0.11);
+      o.frequency.exponentialRampToValueAtTime(f * 1.15, now + i * 0.11 + 0.12);
+    });
+    this.tone(1046.5, 'triangle', now + 0.36, 0.02, 0.01, 0.5);
+  }
+
+  /** The cuttlefish shows a colour to find: a soft two-note call, pitched by the colour (0 … 4). */
+  colourCall(colour: number): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const f = PENTA[colour % 5];
+    this.tone(f, 'triangle', now, 0.04, 0.01, 0.25);
+    this.tone(f * 1.5, 'triangle', now + 0.14, 0.035, 0.01, 0.35);
+  }
+
+  /** Not that coral: a gentle little "uh-uh", never a buzzer. */
+  wiggle(): void {
+    const ctx = this.live();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    this.tone(392.0, 'sine', now, 0.035, 0.01, 0.12);
+    this.tone(349.23, 'sine', now + 0.14, 0.03, 0.01, 0.18);
+  }
+
   /** Every ring of a chain in a row: a quick sparkly run up to a high note. */
   flourish(): void {
     const ctx = this.live();

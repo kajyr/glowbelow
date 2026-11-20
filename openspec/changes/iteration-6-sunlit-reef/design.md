@@ -3,7 +3,7 @@
 - Zone graph, zone generation, the carrier behaviour (giant squid arm), album pages and saving exist from earlier iterations
 - The giant squid's ride already targets "top of the world" from the zone graph
 - The cuttlefish model's colour patches are fixed vertex colours, so colour change must happen at render time
-- The album is one page with nothing to turn; the colour picker is a row at its bottom, under the starfish strips
+- The album is one page with nothing to turn; the colour picker sits at its bottom, beside the starfish strips, in two rows of three dots (under the strips, a 64 px row leaves no room for the stamps on a phone in landscape)
 
 ## Goals / Non-Goals
 
