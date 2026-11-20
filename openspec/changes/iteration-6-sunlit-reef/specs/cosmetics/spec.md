@@ -12,10 +12,10 @@ The squid SHALL start with its teal glow colour. Up to five more glow colours (p
 - **THEN** the squid's glow is teal
 
 ### Requirement: Switching glow colour
-The player SHALL be able to switch to any unlocked glow colour from a colour row on the album's squid page, by tapping a colour or using arrows and Space.
+The player SHALL be able to switch to any unlocked glow colour from a colour row at the bottom of the album page, under the starfish strips, by tapping a colour or using arrows and Space. Colours not unlocked yet SHALL show as dark dots. The whole page SHALL still fit the screen.
 
 #### Scenario: Switching back to teal
-- **WHEN** the player taps teal on the squid page
+- **WHEN** the player taps teal in the album's colour row
 - **THEN** the squid's glow becomes teal again
 
 ### Requirement: Nothing is bought or lost

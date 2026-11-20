@@ -3,7 +3,7 @@
 - Zone graph, zone generation, the carrier behaviour (giant squid arm), album pages and saving exist from earlier iterations
 - The giant squid's ride already targets "top of the world" from the zone graph
 - The cuttlefish model's colour patches are fixed vertex colours, so colour change must happen at render time
-- The album gains a squid page in this iteration to hold the colour picker
+- The album is one page with nothing to turn; the colour picker is a row at its bottom, under the starfish strips
 
 ## Goals / Non-Goals
 
@@ -13,6 +13,7 @@
 
 **Non-Goals:**
 - No hats or fin shapes yet; only glow colours and the automatic sunglasses
+- No credits, score or "the end" screen that stops play; the ending is a celebration and play goes on
 
 ## Decisions
 
@@ -44,6 +45,15 @@
 
 ### Colour game as a small state machine
 - States: idle → showing(colour, round) → cheering → done; wrong touches stay in showing; no timers
+- A touched coral is judged by its colour before the touch: a right coral flashes and keeps its colour; a wrong one steps to its next colour, so tapping it again always reaches the right one
+- The colour shown is always one on a coral near the cuttlefish, preferring colours not unlocked yet
+
+### The ending at the reef's surface
+- Reaching the surface soft wall triggers the ending, instead of only easing the squid back
+- A centre overlay: shooting stars across the screen, then a row of starfish icons per zone (lit for found), the same strips as the album, so the count needs no reading
+- Pauses play like the album; tap, Space or Escape closes it, and the squid is eased back down into the reef
+- It can trigger again (the count may have grown), but only after the squid has swum well away from the surface, so bumping the surface does not repeat it
+- Alternative: a one-time ending saved in the save (rejected: the child would miss it if a grown-up was watching the first time)
 
 ### Sunglasses as an attachable node
 - `sunglasses.glb` from `tools/make_sunglasses.py`, parented to the squid head node, toggled by the current zone with a scale-in flourish
@@ -55,4 +65,4 @@
 
 ## Migration Plan
 
-Save format version 2 → 3 adds reef ids and `cosmetics` with teal unlocked and equipped.
+Save format version 1 → 2 adds the reef's coral colours and `cosmetics` with teal unlocked and equipped. The cuttlefish being found uses the existing found-friends list.

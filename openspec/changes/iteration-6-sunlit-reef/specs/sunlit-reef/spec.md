@@ -13,7 +13,7 @@ The Sunlit reef SHALL be about 4 screens wide and 2 screens tall, directly above
 
 #### Scenario: Surface
 - **WHEN** the squid swims up to the surface
-- **THEN** it is gently eased back down with no penalty
+- **THEN** the ending plays (see "Ending at the surface"), then the squid is gently eased back down with no penalty
 
 ### Requirement: Bright party mood
 The reef SHALL be the brightest zone, using the full pastel palette, with light patterns dancing on the seabed and a cheerful ambient layer.
@@ -39,6 +39,21 @@ When the squid enters the reef it SHALL put on a pair of sunglasses with a littl
 ### Requirement: Reef extras
 The reef SHALL contain five starfish and one bubble-ring chain, behaving as defined in `starfish` and `bubble-rings`.
 
-#### Scenario: Album row
-- **WHEN** the album's starfish page is opened
-- **THEN** it shows a row for the Sunlit reef with five starfish
+#### Scenario: Album strip
+- **WHEN** the album is opened
+- **THEN** it shows a Sunlit reef strip with five starfish icons
+
+### Requirement: Ending at the surface
+Reaching the reef's surface, the top of the world, SHALL play the ending: shooting stars cross the screen and a win card in the centre shows the starfish found, as one strip of starfish icons per zone, lit for found ones, like the album. It SHALL use no text, pause play like the album, and close on tap, Space or Escape, after which the squid is eased back down into the reef and play goes on. Nothing SHALL be reset or lost. It SHALL play again on a later visit to the surface, but not until the squid has swum well away from it.
+
+#### Scenario: First time at the surface
+- **WHEN** the squid swims up to the reef's surface
+- **THEN** shooting stars fly, the win card shows each zone's starfish, lit for found ones, and play pauses
+
+#### Scenario: Closing the ending
+- **WHEN** the player taps the screen while the ending shows
+- **THEN** the card closes, the squid is back in the reef just below the surface, and everything found is kept
+
+#### Scenario: Bumping the surface again
+- **WHEN** the squid touches the surface again right after the ending closed
+- **THEN** it is only eased back down; the ending plays again only after the squid has swum well away and come back

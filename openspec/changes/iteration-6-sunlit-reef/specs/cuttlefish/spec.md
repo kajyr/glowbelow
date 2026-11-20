@@ -19,7 +19,7 @@ A glow pulse reaching the disguised cuttlefish SHALL reveal it: it changes back 
 - **THEN** it swims out, plays its sound, and its sticker is added to the album
 
 ### Requirement: Colour game that cannot be failed
-After being revealed, and each time the squid touches it afterwards, the cuttlefish SHALL play a three-round game: it shows a colour, and the player touches a coral of that colour. Touching a wrong coral SHALL only make the cuttlefish wiggle and keep showing the colour; there SHALL be no failure, timer or score.
+After being revealed, and each time the squid touches it afterwards, the cuttlefish SHALL play a three-round game: it shows a colour, and the player touches a coral of that colour. The colour shown SHALL always be on a coral near the cuttlefish, preferring colours not unlocked yet. A coral SHALL be judged by its colour before the touch: a right coral flashes and keeps its colour; a wrong coral steps to its next colour as usual, and the cuttlefish wiggles and keeps showing the colour. There SHALL be no failure, timer or score.
 
 #### Scenario: Right coral
 - **WHEN** the cuttlefish shows pink and the squid touches a pink coral
@@ -27,7 +27,11 @@ After being revealed, and each time the squid touches it afterwards, the cuttlef
 
 #### Scenario: Wrong coral
 - **WHEN** the cuttlefish shows pink and the squid touches a blue coral
-- **THEN** the cuttlefish wiggles and keeps showing pink
+- **THEN** the cuttlefish wiggles and keeps showing pink, and the coral steps to its next colour
+
+#### Scenario: Tapping one coral until it matches
+- **WHEN** the squid keeps touching the same wrong coral
+- **THEN** the coral reaches pink within one cycle and that touch counts as right
 
 ### Requirement: The game paints the glow
 Finishing the three rounds SHALL unlock the last colour shown as a glow colour and switch the squid's glow to it, as defined in `cosmetics`.
