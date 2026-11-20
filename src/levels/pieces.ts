@@ -23,7 +23,14 @@ export type PieceName =
   | 'ledge-2'
   | 'ledge-3'
   | 'jellyfish-lantern'
-  | 'whale-skeleton';
+  | 'whale-skeleton'
+  | CoralPiece;
+
+/** The reef's corals (tools/make_corals.py): five shapes, -1 small and -2 large. */
+export const CORAL_SHAPES = ['branch', 'fan', 'brain', 'tube', 'mushroom'] as const;
+export type CoralShape = (typeof CORAL_SHAPES)[number];
+export type CoralPiece = `coral-${CoralShape}-${1 | 2}`;
+export const CORAL_PIECES: CoralPiece[] = CORAL_SHAPES.flatMap((c) => [`coral-${c}-1`, `coral-${c}-2`] as CoralPiece[]);
 
 export interface PieceDef {
   circles: Circle[];
@@ -63,6 +70,44 @@ function ledge(length: number, thick: number, tip: number, droop: number): Circl
   }
   return circles;
 }
+
+/**
+ * A small coral's circles (size 1); the large one is the same shape 1.8 times
+ * bigger. Corals are not solid (the squid brushes past them, in front): the
+ * circles are where touching one counts (see `Level.corals`).
+ */
+const CORAL_SMALL: Record<CoralShape, Circle[]> = {
+  branch: [
+    { x: 0, y: 0.3, r: 0.22 },
+    { x: 0, y: 0.75, r: 0.4 },
+  ],
+  fan: [
+    { x: 0, y: 0.25, r: 0.15 },
+    { x: -0.38, y: 0.55, r: 0.28 },
+    { x: 0.38, y: 0.55, r: 0.28 },
+    { x: 0, y: 0.65, r: 0.32 },
+  ],
+  brain: [{ x: 0, y: 0.15, r: 0.48 }],
+  tube: [
+    { x: -0.27, y: 0.35, r: 0.22 },
+    { x: 0, y: 0.45, r: 0.24 },
+    { x: 0.27, y: 0.35, r: 0.22 },
+  ],
+  mushroom: [
+    { x: 0, y: 0.2, r: 0.2 },
+    { x: -0.32, y: 0.38, r: 0.24 },
+    { x: 0.32, y: 0.38, r: 0.24 },
+  ],
+};
+const scaled = (cs: Circle[], k: number): Circle[] => cs.map((c) => ({ x: c.x * k, y: c.y * k, r: c.r * k }));
+/** The large tube cluster has five tubes, wider than the small one scaled up. */
+const TUBE_LARGE: Circle[] = [-0.97, -0.49, 0, 0.49, 0.97].map((x, i) => ({ x, y: i === 2 ? 0.9 : 0.6, r: 0.36 }));
+const CORAL_DEFS = Object.fromEntries(
+  CORAL_SHAPES.flatMap((c) => [
+    [`coral-${c}-1`, { circles: CORAL_SMALL[c] }],
+    [`coral-${c}-2`, { circles: c === 'tube' ? TUBE_LARGE : scaled(CORAL_SMALL[c], 1.8) }],
+  ]),
+) as Record<CoralPiece, PieceDef>;
 
 export const PIECES: Record<PieceName, PieceDef> = {
   // tools/make_rocks.py
@@ -105,6 +150,7 @@ export const PIECES: Record<PieceName, PieceDef> = {
   'jellyfish-lantern': { circles: [{ x: 0, y: 0.25, r: 0.6 }] },
   // tools/make_whale_skeleton.py: spine, ribs, the high part of the tail and the skull (src/levels/skeleton.ts).
   'whale-skeleton': { circles: skeletonCircles() },
+  ...CORAL_DEFS,
 };
 
 export interface Placement {
@@ -138,8 +184,9 @@ export function placedCircles(p: Placement): Circle[] {
 /** World-space floor line of one seabed placement (no rotation). */
 export function placedFloor(p: Placement): HeightLine | null {
   const f = PIECES[p.piece].floor;
-  // Turned seabed segments are used as ceilings and are not a floor.
-  if (!f || (p.rot ?? 0) !== 0) return null;
+  // Turned seabed segments are used as ceilings and are not a floor; nor is
+  // decoration (the reef's seabed lies on rock blocks, above other zones).
+  if (!f || (p.rot ?? 0) !== 0 || p.decor) return null;
   const s = p.scale ?? 1;
   const pts = f.xs.map((x, i) => ({ x: p.x + (p.mirror ? -x : x) * s, y: p.y + f.ys[i] * s }));
   pts.sort((a, b) => a.x - b.x);

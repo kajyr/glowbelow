@@ -5,6 +5,7 @@ import type { Rect } from '../game/sparkleField';
 import type { LocalLights } from './localLights';
 
 const PULSE_COLOR = new THREE.Color('#7ff0d0');
+const SUN_IN = new THREE.Color('#ffe8b0');
 
 /** Soft round points (drifting particles and bubbles), drawn additively. */
 function pointsMaterial(color: string, size: number, opacity: number, ring = false): THREE.ShaderMaterial {
@@ -48,13 +49,19 @@ export class Effects {
   private readonly bubblePos: Float32Array;
   private readonly bubbleInfo: { vent: number; speed: number; phase: number }[] = [];
   private readonly rays: THREE.Mesh;
+  /** Bubbles from the seabed vents rise to here (the way up, not into the reef). */
+  private readonly bubbleTop: number;
+  /** Where the reef's sun comes in at the top of the way up (a warm pool of light), if it does. */
+  private readonly sunIn: { x: number; y: number } | null;
   private time = 0;
 
   constructor(
-    private readonly bounds: Rect,
+    bounds: Rect,
     private readonly vents: number[],
-    shaft: { x0: number; x1: number },
+    shaft: { x0: number; x1: number; lid?: number },
   ) {
+    this.bubbleTop = (shaft.lid ?? bounds.maxY) - 3;
+    this.sunIn = shaft.lid === undefined ? null : { x: (shaft.x0 + shaft.x1) / 2, y: shaft.lid - 1.5 };
     // Drifting particles: a box of dust that wraps around the camera.
     const DUST = 260;
     this.dustPos = new Float32Array(DUST * 3);
@@ -91,7 +98,8 @@ export class Effects {
     this.bubbles.frustumCulled = false;
     this.group.add(this.bubbles);
 
-    // Light falling down the shaft: the way up is visible.
+    // Light falling down the shaft from the bright reef above: the way up is
+    // visible (and shimmers) even though only the giant squid's arm goes there.
     const w = shaft.x1 - shaft.x0;
     const rayMat = new THREE.ShaderMaterial({
       transparent: true,
@@ -105,12 +113,14 @@ export class Effects {
         void main() {
           float edge = smoothstep(0.0, 0.3, vUv.x) * smoothstep(1.0, 0.7, vUv.x);
           float streak = 0.6 + 0.4 * sin(vUv.x * 18.0 + uTime * 0.4) * sin(vUv.x * 7.0 - uTime * 0.25);
-          float a = edge * streak * smoothstep(0.0, 1.0, vUv.y) * 0.4;
-          gl_FragColor = vec4(vec3(0.75, 0.85, 1.0) * a, a);
+          // The reef's sunlight ripples as it comes through.
+          float shimmer = 0.75 + 0.25 * sin(vUv.y * 9.0 - uTime * 1.6 + sin(vUv.x * 11.0 + uTime) * 1.5);
+          float a = edge * streak * shimmer * smoothstep(0.0, 1.0, vUv.y) * 0.5;
+          gl_FragColor = vec4(vec3(1.0, 0.93, 0.78) * a, a);
         }`,
     });
     this.rays = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.6, 22), rayMat);
-    this.rays.position.set((shaft.x0 + shaft.x1) / 2, bounds.maxY - 9, -1.5);
+    this.rays.position.set((shaft.x0 + shaft.x1) / 2, (shaft.lid ?? bounds.maxY) - 9, -1.5);
     this.group.add(this.rays);
   }
 
@@ -166,7 +176,7 @@ export class Effects {
 
     this.bubbleInfo.forEach((b, i) => {
       let y = this.bubblePos[i * 3 + 1] + b.speed * dt;
-      if (y > this.bounds.maxY - 3) y = 0.3;
+      if (y > this.bubbleTop) y = 0.3;
       this.bubblePos[i * 3] = this.vents[b.vent] + Math.sin(this.time * 2 + b.phase) * 0.15 + Math.sin(y * 0.8 + b.phase) * 0.3;
       this.bubblePos[i * 3 + 1] = y;
       this.bubblePos[i * 3 + 2] = -0.8 - (b.phase % 1.5);
@@ -174,6 +184,7 @@ export class Effects {
     this.bubbles.geometry.attributes.position.needsUpdate = true;
 
     (this.rays.material as THREE.ShaderMaterial).uniforms.uTime.value = this.time;
+    if (this.sunIn) lights.add(this.sunIn.x, this.sunIn.y, 1, 6, SUN_IN, 0.7 + 0.15 * Math.sin(this.time * 1.6));
   }
 
   /** Point sizes are in pixels; keep them the same on any screen size. */

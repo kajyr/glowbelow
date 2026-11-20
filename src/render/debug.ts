@@ -3,11 +3,13 @@ import type { CollisionWorld } from '../game/collision';
 import type { Vec2 } from '../game/vec';
 import type { Fields } from '../levels/clearance';
 import type { BuiltLevel } from '../levels/level';
+import { placedCircles } from '../levels/pieces';
 
 /**
  * Debug overlay (open the game with ?debug=1, press C): draws every collider
  * over the models, the seabed line, ceilings, zone bounds, the shaft's soft
- * wall and the cave's discovery circle.
+ * wall and the cave's discovery circle. Corals' touch circles (not solid)
+ * are drawn in their own colour.
  */
 export function colliderOverlay(built: BuiltLevel): THREE.Group {
   const group = new THREE.Group();
@@ -16,13 +18,16 @@ export function colliderOverlay(built: BuiltLevel): THREE.Group {
   const line = (points: THREE.Vector3[], color: string) =>
     group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color, depthTest: false })));
 
-  for (const c of world.circles) {
-    const pts = Array.from({ length: 33 }, (_, i) => {
-      const a = (i / 32) * Math.PI * 2;
-      return new THREE.Vector3(c.x + Math.cos(a) * c.r, c.y + Math.sin(a) * c.r, 1);
-    });
-    line(pts, '#ff5ab4');
-  }
+  const circle = (c: { x: number; y: number; r: number }, color: string) =>
+    line(
+      Array.from({ length: 33 }, (_, i) => {
+        const a = (i / 32) * Math.PI * 2;
+        return new THREE.Vector3(c.x + Math.cos(a) * c.r, c.y + Math.sin(a) * c.r, 1);
+      }),
+      color,
+    );
+  for (const c of world.circles) circle(c, '#ff5ab4');
+  for (const c of (built.level.corals ?? []).flatMap(placedCircles)) circle(c, '#5ad8ff');
   line(world.floor.xs.map((x, i) => new THREE.Vector3(x, world.floor.ys[i], 1)), '#ffd84a');
   for (const c of world.ceilings) line([new THREE.Vector3(c.x0, c.y, 1), new THREE.Vector3(c.x1, c.y, 1)], '#ffd84a');
   for (const b of world.blocks ?? []) {

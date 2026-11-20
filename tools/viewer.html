@@ -18,7 +18,8 @@
 </head>
 <body>
 <p>Drag to orbit. Add ?model=name to load models/name.glb, ?spin=1 to rotate, ?size=1.5 to enlarge,
-?row=a,b,c to lay several models edge to edge (front view), ?hide=part1,part2 to hide named parts.</p>
+?row=a,b,c to lay several models edge to edge (front view), ?hide=part1,part2 to hide named parts,
+?attach=other@node to add models/other.glb as a child of a node (sunglasses@head on the squid).</p>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -31,6 +32,7 @@ const tilt = Number(params.get('tilt') || 0);
 const size = Number(params.get('size') || 1);
 const row = params.get('row') ? params.get('row').split(',') : null;
 const hide = (params.get('hide') || '').split(',').filter(Boolean);
+const [attachModel, attachNode] = (params.get('attach') || '').split('@');
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -87,9 +89,10 @@ if (row) {
     camera.updateProjectionMatrix();
     document.title = `${row.join(' + ')} loaded`;
   });
-} else loader.load(`../models/${name}.glb`, (gltf) => {
+} else Promise.all([loader.loadAsync(`../models/${name}.glb`), attachModel ? loader.loadAsync(`../models/${attachModel}.glb`) : null]).then(([gltf, extra]) => {
   listNodes(name, gltf.scene);
   hideParts(gltf.scene);
+  if (extra) (gltf.scene.getObjectByName(attachNode) || gltf.scene).add(extra.scene);
   turns.forEach((deg, i) => {
     const copy = gltf.scene.clone();
     copy.scale.setScalar(size);

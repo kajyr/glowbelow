@@ -12,14 +12,24 @@ export interface MoodStop {
 
 const hex = (h: string): [number, number, number] => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
 
-/** Home's navy, then Twilight from deep blue at its bottom to lavender at its top. */
-export function worldMood(homeTop: number, twilightTop: number): MoodStop[] {
-  return [
+/**
+ * Home's navy, then Twilight from deep blue at its bottom to lavender at its
+ * top, then the Sunlit reef's bright turquoise, palest under the surface.
+ */
+export function worldMood(homeTop: number, twilightTop: number, reefTop = twilightTop): MoodStop[] {
+  const stops: MoodStop[] = [
     { y: homeTop - 6, color: hex('#041233') },
     { y: homeTop + 6, color: hex('#08245a') },
     { y: (homeTop + twilightTop) / 2, color: hex('#1b2f78') },
-    { y: twilightTop, color: hex('#4a4596') },
+    { y: twilightTop - 4, color: hex('#4a4596') },
   ];
+  if (reefTop > twilightTop) stops.push({ y: twilightTop + 4, color: hex('#2f9cc4') }, { y: reefTop, color: hex('#8ad8ea') });
+  return stops;
+}
+
+/** 0 below the reef, 1 in it, blending through the passage; `seabed` is the reef's seabed height. */
+export function reefness(seabed: number, y: number): number {
+  return Math.min(1, Math.max(0, (y - (seabed - 4)) / 8));
 }
 
 /** Whale fall's water: a soft blue, gentler and a little lighter than home's navy. */

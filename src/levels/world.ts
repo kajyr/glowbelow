@@ -52,7 +52,7 @@ export function translateLevel(level: Level, d: Vec2): Level {
     bounds: moveRect(level.bounds, d),
     cameraBounds: moveRect(level.cameraBounds, d),
     ceilings: level.ceilings.map((c) => ({ x0: c.x0 + d.x, x1: c.x1 + d.x, y: c.y + d.y })),
-    shaft: { x0: level.shaft.x0 + d.x, x1: level.shaft.x1 + d.x, softFrom: level.shaft.softFrom + d.y },
+    shaft: { x0: level.shaft.x0 + d.x, x1: level.shaft.x1 + d.x, softFrom: level.shaft.softFrom + d.y, lid: level.shaft.lid === undefined ? undefined : level.shaft.lid + d.y },
     start: move(level.start, d),
     pieces: level.pieces.map((p): Placement => ({ ...p, x: p.x + d.x, y: p.y + d.y })),
     plants: level.plants.map((p) => ({ ...p, x: p.x + d.x, y: p.y === undefined ? undefined : p.y + d.y })),
@@ -67,5 +67,8 @@ export function translateLevel(level: Level, d: Vec2): Level {
     nautilus: level.nautilus ? { x: level.nautilus.x + d.x, y0: level.nautilus.y0 + d.y, y1: level.nautilus.y1 + d.y } : level.nautilus,
     skeleton: level.skeleton ? { ...level.skeleton, x: level.skeleton.x + d.x, y: level.skeleton.y + d.y } : level.skeleton,
     fishSchools: level.fishSchools?.map((p) => move(p, d)),
+    corals: level.corals?.map((c) => ({ ...c, x: c.x + d.x, y: c.y + d.y })),
+    cuttlefish: level.cuttlefish ? { ...level.cuttlefish, x: level.cuttlefish.x + d.x, y: level.cuttlefish.y + d.y } : level.cuttlefish,
+    landing: level.landing ? move(level.landing, d) : level.landing,
   };
 }

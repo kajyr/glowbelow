@@ -35,6 +35,10 @@ export class SquidView {
   private readonly ears: [THREE.Object3D, THREE.Object3D];
   private readonly eyes: THREE.Object3D[];
   private readonly glow: THREE.MeshStandardMaterial;
+  private readonly sunglasses: THREE.Object3D;
+  /** 0 off … 1 on; eases toward `wantGlasses`. */
+  private glasses = 0;
+  private wantGlasses = false;
 
   facing = 1;
   private time = 0;
@@ -72,6 +76,22 @@ export class SquidView {
       }
     });
     this.glow = glow!;
+
+    // Sunglasses for the bright reef: built in the squid's own units, on the head node.
+    this.sunglasses = models.sunglasses.clone(true);
+    this.sunglasses.scale.setScalar(0);
+    this.sunglasses.visible = false;
+    this.head.add(this.sunglasses);
+  }
+
+  /** Puts the sunglasses on or takes them off, with a little flourish. */
+  setSunglasses(on: boolean): void {
+    this.wantGlasses = on;
+  }
+
+  /** The glow tips' colour (the chosen glow colour). */
+  setGlowColour(color: THREE.Color): void {
+    this.glow.emissive.copy(color);
   }
 
   /** Brief brightening of the tips when the squid glows. */
@@ -131,9 +151,18 @@ export class SquidView {
     const bob = (1 - norm) * 0.08 * Math.sin(this.time * 1.7);
     this.root.position.set(s.x, s.y + bob, 0);
 
+    // Sunglasses pop on with an overshoot, and shrink away.
+    this.glasses = Math.min(1, Math.max(0, this.glasses + (this.wantGlasses ? dt / 0.45 : -dt / 0.25)));
+    this.sunglasses.visible = this.glasses > 0;
+    const g = this.wantGlasses ? popIn(this.glasses) : this.glasses;
+    this.sunglasses.scale.setScalar(g);
+    this.sunglasses.rotation.z = this.wantGlasses ? (1 - this.glasses) * 0.6 : 0;
+
     this.flash = Math.max(0, this.flash - dt * 1.5);
     this.glow.emissiveIntensity = 0.6 + 2.0 * s.meter + 1.5 * this.flash;
   }
 }
 
 const easeOut = (t: number) => 1 - (1 - t) ** 2;
+/** 0 → 1 with a little overshoot. */
+const popIn = (t: number) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2;

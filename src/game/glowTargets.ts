@@ -1,7 +1,7 @@
 import type { Vec2 } from './vec';
 
 /** Kinds of things a glow pulse can reach. */
-export type GlowKind = 'plant' | 'lantern' | 'cave' | 'firefly' | 'nautilus' | 'starfish' | 'rib' | 'giant';
+export type GlowKind = 'plant' | 'lantern' | 'cave' | 'firefly' | 'nautilus' | 'starfish' | 'rib' | 'giant' | 'coral' | 'cuttlefish';
 
 /**
  * Something a pulse can reach, anywhere in the world. Plants and lanterns can

@@ -23,19 +23,26 @@
 - The giant squid's ride passes through the passage and sets the squid down in the reef
 - The reef's light and shimmer show through the passage from below, as a hint
 
+### One-way passage as a lid
+- Twilight's top passage keeps its soft push, and gets a lid at the reef's seabed height
+- The lid holds the squid from below (no dash gets through); a squid that came down from the reef passes it, until it is well below
+- The reef's surface is a soft push too, like a closed shaft
+
 ### The reef is a generated zone
 - A recipe like Twilight's and Whale fall's: coral garden along the bottom, surface soft wall, five starfish, one bubble-ring chain, the cuttlefish's spot among the corals
 - Extra rule: a clear landing spot where the ride sets the squid down, and a clear way down to the passage
 
-### Hue shift in a material patch
-- The cuttlefish and coral materials get a small `onBeforeCompile` patch that rotates vertex-colour hue by a uniform; the cuttlefish disguise and cycling animate that uniform
-- Alternative: swap whole vertex-colour arrays per colour (more memory, abrupt switches)
+### Coral colours as a tint; the cuttlefish's as a hue shift
+- Corals are built pale and neutral; each instance gets its colour as the instance colour, which multiplies the vertex colours, so every coral shows the exact colour of the cycle
+- The cuttlefish keeps its own patterned vertex colours; a small `onBeforeCompile` patch rotates their hue by a uniform for its colour cycling
+- Alternative: rotate every coral's hue from one base colour (rejected: hues land near, not on, the cycle's colours)
 
 ### Corals are `.glb` models from the Python pipeline
 - `tools/make_corals.py` writes 5 coral types: branching, fan, brain, tube cluster and soft mushroom, each in 2 sizes
-- Each coral is built in a neutral base colour so the hue-shift patch can turn it into any colour in the cycle; the cuttlefish's disguise uses the same coral shapes
-- Placed by the reef generator with `InstancedMesh`, with per-instance hue so one model gives many colours
-- Colliders per coral type in `src/levels/pieces.ts`, like the other environment pieces
+- Each coral is built in a neutral base colour so its tint can be any colour in the cycle; the cuttlefish's disguise uses the same coral shapes
+- Placed by the reef generator with `InstancedMesh`, packed edge to edge across the seabed
+- Circles per coral type in `src/levels/pieces.ts`, like the other environment pieces, but as touch areas: corals are not solid, the squid brushes past in front of them
+- Why not solid: a packed solid garden leaves slots the squid can squeeze into but not leave comfortably (the generator's pocket rule), and the colour game asks for many touches
 
 ### Glow colour as one shared uniform
 - The squid's glow-tip material, the pulse ring and the HUD read one `glowColor` value from state

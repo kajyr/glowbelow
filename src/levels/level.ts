@@ -4,7 +4,8 @@ import type { Vec2 } from '../game/vec';
 import { plantId } from './ids';
 import type { RingChain } from './rings';
 import type { StarfishSpot } from './starfish';
-import { placedCircles, placedFloor, type Placement } from './pieces';
+import type { CoralColour } from '../game/colours';
+import { placedCircles, placedFloor, type CoralPiece, type Placement } from './pieces';
 
 export interface PlantSpot {
   x: number;
@@ -24,8 +25,12 @@ export interface Level {
   cameraBounds: Rect;
   /** Lower ceilings than bounds.maxY, except where the way up is. */
   ceilings: Ceiling[];
-  /** The way up: a gentle push down starts at `softFrom`. */
-  shaft: { x0: number; x1: number; softFrom: number };
+  /**
+   * The way up: a gentle push down starts at `softFrom`. With `lid`, the way
+   * is one-way: below the lid's height the squid is eased back down and
+   * cannot pass it going up, but comes down through it freely.
+   */
+  shaft: { x0: number; x1: number; softFrom: number; lid?: number };
   start: Vec2;
   pieces: Placement[];
   plants: PlantSpot[];
@@ -52,6 +57,18 @@ export interface Level {
   skeleton?: SkeletonPlacement | null;
   /** Small fish schools, set dressing (Whale fall). */
   fishSchools?: Vec2[];
+  /** Corals that change colour when touched (Sunlit reef). Not solid: the squid brushes past them. */
+  corals?: CoralSpot[];
+  /** Where the cuttlefish hides among the corals, disguised as a coral of this shape (Sunlit reef). */
+  cuttlefish?: { x: number; y: number; piece: CoralPiece } | null;
+  /** Where the giant squid's ride sets the squid down (Sunlit reef). */
+  landing?: Vec2;
+}
+
+/** A coral in the garden, with the colour it starts in. */
+export interface CoralSpot extends Placement {
+  piece: CoralPiece;
+  colour: CoralColour;
 }
 
 export interface SkeletonPlacement {

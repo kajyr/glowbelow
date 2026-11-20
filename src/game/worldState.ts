@@ -1,3 +1,5 @@
+import { CORAL_COLOURS, isCoralColour, isGlowColour, nextColour, type CoralColour, type GlowColour } from './colours';
+
 /** Friends that can be found. */
 export type FriendName = 'dumbo' | 'nautilus' | 'firefly' | 'cuttlefish' | 'giant-squid';
 
@@ -9,9 +11,18 @@ export type StampName = FriendName | CreatureName;
 
 export const STAMP_NAMES: StampName[] = ['dumbo', 'nautilus', 'firefly', 'cuttlefish', 'giant-squid', 'starfish', 'phantom-jelly', 'lantern-jelly'];
 
-/** The serialisable form, saved as it is in iteration 3. */
+/** Unlockable looks for the squid. Future slots (hat, fins) become more keys under `equipped`. */
+export interface Cosmetics {
+  unlocked: GlowColour[];
+  equipped: { glow: GlowColour };
+}
+
+/** A new game's looks: the teal glow, unlocked and worn. */
+export const DEFAULT_COSMETICS: Cosmetics = { unlocked: ['teal'], equipped: { glow: 'teal' } };
+
+/** The serialisable form (version 2 from iteration 6: coral colours and cosmetics). */
 export interface WorldStateData {
-  version: 1;
+  version: 2;
   seed: number;
   /** Ids of lit glow-reactive things (plants, lanterns). */
   lit: string[];
@@ -25,6 +36,22 @@ export interface WorldStateData {
   starfish: string[];
   /** Stamps that have been seen in the album (for the new-sticker badge). */
   viewed: StampName[];
+  /** The colour of each coral touched in the Sunlit reef, by id; the rest keep their first colour. */
+  corals: Record<string, CoralColour>;
+  cosmetics: Cosmetics;
+}
+
+/** Checks the shape of saved cosmetics. */
+export function validCosmetics(c: unknown): c is Cosmetics {
+  if (!c || typeof c !== 'object') return false;
+  const d = c as Record<string, unknown>;
+  const eq = d.equipped as Record<string, unknown> | undefined;
+  return Array.isArray(d.unlocked) && d.unlocked.every(isGlowColour) && !!eq && typeof eq === 'object' && isGlowColour(eq.glow);
+}
+
+/** Checks the shape of saved coral colours. */
+export function validCorals(c: unknown): c is Record<string, CoralColour> {
+  return !!c && typeof c === 'object' && !Array.isArray(c) && Object.values(c).every(isCoralColour);
 }
 
 /**
@@ -41,6 +68,9 @@ export class WorldState {
   private dash = false;
   private readonly starfish = new Set<string>();
   private readonly viewed = new Set<StampName>();
+  private readonly corals = new Map<string, CoralColour>();
+  private readonly unlocked = new Set<GlowColour>(DEFAULT_COSMETICS.unlocked);
+  private glow: GlowColour = DEFAULT_COSMETICS.equipped.glow;
   /** Called after anything changes (the save listens). */
   onChange: () => void = () => {};
 
@@ -135,8 +165,65 @@ export class WorldState {
     return true;
   }
 
+  /** A coral's colour: as last touched, or `first` (its colour in a new world). */
+  coralColour(id: string, first: CoralColour): CoralColour {
+    return this.corals.get(id) ?? first;
+  }
+
+  /** Steps a coral to the next colour in the cycle and returns it. */
+  stepCoral(id: string, first: CoralColour): CoralColour {
+    const c = nextColour(this.coralColour(id, first));
+    this.corals.set(id, c);
+    this.onChange();
+    return c;
+  }
+
+  get glowColour(): GlowColour {
+    return this.glow;
+  }
+
+  get unlockedColours(): GlowColour[] {
+    return [...this.unlocked];
+  }
+
+  isUnlocked(c: GlowColour): boolean {
+    return this.unlocked.has(c);
+  }
+
+  /** Unlocks a glow colour (forever). Returns true the first time only. */
+  unlockColour(c: GlowColour): boolean {
+    if (this.unlocked.has(c)) return false;
+    this.unlocked.add(c);
+    this.onChange();
+    return true;
+  }
+
+  /** Wears an unlocked glow colour. Returns false for a locked one. */
+  chooseGlow(c: GlowColour): boolean {
+    if (!this.unlocked.has(c)) return false;
+    if (c !== this.glow) {
+      this.glow = c;
+      this.onChange();
+    }
+    return true;
+  }
+
   toJSON(): WorldStateData {
-    return { version: 1, seed: this.seed, lit: [...this.lit].sort(), found: [...this.found].sort(), swarm: [...this.swarm].sort(), dash: this.dash, starfish: [...this.starfish].sort(), viewed: [...this.viewed].sort() };
+    const corals = Object.fromEntries([...this.corals].sort(([a], [b]) => a.localeCompare(b)));
+    // Unlocked colours in the cycle's order, so a save reads the same however they were found.
+    const unlocked = (['teal', ...CORAL_COLOURS] as GlowColour[]).filter((c) => this.unlocked.has(c));
+    return {
+      version: 2,
+      seed: this.seed,
+      lit: [...this.lit].sort(),
+      found: [...this.found].sort(),
+      swarm: [...this.swarm].sort(),
+      dash: this.dash,
+      starfish: [...this.starfish].sort(),
+      viewed: [...this.viewed].sort(),
+      corals,
+      cosmetics: { unlocked, equipped: { glow: this.glow } },
+    };
   }
 
   static fromJSON(data: WorldStateData): WorldState {
@@ -147,6 +234,10 @@ export class WorldState {
     w.dash = data.dash;
     data.starfish.forEach((s) => w.starfish.add(s));
     (data.viewed ?? []).forEach((f) => w.viewed.add(f));
+    Object.entries(data.corals ?? {}).forEach(([id, c]) => w.corals.set(id, c));
+    const cos = data.cosmetics ?? DEFAULT_COSMETICS;
+    cos.unlocked.forEach((c) => w.unlocked.add(c));
+    w.glow = w.unlocked.has(cos.equipped.glow) ? cos.equipped.glow : 'teal';
     return w;
   }
 }

@@ -154,10 +154,11 @@ describe('save', () => {
   test('a save from before Whale fall keeps everything; its ribs start unlit and the giant squid asleep', () => {
     const s = memory();
     // Exactly what iteration 4 wrote: no rib ids, no giant squid.
-    const old = { version: 1, layout: LAYOUT, zone: 'home', state: played().toJSON() };
+    const { corals: _c, cosmetics: _k, ...v1 } = { ...played().toJSON(), version: 1 };
+    const old = { version: 1, layout: LAYOUT, zone: 'home', state: v1 };
     s.setItem(SAVE_KEY, JSON.stringify(old));
     const back = loadSave(s)!;
-    expect(back.state.toJSON()).toEqual(old.state);
+    expect(back.state.toJSON()).toEqual(played().toJSON());
     expect(back.state.isLit('rib-0')).toBe(false);
     expect(back.state.hasFound('giant-squid')).toBe(false);
   });
@@ -175,5 +176,59 @@ describe('save', () => {
     expect(back.state.isLit('rib-6')).toBe(true);
     expect(back.state.hasFound('giant-squid')).toBe(true);
     expect(back.state.hasFoundStarfish('starfish-whale-fall-2')).toBe(true);
+  });
+
+  test('a version 1 save (from before the reef) keeps everything; corals start in their first colours, only teal is unlocked and worn', () => {
+    const s = memory();
+    const { corals: _c, cosmetics: _k, ...v1 } = { ...played().toJSON(), version: 1 };
+    s.setItem(SAVE_KEY, JSON.stringify({ version: 1, layout: LAYOUT, zone: 'twilight', state: v1 }));
+    const back = loadSave(s)!;
+    expect(back.zone).toBe('twilight');
+    expect(back.state.hasFound('dumbo')).toBe(true);
+    expect(back.state.isLit('plant-3')).toBe(true);
+    expect(back.state.coralColour('coral-0', 'amber')).toBe('amber');
+    expect(back.state.unlockedColours).toEqual(['teal']);
+    expect(back.state.glowColour).toBe('teal');
+  });
+
+  test('coral colours, unlocked glow colours and the chosen one are saved', () => {
+    const s = memory();
+    const w = played();
+    expect(w.stepCoral('coral-3', 'pink')).toBe('amber');
+    w.stepCoral('coral-3', 'pink');
+    expect(w.unlockColour('pink')).toBe(true);
+    expect(w.unlockColour('pink')).toBe(false);
+    expect(w.chooseGlow('pink')).toBe(true);
+    expect(w.chooseGlow('sky')).toBe(false);
+    writeSave(s, w, 'sunlit-reef');
+    const back = loadSave(s)!;
+    expect(back.zone).toBe('sunlit-reef');
+    expect(back.state.coralColour('coral-3', 'pink')).toBe('lavender');
+    expect(back.state.unlockedColours).toEqual(['teal', 'pink']);
+    expect(back.state.glowColour).toBe('pink');
+  });
+
+  test('a save from an older layout keeps glow colours but drops coral colours', () => {
+    const s = memory();
+    const w = played();
+    w.stepCoral('coral-1', 'sky');
+    w.unlockColour('amber');
+    w.chooseGlow('amber');
+    writeSave(s, w, 'home');
+    const d = JSON.parse(s.data.get(SAVE_KEY)!);
+    s.data.set(SAVE_KEY, JSON.stringify({ ...d, layout: LAYOUT - 1 }));
+    const back = loadSave(s)!;
+    expect(back.state.coralColour('coral-1', 'sky')).toBe('sky');
+    expect(back.state.glowColour).toBe('amber');
+  });
+
+  test('odd cosmetics or coral colours make the save unreadable', () => {
+    for (const bad of [{ cosmetics: { unlocked: ['gold'], equipped: { glow: 'gold' } } }, { corals: { 'coral-1': 'teal' } }, { cosmetics: null }]) {
+      const s = memory();
+      writeSave(s, played(), 'home');
+      const d = JSON.parse(s.data.get(SAVE_KEY)!);
+      s.data.set(SAVE_KEY, JSON.stringify({ ...d, state: { ...d.state, ...bad } }));
+      expect(loadSave(s)).toBeNull();
+    }
   });
 });

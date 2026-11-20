@@ -30,6 +30,8 @@ export interface StarfishOptions {
    * seem stuck to the edge of the screen.
    */
   awayFromBounds?: number;
+  /** Only at or above this height (the reef: not down its hole). */
+  minY?: number;
 }
 
 /**
@@ -67,6 +69,7 @@ export function placeStarfish(f: Fields, seed: number, zone: string, o: Starfish
       const x = f.cx(ix) - (nx / n) * SINK;
       const y = f.cy(iy) - (ny / n) * SINK;
       const m = o.awayFromBounds ?? 0;
+      if (o.minY !== undefined && y < o.minY) continue;
       if (m > 0 && (x < f.minX + m || x > f.minX + f.cols * CELL - m || y < f.minY + m || y > f.minY + f.rows * CELL - m)) continue;
       if (f.distanceToWideReach(x, y, PLANT_REACH) === Infinity) continue;
       candidates.push({ zone, x, y, rot: Math.atan2(-nx / n, ny / n) });

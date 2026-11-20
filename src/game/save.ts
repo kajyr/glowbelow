@@ -1,13 +1,14 @@
-import { STAMP_NAMES, WorldState, type StampName, type WorldStateData } from './worldState';
+import { DEFAULT_COSMETICS, STAMP_NAMES, validCorals, validCosmetics, WorldState, type StampName, type WorldStateData } from './worldState';
 
 /** Where progress lives in the browser. Settings (mute, volumes) have their own keys. */
 export const SAVE_KEY = 'glowbelow.save';
-/** The save format. */
-export const SAVE_VERSION = 1;
+/** The save format: 2 from iteration 6 (coral colours, cosmetics). */
+export const SAVE_VERSION = 2;
 /**
  * The world layout this game generates. Bump it whenever a change alters
  * what the generator makes for a seed: older saves then keep friends,
- * starfish and dash, but drop lit things, whose ids may now mean something else.
+ * starfish, dash and glow colours, but drop lit things and coral colours,
+ * whose ids may now mean something else.
  */
 export const LAYOUT = 2;
 
@@ -36,14 +37,20 @@ export interface Loaded {
 const strings = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string');
 
 /** Upgrades from each older save format, by the version it upgrades from. */
-const UPGRADES: Record<number, (d: Record<string, unknown>) => Record<string, unknown>> = {};
+const UPGRADES: Record<number, (d: Record<string, unknown>) => Record<string, unknown>> = {
+  // Before the reef: its corals start in their first colours; only teal is unlocked and worn.
+  1: (d) => {
+    const state = d.state && typeof d.state === 'object' ? { ...(d.state as Record<string, unknown>), version: 2, corals: {}, cosmetics: DEFAULT_COSMETICS } : d.state;
+    return { ...d, version: 2, state };
+  },
+};
 
 /** Checks the shape of a save's state; anything odd means the save is unreadable. */
 function validState(s: unknown): s is WorldStateData {
   if (!s || typeof s !== 'object') return false;
   const d = s as Record<string, unknown>;
   return (
-    d.version === 1 &&
+    d.version === 2 &&
     typeof d.seed === 'number' &&
     Number.isFinite(d.seed) &&
     strings(d.lit) &&
@@ -52,7 +59,9 @@ function validState(s: unknown): s is WorldStateData {
     strings(d.swarm) &&
     typeof d.dash === 'boolean' &&
     strings(d.starfish) &&
-    (d.viewed === undefined || strings(d.viewed))
+    (d.viewed === undefined || strings(d.viewed)) &&
+    validCorals(d.corals) &&
+    validCosmetics(d.cosmetics)
   );
 }
 
@@ -82,8 +91,8 @@ export function loadSave(storage: SaveStorage | null): Loaded | null {
   }
   if (d.version !== SAVE_VERSION || typeof d.layout !== 'number' || typeof d.zone !== 'string' || !validState(d.state)) return null;
   const relayout = d.layout !== LAYOUT;
-  // A different layout keeps what does not depend on where things are.
-  const state: WorldStateData = relayout ? { ...d.state, lit: [] } : d.state;
+  // A different layout keeps what does not depend on where things are (glow colours do not).
+  const state: WorldStateData = relayout ? { ...d.state, lit: [], corals: {} } : d.state;
   return { state: WorldState.fromJSON(state), zone: d.zone, relayout };
 }
 

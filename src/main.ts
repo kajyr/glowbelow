@@ -6,12 +6,14 @@ import { Dash, dashDirection } from './game/dash';
 import { collide } from './game/collision';
 import { DumboBrain, dumboTargets } from './game/dumboBrain';
 import { GlowMeter } from './game/glowMeter';
-import { brighten, mix, moodColor, twilightness, WHALE_FALL_WATER, whaleFallness, worldMood } from './game/mood';
+import { brighten, mix, moodColor, reefness, twilightness, WHALE_FALL_WATER, whaleFallness, worldMood } from './game/mood';
 import { LIGHTABLE, type GlowTarget } from './game/glowTargets';
 import { Jelly } from './game/jelly';
 import { Hints, type InputKind } from './game/hints';
 import { PulseSystem } from './game/pulse';
-import { shaftPush } from './game/shaft';
+import { shaftPush, surfacePush, type Gate } from './game/shaft';
+import { CoralTouch, coralId } from './game/corals';
+import { CORAL_COLOURS } from './game/colours';
 import { SparkleField } from './game/sparkleField';
 import { steer, type Body, type SteerInput } from './game/steering';
 import { fireflyGroupId, Swarm } from './game/swarm';
@@ -32,6 +34,8 @@ import { whaleFallSpots } from './levels/whaleFall';
 import { SPINE_Y } from './levels/skeleton';
 import { JellyFreeArea } from './levels/jellyArea';
 import { buildLevel, sparkleBounds } from './levels/level';
+import { placedCircles } from './levels/pieces';
+import { coralTop } from './levels/sunlitReef';
 import { CameraRig } from './render/cameraRig';
 import { colliderOverlay, reachOverlay } from './render/debug';
 import { DumboView } from './render/dumboView';
@@ -53,6 +57,8 @@ import { ribId, starfishIds } from './levels/ids';
 import { SkeletonView } from './render/skeletonView';
 import { GiantSquidView } from './render/giantSquidView';
 import { FishView } from './render/fishView';
+import { CoralsView } from './render/coralsView';
+import { ReefView } from './render/reefView';
 import { zoneAt } from './levels/world';
 import { Hud } from './ui/hud';
 import { STICKER_DUMBO, STICKER_FIREFLY, STICKER_NAUTILUS } from './ui/icons';
@@ -150,6 +156,21 @@ async function boot() {
   scene.add(giantView.root);
   const fishView = new FishView(models, level.fishSchools ?? []);
   scene.add(fishView.group);
+  // The Sunlit reef: its coral garden (each coral's colour lives in the world state) and its light.
+  const reefZone = gameWorld.map.zones.find((z) => z.name === 'sunlit-reef');
+  if (!reefZone) throw new Error('the world has no sunlit reef');
+  const reefRect = reefZone.rect;
+  const coralSpots = level.corals ?? [];
+  const coralIds = coralSpots.map((_c, i) => coralId(i));
+  const coralIndex = new Map(coralIds.map((id, i) => [id, i]));
+  const coralTouch = new CoralTouch(coralSpots.map((c, i) => ({ id: coralIds[i], circles: placedCircles(c), first: c.colour, top: coralTop(c) })));
+  const coralsView = new CoralsView(models, coralSpots, (i) => worldState.coralColour(coralIds[i], coralSpots[i].colour), lights);
+  scene.add(coralsView.group);
+  const reefView = new ReefView(reefRect);
+  scene.add(reefView.group);
+  // Twilight's top passage lets the squid down from the reef, never up into it.
+  const gate: Gate = { fromAbove: false };
+  const surface = { x0: reefRect.minX, x1: reefRect.maxX, y: reefRect.maxY };
   const field = new SparkleField({
     // Sparkles drift in each zone's water, never in the rock between them.
     bounds: [sparkleBounds(zone.layout.level), ...gameWorld.map.zones.filter((z) => z.name !== 'home').map((z) => ({ minX: z.rect.minX + 1, maxX: z.rect.maxX - 1, minY: z.rect.minY + 1, maxY: z.rect.maxY - 5 }))],
@@ -174,7 +195,8 @@ async function boot() {
   // Water colour by height: home's navy up to Twilight's lavender.
   const homeTop = gameWorld.map.zones.find((z) => z.name === 'twilight')!.rect.minY;
   const homeLeft = gameWorld.map.zones.find((z) => z.name === 'home')!.rect.minX;
-  const moodStops = worldMood(homeTop, gameWorld.map.bounds.maxY);
+  const reefFloor = reefRect.minY;
+  const moodStops = worldMood(homeTop, reefFloor, reefRect.maxY);
   const water = new THREE.Color();
   scene.background = water;
   let overview = false;
@@ -247,6 +269,7 @@ async function boot() {
     { zone: 'home', tint: '#0b2150', ids: starfish.idsIn('home') },
     { zone: 'twilight', tint: '#3b3f8f', ids: starfish.idsIn('twilight') },
     { zone: 'whale-fall', tint: '#1f4a73', ids: starfish.idsIn('whale-fall') },
+    { zone: 'sunlit-reef', tint: '#2f9cc4', ids: starfish.idsIn('sunlit-reef') },
   ]);
   // Inside another site's frame (itch.io), the browser may block storage: tell the grown-ups.
   const framed = (() => {
@@ -465,6 +488,15 @@ async function boot() {
     setTimeout(() => hud.stickerFly(from, stampArt(name)), 500);
   }
 
+  /** A coral touched or reached by a glow: it steps to its next colour and chimes. */
+  function touchCoral(id: string, chime = true) {
+    const i = coralIndex.get(id);
+    if (i === undefined) return;
+    const colour = worldState.stepCoral(id, coralSpots[i].colour);
+    coralsView.setColour(i, colour);
+    if (chime) synth.coral(CORAL_COLOURS.indexOf(colour));
+  }
+
   function discoverDumbo() {
     if (!brain.discover()) return;
     worldState.find('dumbo');
@@ -486,6 +518,7 @@ async function boot() {
     ...swarm.groups.map((g, i): GlowTarget => ({ id: fireflyGroupId(i), kind: 'firefly', x: g.x, y: g.y, r: TUNING.firefly.groupRadius })),
     ...(level.starfish ?? []).map((st, i): GlowTarget => ({ id: starIds[i], kind: 'starfish', x: st.x, y: st.y, r: 0.6 })),
     ...wfSpots.ribs.map((r, i): GlowTarget => ({ id: ribIds[i], kind: 'rib', x: r.x, y: r.y, r: r.r })),
+    ...coralSpots.map((c, i): GlowTarget => ({ id: coralIds[i], kind: 'coral', ...coralTop(c), r: 0.5 })),
   ];
   // The giant squid moves once awake; its target follows it (see logic).
   const giantTarget: GlowTarget = { id: 'giant-squid', kind: 'giant', x: giant.pos.x, y: giant.pos.y, r: 3 };
@@ -546,8 +579,13 @@ async function boot() {
       if (ev.dash && worldState.dashUnlocked && !bump.locked && dash.trigger(body, dashDirection(body, steerIn, squidView.facing))) hud.dashFlash();
       steer(body, steerIn, dt, dash.params());
       contact = collide(body, TUNING.squid.radius, built.world, dt);
-      shaftPush(body, level.shaft, dt);
+      shaftPush(body, level.shaft, dt, gate);
+      surfacePush(body, surface, dt);
     }
+    // Corals: swimming into one steps it to its next colour.
+    for (const id of coralTouch.update(body.pos, TUNING.squid.radius)) touchCoral(id);
+    // Sunglasses in the bright reef.
+    squidView.setSunglasses(zoneHere === 'sunlit-reef');
     // Swimming along the lit ribs from tail to head sings the whale song again.
     if (whaleSong.update(dt, body.pos, skeletonView.allLit)) singWhaleSong();
     for (const e of rings.update(dt, body)) {
@@ -605,6 +643,7 @@ async function boot() {
     }
     pulses.update(dt);
     const ribsReached: GlowTarget[] = [];
+    const coralsReached: string[] = [];
     for (const { id, kind: pulseKind } of pulses.sweepHits(glowTargets)) {
       const kind = glowById.get(id)?.kind;
       if (kind === 'cave') discoverDumbo();
@@ -613,6 +652,7 @@ async function boot() {
       else if (kind === 'firefly') joinFireflies(fireflyGroupOf.get(id) ?? -1);
       else if (kind === 'starfish') touchStarfish(id);
       else if (kind === 'rib') ribsReached.push(glowById.get(id)!);
+      else if (kind === 'coral') coralsReached.push(id);
       else if (kind === 'giant') {
         const e = giant.pulse(pulseKind);
         if (e?.kind === 'stir') synth.giantStir();
@@ -621,6 +661,8 @@ async function boot() {
     }
     // Several ribs reached at once ring nearest first, in a quick run.
     ribOrder(ribsReached, body.pos).forEach((id, i) => (i === 0 ? touchRib(id) : setTimeout(() => touchRib(id), i * 90)));
+    // Corals reached by a glow all change at once; one chime for the lot.
+    coralsReached.forEach((id, i) => touchCoral(id, i === 0));
 
     const dumboEvent = brain.update(
       dt,
@@ -675,7 +717,9 @@ async function boot() {
     const wf = whaleFallness(homeLeft, body.pos.x);
     const ribsLit = skeletonView.litCount / skeletonView.ribs.length;
     const homeOrTwilight = plantsLit + (lanternsLit - plantsLit) * tw;
-    const lit = homeOrTwilight + (ribsLit - homeOrTwilight) * wf;
+    const rf = reefness(reefFloor, body.pos.y);
+    // The reef is always bright: nothing there needs lighting up.
+    const lit = homeOrTwilight + (ribsLit - homeOrTwilight) * wf + (1 - homeOrTwilight) * rf;
     lights.begin();
     lights.add(body.pos.x, body.pos.y, 1.2, 2.8, SQUID_LIGHT, 0.2 + 0.4 * meter.value, 0, true);
     plants.update(frameDt, lights);
@@ -685,9 +729,12 @@ async function boot() {
     skeletonView.update(frameDt, lights);
     giantView.update(frameDt, giant, body.pos, lights);
     effects.update(frameDt, stage.camera, pulses.active, lights);
-    lights.end(0.24 + 0.46 * lit + 0.06 * tw, rig.view());
+    reefView.update(frameDt, lights);
+    lights.end(0.24 + 0.46 * lit + 0.06 * tw + 0.3 * rf, rig.view());
     const camWf = whaleFallness(homeLeft, stage.camera.position.x);
-    const wc = mix(brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y)), brighten(WHALE_FALL_WATER, ribsLit * 0.45), camWf);
+    const camRf = reefness(reefFloor, stage.camera.position.y);
+    const wc = mix(brighten(moodColor(moodStops, stage.camera.position.y), lanternsLit * twilightness(homeTop, stage.camera.position.y) * (1 - camRf)), brighten(WHALE_FALL_WATER, ribsLit * 0.45), camWf);
+    stage.setBrightWater(camRf);
     water.setRGB(wc[0], wc[1], wc[2], THREE.SRGBColorSpace);
     fog.color.copy(water);
 
@@ -705,6 +752,7 @@ async function boot() {
     if (nautilus && nautilusView) nautilusView.update(frameDt, nautilus);
     ringsView.update(frameDt);
     fishView.update(frameDt);
+    coralsView.update(frameDt);
     sparkles.update(frameDt);
 
     // The camera eases in from the title close-up.
@@ -728,6 +776,7 @@ async function boot() {
     synth.setBrightness(lit);
     synth.setZone(tw);
     synth.setWhaleFall(wf);
+    synth.setReef(rf);
 
     stage.render(frameDt);
 
@@ -761,7 +810,7 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish, giant, skeletonView, whaleSong } });
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish, giant, skeletonView, whaleSong, coralsView } });
 }
 
 boot().catch((err) => {

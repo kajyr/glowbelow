@@ -9,6 +9,8 @@ import { generateValidZone } from './generateValid';
 import { placedCircles } from './pieces';
 import { WHALE_FALL, whaleFallSpots } from './whaleFall';
 import { MIDNIGHT_HOME } from './zoneRecipe';
+import { SUNLIT_REEF } from './sunlitReef';
+import { Dash } from '../game/dash';
 import { Fields } from './clearance';
 import { buildLevel } from './level';
 import { zoneAt } from './world';
@@ -131,7 +133,7 @@ describe('the assembled world', () => {
       const end = path[path.length - 1];
       expect(Math.hypot(path[0].x - arm.x, path[0].y - arm.y)).toBeLessThan(1.5);
       expect(Math.hypot(end.x - w.landing.x, end.y - w.landing.y)).toBeLessThan(1.5);
-      expect(zoneAt(w.map, end)).toBe('twilight');
+      expect(zoneAt(w.map, end)).toBe('sunlit-reef');
       const world = buildLevel(w.level).world;
       for (const p of path) for (const c of world.circles) expect(Math.hypot(p.x - c.x, p.y - c.y)).toBeGreaterThan(c.r + R);
     }
@@ -163,6 +165,77 @@ describe('the assembled world', () => {
         }
         expect((body.pos.x - edge) * side).toBeLessThan(0);
       }
+    }
+  });
+
+  test('the Sunlit reef sits on top of Twilight, its hole over Twilight\'s top passage', () => {
+    for (const s of [24, 25, 26]) {
+      const w = generateWorld(s);
+      const tw = w.map.zones.find((z) => z.name === 'twilight')!;
+      const reef = w.map.zones.find((z) => z.name === 'sunlit-reef')!;
+      expect(reef.rect.minY).toBeCloseTo(tw.rect.maxY, 5);
+      expect(reef.rect.maxY - reef.rect.minY).toBe(SUNLIT_REEF.height);
+      expect((reef.rect.minX + reef.rect.maxX) / 2).toBeCloseTo((w.level.shaft.x0 + w.level.shaft.x1) / 2, 5);
+      expect(zoneAt(w.map, w.landing)).toBe('sunlit-reef');
+      expect(zoneAt(w.map, w.entries['sunlit-reef'])).toBe('sunlit-reef');
+    }
+  });
+
+  test('swimming up Twilight\'s top passage, even dashing, the squid is held below the reef', () => {
+    for (const s of [27, 28, 29]) {
+      const w = generateWorld(s);
+      const world = buildLevel(w.level).world;
+      const shaft = w.level.shaft;
+      const body: Body = { pos: { x: (shaft.x0 + shaft.x1) / 2, y: shaft.softFrom - 6 }, vel: { x: 0, y: 0 } };
+      const gate = { fromAbove: false };
+      const dash = new Dash();
+      for (let t = 0; t < 8; t += DT) {
+        dash.update(DT);
+        dash.trigger(body, { x: 0, y: 1 });
+        steer(body, { kind: 'direction', x: 0, y: 1 }, DT, dash.params());
+        collide(body, R, world, DT);
+        shaftPush(body, shaft, DT, gate);
+        expect(body.pos.y + R).toBeLessThanOrEqual(shaft.lid! + 1e-6);
+      }
+      expect(zoneAt(w.map, body.pos)).toBe('twilight');
+    }
+  });
+
+  test('from the reef, the squid swims down through the hole into Twilight, and the lid holds it there', () => {
+    for (const s of [30, 31, 32]) {
+      const w = generateWorld(s);
+      const world = buildLevel(w.level).world;
+      const shaft = w.level.shaft;
+      const body: Body = { pos: { x: (shaft.x0 + shaft.x1) / 2, y: shaft.lid! + 4 }, vel: { x: 0, y: 0 } };
+      const gate = { fromAbove: false };
+      for (let t = 0; t < 4; t += DT) {
+        steer(body, { kind: 'direction', x: 0, y: -1 }, DT);
+        collide(body, R, world, DT);
+        shaftPush(body, shaft, DT, gate);
+      }
+      expect(zoneAt(w.map, body.pos)).toBe('twilight');
+      // Turning back up, it is held below the lid again.
+      for (let t = 0; t < 4; t += DT) {
+        steer(body, { kind: 'direction', x: 0, y: 1 }, DT);
+        collide(body, R, world, DT);
+        shaftPush(body, shaft, DT, gate);
+      }
+      expect(body.pos.y + R).toBeLessThanOrEqual(shaft.lid! + 1e-6);
+    }
+  });
+
+  test('the reef\'s seabed and sides are solid', () => {
+    const w = generateWorld(33);
+    const world = buildLevel(w.level).world;
+    const reef = w.map.zones.find((z) => z.name === 'sunlit-reef')!;
+    // Down onto the seabed away from the hole, and out past each side.
+    for (const [x, dx, dy] of [[reef.rect.minX + 4, 0, -1], [reef.rect.minX + 3, -1, 0], [reef.rect.maxX - 3, 1, 0]] as const) {
+      const body: Body = { pos: { x, y: reef.rect.minY + 5 }, vel: { x: 0, y: 0 } };
+      for (let t = 0; t < 4; t += DT) {
+        steer(body, { kind: 'direction', x: dx, y: dy }, DT);
+        collide(body, R, world, DT);
+      }
+      expect(zoneAt(w.map, body.pos)).toBe('sunlit-reef');
     }
   });
 });

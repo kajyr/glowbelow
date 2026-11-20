@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { brighten, mix, moodColor, twilightness, whaleFallness, worldMood } from './mood';
+import { brighten, mix, moodColor, reefness, twilightness, whaleFallness, worldMood } from './mood';
 
 const stops = worldMood(44.5, 154.5);
 const lum = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
@@ -47,5 +47,32 @@ describe('whale fall mood', () => {
 
   test('mixing water colours', () => {
     expect(mix([0, 0, 0], [1, 0.5, 0.2], 0.5)).toEqual([0.5, 0.25, 0.1]);
+  });
+});
+
+describe('sunlit reef mood', () => {
+  const withReef = worldMood(44.5, 154.5, 176.5);
+
+  test('the reef is the brightest water of all, palest under the surface', () => {
+    const twilightTop = lum(moodColor(withReef, 150));
+    const reefFloor = lum(moodColor(withReef, 160));
+    const surface = lum(moodColor(withReef, 176));
+    expect(reefFloor).toBeGreaterThan(twilightTop);
+    expect(surface).toBeGreaterThan(reefFloor);
+  });
+
+  test('it blends through the passage with no jump', () => {
+    let prev = moodColor(withReef, 145);
+    for (let y = 145; y < 165; y += 0.25) {
+      const c = moodColor(withReef, y);
+      expect(Math.max(...c.map((v, i) => Math.abs(v - prev[i])))).toBeLessThan(0.02);
+      prev = c;
+    }
+  });
+
+  test('reefness is 0 in Twilight and 1 in the reef', () => {
+    expect(reefness(154.5, 140)).toBe(0);
+    expect(reefness(154.5, 154.5)).toBeCloseTo(0.5);
+    expect(reefness(154.5, 165)).toBe(1);
   });
 });

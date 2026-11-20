@@ -26,6 +26,18 @@ import starfishUrl from '../../models/starfish.glb?url';
 import skeletonUrl from '../../models/whale-skeleton.glb?url';
 import smallFishUrl from '../../models/small-fish.glb?url';
 import giantSquidUrl from '../../models/giant-squid.glb?url';
+import cuttlefishUrl from '../../models/cuttlefish.glb?url';
+import sunglassesUrl from '../../models/sunglasses.glb?url';
+import coralBranch1Url from '../../models/coral-branch-1.glb?url';
+import coralBranch2Url from '../../models/coral-branch-2.glb?url';
+import coralFan1Url from '../../models/coral-fan-1.glb?url';
+import coralFan2Url from '../../models/coral-fan-2.glb?url';
+import coralBrain1Url from '../../models/coral-brain-1.glb?url';
+import coralBrain2Url from '../../models/coral-brain-2.glb?url';
+import coralTube1Url from '../../models/coral-tube-1.glb?url';
+import coralTube2Url from '../../models/coral-tube-2.glb?url';
+import coralMushroom1Url from '../../models/coral-mushroom-1.glb?url';
+import coralMushroom2Url from '../../models/coral-mushroom-2.glb?url';
 
 /** Every model the game uses, imported from models/ so Vite gives each a relative URL. */
 export const MODEL_URLS = {
@@ -54,6 +66,18 @@ export const MODEL_URLS = {
   'whale-skeleton': skeletonUrl,
   'small-fish': smallFishUrl,
   'giant-squid': giantSquidUrl,
+  cuttlefish: cuttlefishUrl,
+  sunglasses: sunglassesUrl,
+  'coral-branch-1': coralBranch1Url,
+  'coral-branch-2': coralBranch2Url,
+  'coral-fan-1': coralFan1Url,
+  'coral-fan-2': coralFan2Url,
+  'coral-brain-1': coralBrain1Url,
+  'coral-brain-2': coralBrain2Url,
+  'coral-tube-1': coralTube1Url,
+  'coral-tube-2': coralTube2Url,
+  'coral-mushroom-1': coralMushroom1Url,
+  'coral-mushroom-2': coralMushroom2Url,
 } as const;
 
 export type ModelName = keyof typeof MODEL_URLS;

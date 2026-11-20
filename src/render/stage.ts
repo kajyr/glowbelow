@@ -65,6 +65,16 @@ export class Stage {
     this.resize();
   }
 
+  /**
+   * How bright the water around the camera is (0 dark … 1 the sunlit reef):
+   * bright water would bloom, so the bloom only catches brighter things there.
+   */
+  setBrightWater(amount: number): void {
+    const k = Math.min(1, Math.max(0, amount));
+    this.bloom.threshold = 0.8 + 0.15 * k;
+    this.bloom.strength = 0.6 - 0.25 * k;
+  }
+
   resize(): void {
     const w = Math.max(1, this.container.clientWidth);
     const h = Math.max(1, this.container.clientHeight);
