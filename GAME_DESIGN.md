@@ -246,7 +246,7 @@ Each friend: found once, added to the album, gives one simple helper ability.
 | **Firefly squid** (a swarm) | Twilight | Giggly group | Form a glowing arrow / trail to something fun | One tiny model, instanced many times |
 | **Nautilus** | Twilight walls | Old, slow, wise | Elevator: ride its shell up/down between zones | Rigid shell, almost no animation |
 | **Cuttlefish** | Reef | Show-off, changes color | Color-matching mini-game; paints your squid new colors | Color change done in code, not in the model |
-| **Giant squid** | Whale fall | Enormous, gentle | Ride on its arm; it lifts you all the way up to the reef | The one big "wow" model |
+| **Giant squid** | Whale fall | Enormous, gentle | Ride on its arm; it lifts you up to the next place you haven't been: Twilight first, then the reef | The one big "wow" model |
 
 | Dumbo octopus | Firefly squid | Nautilus | Cuttlefish | Giant squid |
 |---|---|---|---|---|
@@ -260,7 +260,7 @@ Each friend: found once, added to the album, gives one simple helper ability.
 | **Firefly squid** | Five small groups scattered in Twilight | Glow near a group: it joins your swarm | The swarm trails behind you; more groups make bigger shapes (arrow, star, heart) |
 | **Nautilus** | Cruising slowly up and down the Twilight shaft | Touch the shell: the squid sits on it and rides | Hop on and off any time; a free lift between zones |
 | **Cuttlefish** | A coral on the reef that flickers the wrong color | Glow reveals it; it shows a color, you touch a coral of that color, three rounds, no way to fail | Paints your glow that color; visit again to change it |
-| **Giant squid** | Asleep behind the whale skull | A full-meter glow wakes it; it offers an arm | Ride the arm up to the top of the world; the only way into the reef. Swim back down by yourself |
+| **Giant squid** | Asleep behind the whale skull | A full-meter glow wakes it; it offers an arm | Ride the arm up to the first zone you haven't reached: Twilight, then the reef; the only way into the reef. Swim back down by yourself |
 
 - Only dumbo is needed for the playable demo; the other four are decided when we get to them
 
@@ -318,7 +318,7 @@ World shape: Midnight home at the bottom, Whale fall beside it to the left, Twil
 | Zone | Size (screens) | Landmark | Things to light up | Friend spot | Ways out |
 |---|---|---|---|---|---|
 | **Midnight home** | 3 wide × 2 tall | Rock arch and a small cave | ~20 glow plants on the seabed | Dumbo in the cave | Left to Whale fall; shaft up to Twilight |
-| **Whale fall** | 3 wide × 2 tall | A whale skeleton to swim through | Ribs that play a note each when glowed, like a xylophone | Giant squid asleep behind the skull | Right to home; giant squid lift to the reef |
+| **Whale fall** | 3 wide × 2 tall | A whale skeleton to swim through | Ribs that play a note each when glowed, like a xylophone | Giant squid asleep behind the skull | Right to home; giant squid lift to Twilight, then the reef |
 | **Twilight** | 2 wide × 4 tall | The open blue shaft itself | Jellyfish lanterns floating at different heights | Firefly groups scattered around; nautilus cruising up and down | Down to home; up to the reef |
 | **Sunlit reef** | 4 wide × 2 tall | Coral garden under a shimmering surface | Corals that change color when touched | Cuttlefish disguised as coral | Down to Twilight |
 

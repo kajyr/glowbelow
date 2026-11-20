@@ -125,10 +125,24 @@ describe('the assembled world', () => {
     }
   }, 60_000);
 
+  test('its first stop goes from its arm to just inside the bottom of Twilight, in open water', () => {
+    for (const s of [18, 19, 20]) {
+      const w = generateWorld(s);
+      const path = ridePath(w, 'twilight');
+      const arm = whaleFallSpots(w.level.skeleton!).arm;
+      const end = path[path.length - 1];
+      expect(Math.hypot(path[0].x - arm.x, path[0].y - arm.y)).toBeLessThan(1.5);
+      expect(Math.hypot(end.x - w.entries.twilight.x, end.y - w.entries.twilight.y)).toBeLessThan(1.5);
+      expect(zoneAt(w.map, end)).toBe('twilight');
+      const world = buildLevel(w.level).world;
+      for (const p of path) for (const c of world.circles) expect(Math.hypot(p.x - c.x, p.y - c.y)).toBeGreaterThan(c.r + R);
+    }
+  });
+
   test('the giant squid\'s ride goes from its arm to the top of the world, in open water', () => {
     for (const s of [18, 19, 20]) {
       const w = generateWorld(s);
-      const path = ridePath(w);
+      const path = ridePath(w, 'reef');
       const arm = whaleFallSpots(w.level.skeleton!).arm;
       const end = path[path.length - 1];
       expect(Math.hypot(path[0].x - arm.x, path[0].y - arm.y)).toBeLessThan(1.5);

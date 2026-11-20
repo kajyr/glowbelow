@@ -14,7 +14,7 @@ Swim, catch drifting sparkles and give a pulse of light: sea plants bloom, jelly
 
 You are not alone down here. A dumbo octopus flaps along beside you, a phantom jelly drifts through the dark, a swarm of firefly squid follows you and makes shapes, and a very old nautilus cruises up and down the Twilight waters leaving sparkles behind. Every friend you find goes into a sticker album. Your progress is saved, so you can pick up where you left off.
 
-Beside your home lies Whale fall, where an old whale skeleton rests on the seabed. Glow at its ribs and they play notes like a xylophone; light them all for the whale song. Behind the skull sleeps a giant squid: wake it with a big glow and ride its arm all the way up to the top of the world.
+Beside your home lies Whale fall, where an old whale skeleton rests on the seabed. Glow at its ribs and they play notes like a xylophone; light them all for the whale song. Behind the skull sleeps a giant squid: wake it with a big glow and ride its arm up to the next place you haven't been, all the way to the top of the world.
 
 ![Whale fall: the giant squid holds out its arm for a ride](devlog/whale-fall-giant-squid.jpg)
 

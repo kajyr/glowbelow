@@ -1,4 +1,5 @@
 import type { Block } from '../game/collision';
+import type { RideStop } from '../game/giantSquid';
 import { makeRng } from '../game/rng';
 import type { Vec2 } from '../game/vec';
 import { Fields } from './clearance';
@@ -186,14 +187,15 @@ export function generateWorld(seed: number): GameWorld {
 
 /**
  * The way the giant squid carries the squid: from the tip of its offered
- * arm in Whale fall, through home and up to the top of the world, in open
- * water all the way (the squid's own size has room everywhere along it).
- * Built once, when first needed: it searches the whole world.
+ * arm in Whale fall, through home and up to the stop: just inside the
+ * bottom of Twilight, or the reef's landing at the top of the world. In
+ * open water all the way (the squid's own size has room everywhere along
+ * it). Built once per stop, when first needed: it searches the whole world.
  */
-export function ridePath(w: GameWorld): Vec2[] {
+export function ridePath(w: GameWorld, stop: RideStop): Vec2[] {
   const from = whaleFallSpots(w.level.skeleton!).arm;
   const fields = new Fields(buildLevel(w.level).world, from);
-  const path = findPath(fields, from, w.landing);
+  const path = findPath(fields, from, stop === 'twilight' ? w.entries.twilight : w.landing);
   if (!path) throw new Error('no way up from the giant squid');
   return resample(simplify(fields, path), 1);
 }

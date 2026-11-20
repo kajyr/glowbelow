@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { GiantSquid, type GiantEvent } from './giantSquid';
+import { GiantSquid, rideStop, type GiantEvent, type RideStop } from './giantSquid';
 
 const DT = 1 / 60;
 const spots = { sleep: { x: 22.5, y: 3.2 }, hover: { x: 22, y: 13.5 }, arm: { x: 17, y: 11 } };
@@ -89,5 +89,44 @@ describe('giant squid', () => {
     expect(asked).toBe(0);
     run(g, DT, () => spots.arm);
     expect(asked).toBe(1);
+  });
+
+  test('the stop is Twilight until it has been reached, then the reef', () => {
+    expect(rideStop(false)).toBe('twilight');
+    expect(rideStop(true)).toBe('reef');
+  });
+
+  test('each ride goes to the stop picked at boarding, and the way home retraces it', () => {
+    const paths: Record<RideStop, { x: number; y: number }[]> = {
+      twilight: [{ x: 17, y: 11 }, { x: 40, y: 11 }, { x: 40, y: 30 }],
+      reef: path,
+    };
+    const asked: RideStop[] = [];
+    let reached = false;
+    const g = new GiantSquid(spots, (stop) => (asked.push(stop), paths[stop]), () => rideStop(reached));
+    g.restore();
+    const ride = () => {
+      run(g, DT, () => spots.arm);
+      let top = -Infinity;
+      let dropAt = { x: 0, y: 0 };
+      for (let t = 0; t < 40; t += DT) {
+        g.update(DT, g.riding ? g.armTip : far, false);
+        if (g.riding) {
+          top = Math.max(top, g.armTip.y);
+          dropAt = { ...g.armTip };
+        }
+        // On the way home it never goes above where it set the squid down.
+        if (g.state === 'returning') expect(g.pos.y).toBeLessThan(top + 9);
+      }
+      expect(g.state).toBe('awake');
+      return dropAt;
+    };
+    expect(ride().y).toBeCloseTo(30, 0);
+    // Reached Twilight (by the ride, or swimming): the next ride goes on to the reef.
+    reached = true;
+    expect(ride().y).toBeCloseTo(60, 0);
+    expect(ride().y).toBeCloseTo(60, 0);
+    // Each stop's path is asked for once.
+    expect(asked).toEqual(['twilight', 'reef']);
   });
 });

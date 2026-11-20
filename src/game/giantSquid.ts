@@ -3,6 +3,12 @@ import type { PulseKind } from './pulse';
 import { TUNING } from './tuning';
 import type { Vec2 } from './vec';
 
+/** Where a ride sets the squid down: the first zone on the way up it has not reached yet. */
+export type RideStop = 'twilight' | 'reef';
+
+/** Twilight until the squid has reached it once, then the Sunlit reef (the last stop). */
+export const rideStop = (twilightReached: boolean): RideStop => (twilightReached ? 'reef' : 'twilight');
+
 export type GiantState = 'asleep' | 'waking' | 'awake' | 'carrying' | 'returning';
 
 export type GiantEvent =
@@ -14,7 +20,7 @@ export type GiantEvent =
   | { kind: 'board' }
   /** The player steered away during the ride. */
   | { kind: 'hop' }
-  /** The ride reached the top of the world. */
+  /** The ride reached its stop. */
   | { kind: 'drop' }
   /** Back at its spot in Whale fall. */
   | { kind: 'home' };
@@ -32,9 +38,10 @@ const ease = (t: number) => t * t * (3 - 2 * t);
  * The giant squid: asleep behind the whale skull until a big pulse wakes it;
  * small pulses only make it stir. Awake, it hovers above the skull offering
  * an arm. Touching the arm's tip boards it, and it carries the squid along
- * the ride path to the top of the world (a carrier: steering hops off), then
- * sinks back to its spot. It has no collider: it never blocks the squid.
- * The ride path is asked for only when first needed (it searches the world).
+ * the ride path to the stop (a carrier: steering hops off), then sinks back
+ * to its spot. The stop is picked at boarding: the first zone on the way up
+ * the squid has not reached. It has no collider: it never blocks the squid.
+ * Each stop's path is asked for only when first needed (it searches the world).
  */
 export class GiantSquid {
   state: GiantState = 'asleep';
@@ -48,13 +55,16 @@ export class GiantSquid {
   awake = 0;
   private timer = 0;
   private carrier: Carrier | null = null;
+  /** The stop the current carrier goes to. */
+  private stop: RideStop | null = null;
   /** The squid has swum away from the arm since the last ride, so touching it boards again. */
   private armed = true;
   private readonly restFacing: number;
 
   constructor(
     private readonly spots: GiantSpots,
-    private readonly ridePath: () => Vec2[],
+    private readonly ridePath: (stop: RideStop) => Vec2[],
+    private readonly nextStop: () => RideStop = () => 'reef',
   ) {
     this.pos = { ...spots.sleep };
     this.facing = this.restFacing = Math.sign(spots.arm.x - spots.hover.x) || -1;
@@ -89,9 +99,18 @@ export class GiantSquid {
     return { kind: 'wake' };
   }
 
+  /** The current ride (and the way home, which retraces it). */
   private path(): Carrier {
+    return this.carrier ?? this.pathTo(this.nextStop());
+  }
+
+  /** A carrier to the stop: the current one if it already goes there. Only called at boarding. */
+  private pathTo(stop: RideStop): Carrier {
     const G = TUNING.giant;
-    this.carrier ??= new Carrier(this.ridePath(), { speed: G.rideSpeed, ease: G.rideEase });
+    if (!this.carrier || this.stop !== stop) {
+      this.carrier = new Carrier(this.ridePath(stop), { speed: G.rideSpeed, ease: G.rideEase });
+      this.stop = stop;
+    }
     return this.carrier;
   }
 
@@ -128,7 +147,7 @@ export class GiantSquid {
         if (this.armed && d <= G.boardRadius) {
           this.state = 'carrying';
           this.armed = false;
-          this.path().board();
+          this.pathTo(this.nextStop()).board();
           return { kind: 'board' };
         }
         return null;
