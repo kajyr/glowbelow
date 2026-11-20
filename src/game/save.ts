@@ -61,7 +61,8 @@ function validState(s: unknown): s is WorldStateData {
     strings(d.starfish) &&
     (d.viewed === undefined || strings(d.viewed)) &&
     validCorals(d.corals) &&
-    validCosmetics(d.cosmetics)
+    validCosmetics(d.cosmetics) &&
+    (d.completed === undefined || typeof d.completed === 'boolean')
   );
 }
 

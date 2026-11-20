@@ -208,6 +208,19 @@ describe('save', () => {
     expect(back.state.glowColour).toBe('pink');
   });
 
+  test('a completed journey is saved, and kept across a layout change', () => {
+    const s = memory();
+    const w = played();
+    expect(w.completed).toBe(false);
+    expect(w.complete()).toBe(true);
+    expect(w.complete()).toBe(false);
+    writeSave(s, w, 'sunlit-reef');
+    expect(loadSave(s)!.state.completed).toBe(true);
+    const d = JSON.parse(s.data.get(SAVE_KEY)!);
+    s.data.set(SAVE_KEY, JSON.stringify({ ...d, layout: LAYOUT - 1 }));
+    expect(loadSave(s)!.state.completed).toBe(true);
+  });
+
   test('a save from an older layout keeps glow colours but drops coral colours', () => {
     const s = memory();
     const w = played();

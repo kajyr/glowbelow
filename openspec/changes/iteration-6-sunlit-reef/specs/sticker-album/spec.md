@@ -14,3 +14,15 @@ Beside the starfish strips, the album page SHALL show the glow-colour dots, in r
 #### Scenario: Locked colour
 - **WHEN** the player taps a dark dot
 - **THEN** the dot wiggles and nothing else changes
+
+### Requirement: Completed stamp
+When the journey is completed (the sunbeam in the Sunlit reef, as defined in `sunlit-reef`), the album SHALL open and a completed stamp SHALL thump onto its page: red ink in a double ring, a star in the middle and the word round the top, at an angle, with rough edges and patchy ink like a real rubber stamp. The stamp SHALL stay on the page every time the album is opened afterwards. The word is decoration: nothing needs reading.
+
+#### Scenario: Completing the journey
+- **WHEN** the squid swims up into the sunbeam
+- **THEN** the album opens and, a moment later, the stamp thumps down with a soft knock
+
+#### Scenario: Later
+- **WHEN** the player opens the album after completing the journey
+- **THEN** the completed stamp is on the page
+

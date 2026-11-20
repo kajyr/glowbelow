@@ -13,16 +13,16 @@ The top of the world is open: the **Sunlit reef**, a bright coral garden under t
 - **The cuttlefish**, the fifth friend. It hides as a coral that now and then flickers a colour that doesn't match. Glow at it to find it.
 - **The colour game.** Touch the cuttlefish and it glows a colour: find a coral of that colour. Three rounds, no wrong answers, no timer. If you pick another coral, the cuttlefish just wiggles, and that coral moves to its next colour.
 - **New glow colours.** Each finished game paints the squid's glow in the last colour: pink, amber, lavender, coral or sky blue. Switch back any time with the colour dots in the sticker album.
-- **The end of the journey.** Somewhere on the reef, a sunbeam pours down through the surface. Swim up into it: shooting stars fly and a card shows every starfish you've found. Close it and play on.
+- **The end of the journey.** Somewhere on the reef, a sunbeam pours down through the surface. Swim up into it: the sticker album opens and a big red "completed" stamp thumps onto the page, like a real rubber stamp. It stays there. Close the album and play on.
 - **More to find:** five new starfish, a bubble-ring chain and the cuttlefish's album page with a fun fact.
 
-![The ending: shooting stars, and a card with each zone's starfish](sunlit-reef-ending.jpg)
+![The sticker album with the red completed stamp across the page](sunlit-reef-completed.jpg)
 
 ## For grown-ups
 
 - Saved games carry on: the reef appears with its corals in their first colours and the squid's glow still teal.
 - The giant squid is the only way into the reef. If it's still asleep, the dumbo octopus points at it in Whale fall.
-- The ending takes nothing away: everything found stays found, and you can visit the surface again later.
+- The ending takes nothing away: everything found stays found, and you can keep playing to fill the album.
 - Still nothing to read and nothing to lose.
 
 ## What's next

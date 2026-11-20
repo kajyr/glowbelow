@@ -261,6 +261,25 @@ export class Synth {
     this.tone(f * 3, 'sine', now, 0.012, 0.005, 0.35);
   }
 
+  /** A rubber stamp thumping onto the album page: a soft low knock with a papery slap. */
+  stampThump(): void {
+    const ctx = this.live();
+    if (!ctx || !this.noise) return;
+    const now = ctx.currentTime;
+    const o = this.tone(140, 'sine', now, 0.22, 0.004, 0.18);
+    o.frequency.setValueAtTime(180, now);
+    o.frequency.exponentialRampToValueAtTime(70, now + 0.15);
+    const slap = ctx.createBufferSource();
+    slap.buffer = this.noise;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1400;
+    slap.connect(lp);
+    lp.connect(this.env(now, 0.08, 0.002, 0.09));
+    slap.start(now);
+    slap.stop(now + 0.15);
+  }
+
   /** The cuttlefish: three bubbly blips that bend upward, a playful hello. */
   cuttlefish(): void {
     const ctx = this.live();

@@ -44,20 +44,16 @@ The reef SHALL contain five starfish and one bubble-ring chain, behaving as defi
 - **THEN** it shows a Sunlit reef strip with five starfish icons
 
 ### Requirement: Ending in the sunbeam
-One sunbeam SHALL pour down through a gap in the reef's surface, the top of the world, well away from the cuttlefish's hiding place, shown by a warm column of light with sparkles rising up it. Swimming up into it SHALL play the ending: shooting stars cross the screen and a win card in the centre shows the starfish found, as one strip of starfish icons per zone, lit for found ones, like the album. It SHALL use no text, pause play like the album, and close on tap, Space or Escape, after which the squid is eased back down into the reef and play goes on. Nothing SHALL be reset or lost.
+One sunbeam SHALL pour down through a gap in the reef's surface, the top of the world, well away from the cuttlefish's hiding place, shown by a warm column of light with sparkles rising up it. Swimming up into it SHALL complete the journey: the sticker album opens and a completed stamp, like one from a real rubber stamp, thumps down onto its page, as defined in `sticker-album`. Closing the album SHALL let the squid sink back into the reef and play go on. Nothing SHALL be reset or lost.
 
 #### Scenario: Into the sunbeam
 - **WHEN** the squid swims up into the sunbeam
-- **THEN** shooting stars fly, the win card shows each zone's starfish, lit for found ones, and play pauses
+- **THEN** the album opens and the completed stamp thumps onto the page
 
 #### Scenario: Bumping the surface elsewhere
 - **WHEN** the squid swims up to the surface anywhere but the sunbeam
-- **THEN** it is only eased back down; the ending does not play
-
-#### Scenario: Closing the ending
-- **WHEN** the player taps the screen while the ending shows
-- **THEN** the card closes, the squid is back in the reef just below the surface, and everything found is kept
+- **THEN** it is only eased back down; the album does not open
 
 #### Scenario: Swimming up again right away
-- **WHEN** the squid swims back up into the sunbeam right after the ending closed
-- **THEN** it is only eased back down; the ending plays again only after the squid has swum well away and come back
+- **WHEN** the squid swims back up into the sunbeam right after closing the album
+- **THEN** it is only eased back down; it opens the album again only after the squid has swum well away and come back

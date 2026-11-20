@@ -39,6 +39,8 @@ export interface WorldStateData {
   /** The colour of each coral touched in the Sunlit reef, by id; the rest keep their first colour. */
   corals: Record<string, CoralColour>;
   cosmetics: Cosmetics;
+  /** The journey was completed (the sunbeam at the top): the album shows the completed stamp. */
+  completed?: boolean;
 }
 
 /** Checks the shape of saved cosmetics. */
@@ -71,6 +73,7 @@ export class WorldState {
   private readonly corals = new Map<string, CoralColour>();
   private readonly unlocked = new Set<GlowColour>(DEFAULT_COSMETICS.unlocked);
   private glow: GlowColour = DEFAULT_COSMETICS.equipped.glow;
+  private done = false;
   /** Called after anything changes (the save listens). */
   onChange: () => void = () => {};
 
@@ -178,6 +181,18 @@ export class WorldState {
     return c;
   }
 
+  get completed(): boolean {
+    return this.done;
+  }
+
+  /** The journey is completed (the album gets its stamp). Returns true the first time only. */
+  complete(): boolean {
+    if (this.done) return false;
+    this.done = true;
+    this.onChange();
+    return true;
+  }
+
   get glowColour(): GlowColour {
     return this.glow;
   }
@@ -223,6 +238,7 @@ export class WorldState {
       viewed: [...this.viewed].sort(),
       corals,
       cosmetics: { unlocked, equipped: { glow: this.glow } },
+      ...(this.done ? { completed: true } : {}),
     };
   }
 
@@ -238,6 +254,7 @@ export class WorldState {
     const cos = data.cosmetics ?? DEFAULT_COSMETICS;
     cos.unlocked.forEach((c) => w.unlocked.add(c));
     w.glow = w.unlocked.has(cos.equipped.glow) ? cos.equipped.glow : 'teal';
+    w.done = data.completed === true;
     return w;
   }
 }

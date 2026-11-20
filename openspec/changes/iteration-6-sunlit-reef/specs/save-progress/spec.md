@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: What is saved
-The save SHALL include the world's seed, lit plants and lanterns, lit ribs in Whale fall, whether the whale song has played, found friends, the firefly groups that joined the swarm, found starfish, whether dash is unlocked, whether the giant squid is awake, the colour of each coral in the Sunlit reef, the unlocked glow colours and the chosen one, and the zone the squid was in. It SHALL NOT include the squid's exact position, the glow meter, a colour game in progress or whether the ending has played. Mute and volume are settings, remembered separately, and are not part of the save.
+The save SHALL include the world's seed, lit plants and lanterns, lit ribs in Whale fall, whether the whale song has played, found friends, the firefly groups that joined the swarm, found starfish, whether dash is unlocked, whether the giant squid is awake, the colour of each coral in the Sunlit reef, the unlocked glow colours and the chosen one, whether the journey was completed, and the zone the squid was in. It SHALL NOT include the squid's exact position, the glow meter or a colour game in progress. Mute and volume are settings, remembered separately, and are not part of the save.
 
 #### Scenario: Starting position after load
 - **WHEN** the player continues a saved game
@@ -16,7 +16,7 @@ The save SHALL include the world's seed, lit plants and lanterns, lit ribs in Wh
 - **THEN** everything in it is kept, the reef's corals start in their first colours, and only teal is unlocked and chosen
 
 ### Requirement: Saves survive game updates
-The save SHALL record which version of the world layout it was made with. When a newer version of the game lays the world out differently, continuing SHALL keep found friends, the joined firefly groups, found starfish, the dash unlock and the unlocked and chosen glow colours, so the album never loses anything; lit plants and lanterns and the reef's coral colours from the old layout SHALL be dropped, so those zones glow again as the player lights them.
+The save SHALL record which version of the world layout it was made with. When a newer version of the game lays the world out differently, continuing SHALL keep found friends, the joined firefly groups, found starfish, the dash unlock, the unlocked and chosen glow colours and a completed journey, so the album never loses anything; lit plants and lanterns and the reef's coral colours from the old layout SHALL be dropped, so those zones glow again as the player lights them.
 
 #### Scenario: After an update
 - **WHEN** a save made before a game update that changed world generation is continued

@@ -79,6 +79,33 @@ export function dotAfter(index: number, key: string, count: number = GLOW_COLOUR
 /** The fun-fact speaker is hidden until the facts sound good (see `voice-recordings`). */
 const FACT_SPEAKER = false;
 
+/**
+ * The completed stamp: like a real rubber stamp, red ink in a double ring
+ * with the word round the top and a star in the middle, the edges roughened
+ * by a noise filter and the ink a little patchy.
+ */
+function doneStamp(word: string): string {
+  return `<svg viewBox="0 0 200 200" aria-hidden="true">
+  <defs>
+    <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="grain"/>
+      <feDisplacementMap in="SourceGraphic" in2="grain" scale="5" result="rough"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="3" result="blots"/>
+      <feColorMatrix in="blots" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9" result="patchy"/>
+      <feComposite in="rough" in2="patchy" operator="in"/>
+    </filter>
+    <path id="arc" d="M 38 100 A 62 62 0 0 1 162 100"/>
+  </defs>
+  <g filter="url(#ink)" fill="none" stroke="currentColor">
+    <circle cx="100" cy="100" r="92" stroke-width="9"/>
+    <circle cx="100" cy="100" r="78" stroke-width="3.5"/>
+    <text font-family="'Trebuchet MS', 'Arial Rounded MT Bold', sans-serif" font-weight="900" font-size="25" letter-spacing="3" fill="currentColor" stroke="none" text-anchor="middle"><textPath href="#arc" startOffset="50%">${word.toUpperCase()}</textPath></text>
+    <path d="M100,92 L111,120 L141,121 L117,139 L126,168 L100,151 L74,168 L83,139 L59,121 L89,120 Z" fill="currentColor" stroke="none" transform="translate(0 -18)"/>
+    <path d="M44 132 Q100 172 156 132" stroke-width="3.5"/>
+  </g>
+</svg>`;
+}
+
 const CLOSE = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 14 L34 34 M34 14 L14 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg>`;
 export const STAR_ICON = `<svg viewBox="-50 -50 100 100" aria-hidden="true"><path d="M0,-44 L12,-14 L42,-13 L18,6 L27,36 L0,19 L-27,36 L-18,6 L-42,-13 L-12,-14 Z" fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="-8" cy="-4" r="4" fill="#4a1b0c"/><circle cx="8" cy="-4" r="4" fill="#4a1b0c"/></svg>`;
 
@@ -97,6 +124,7 @@ export class Album {
   private readonly grid: HTMLElement;
   private readonly stars: HTMLElement;
   private readonly colours: HTMLElement;
+  private readonly done: HTMLElement;
   open = false;
 
   constructor(
@@ -115,10 +143,12 @@ export class Album {
           <div class="album-stars"></div>
           <div class="album-colours"></div>
         </div>
+        <div class="album-done">${doneStamp(t('completed'))}</div>
       </div>`;
     this.grid = this.overlay.querySelector('.album-grid')!;
     this.stars = this.overlay.querySelector('.album-stars')!;
     this.colours = this.overlay.querySelector('.album-colours')!;
+    this.done = this.overlay.querySelector('.album-done')!;
     const { cols, rows } = gridSize(ALBUM_STAMPS.length);
     // Never bigger than the height allows (the book may be wider than the stamps need).
     this.grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, var(--cell)))`;
@@ -156,6 +186,17 @@ export class Album {
     if (open) this.show();
     this.overlay.classList.toggle('show', open);
     this.actions.onOpenChange(open);
+  }
+
+  /**
+   * The journey is completed: the album opens and the completed stamp
+   * thumps down onto the page. Afterwards the stamp stays on the page.
+   */
+  stampCompleted(): void {
+    this.setOpen(true);
+    this.done.classList.remove('show', 'slam');
+    void this.done.offsetWidth;
+    this.done.classList.add('slam');
   }
 
   toggle(): void {
@@ -229,6 +270,8 @@ export class Album {
       this.stars.appendChild(row);
     }
     this.showColours();
+    this.done.classList.toggle('show', this.world.completed);
+    this.done.classList.remove('slam');
     // Every stamp is in view now: nothing is unseen any more.
     for (const f of this.world.unviewed) this.world.view(f);
     this.updateBadge();

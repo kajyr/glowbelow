@@ -13,7 +13,7 @@
 
 **Non-Goals:**
 - No hats or fin shapes yet; only glow colours and the automatic sunglasses
-- No credits, score or "the end" screen that stops play; the ending is a celebration and play goes on
+- No credits, score or "the end" screen that stops play; the ending is a stamp in the album and play goes on
 
 ## Decisions
 
@@ -56,13 +56,12 @@
 - The colour shown is always one on a coral near the cuttlefish, preferring colours not unlocked yet
 
 ### The ending in the sunbeam
-- One sunbeam pours through a gap in the surface, placed by the generator well away from the cuttlefish and the landing spot; swimming up into it triggers the ending
+- One sunbeam pours through a gap in the surface, placed by the generator well away from the cuttlefish and the landing spot; swimming up into it completes the journey
 - The rest of the surface is only a soft wall: looking for the cuttlefish near the top never ends the game by accident (the first version used the whole surface and was too easy to bump into)
 - Drawn with normal blending (warm column, a glowing gap, rising sparkles): added light vanishes in the bright water
-- A centre overlay: shooting stars across the screen, then a row of starfish icons per zone (lit for found), the same strips as the album, so the count needs no reading
-- Pauses play like the album; tap, Space or Escape closes it, and the squid is eased back down into the reef
-- It can trigger again (the count may have grown), but only after the squid has swum well away from the sunbeam
-- Alternative: a one-time ending saved in the save (rejected: the child would miss it if a grown-up was watching the first time)
+- Completing opens the album, where a completed stamp thumps onto the page and stays (the first version had its own win card with shooting stars; the album is the game's one goal, so the end belongs there)
+- The stamp is an inline SVG: double ring, star, the word on an arc, roughened with an SVG noise filter for a rubber-stamp look
+- Saved as `completed` in the world state; the sunbeam opens the album again only after the squid has swum well away
 
 ### Sunglasses as an attachable node
 - `sunglasses.glb` from `tools/make_sunglasses.py`, parented to the squid head node, toggled by the current zone with a scale-in flourish

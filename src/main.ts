@@ -21,7 +21,7 @@ import { steer, type Body, type SteerInput } from './game/steering';
 import { fireflyGroupId, Swarm } from './game/swarm';
 import { Nautilus } from './game/nautilus';
 import { BubbleRings } from './game/bubbleRings';
-import { GiantSquid } from './game/giantSquid';
+import { GiantSquid, rideStop, type RideStop } from './game/giantSquid';
 import { ribOrder, WhaleSong } from './game/ribs';
 import type { Vec2 } from './game/vec';
 import { TUNING } from './game/tuning';
@@ -30,7 +30,6 @@ import { browserStorage, clearSave, loadSave, Saver, saveUnavailableHere } from 
 import { loadVolumes, saveVolumes } from './game/settings';
 import { ParentCorner } from './ui/parentCorner';
 import { Album, stampArt, type StarfishZone } from './ui/album';
-import { Ending } from './ui/ending';
 import { SurfaceEnding } from './game/ending';
 import { Input } from './input';
 import { generateWorld, ridePath } from './levels/assembleWorld';
@@ -154,10 +153,14 @@ async function boot() {
   const skeletonView = new SkeletonView(models, skeleton, ribIds, wfSpots.ribs, lights, worldState);
   scene.add(skeletonView.root);
   const whaleSong = new WhaleSong(wfSpots.ribs.map((r) => r.x), skeleton.y + SPINE_Y + TUNING.whaleFall.bandAbove, skeletonView.allLit);
-  // The way up is searched once, when first needed (it covers the whole world).
-  let ride: Vec2[] | null = null;
-  const getRide = () => (ride ??= ridePath(gameWorld));
-  const giant = new GiantSquid(wfSpots, getRide);
+  // The way up is searched once per stop, when first needed (it covers the whole world).
+  // The ride goes to the first zone not reached yet: "reached Twilight" is the dash flag,
+  // which unlocks the first time the squid is in Twilight (if that moves, give the ride its own flag).
+  const rides: Partial<Record<RideStop, Vec2[]>> = {};
+  const getRide = (stop: RideStop) => (rides[stop] ??= ridePath(gameWorld, stop));
+  const nextStop = () => rideStop(worldState.dashUnlocked);
+  const warmRide = () => getRide(nextStop());
+  const giant = new GiantSquid(wfSpots, getRide, nextStop);
   const giantView = new GiantSquidView(models);
   scene.add(giantView.root);
   const fishView = new FishView(models, level.fishSchools ?? []);
@@ -232,7 +235,7 @@ async function boot() {
   if (worldState.hasFound('giant-squid')) {
     giant.restore();
     // Find the way up while the title shows, not in the middle of play.
-    setTimeout(getRide, 300);
+    setTimeout(warmRide, 300);
   }
   swarm.groups.forEach((_g, i) => worldState.hasJoined(fireflyGroupId(i)) && swarm.restore(i, { x: entry.x - 2, y: entry.y - 0.4 }));
   // Saves about a second after any change, at once when the page is hidden.
@@ -251,7 +254,7 @@ async function boot() {
   // Play pauses while the album or the parent corner is open.
   let overlayOpen = false;
   const overlayChanged = () => {
-    overlayOpen = album.open || parent.open || ending.open;
+    overlayOpen = album.open || parent.open;
     if (!album.open) facts.stop();
     synth.setDucked(overlayOpen);
     input.reset();
@@ -296,13 +299,7 @@ async function boot() {
       if (worldState.chooseGlow(c)) wearGlow(c);
     },
   }, starfishZones);
-  // The ending at the reef's surface: shooting stars and every starfish found. Closing it eases the squid back down.
-  const ending = new Ending(container, worldState, starfishZones, {
-    onOpenChange: (open) => {
-      overlayChanged();
-      if (!open) body.vel.y = Math.min(body.vel.y, -TUNING.ending.sinkTo);
-    },
-  });
+  // The end of the journey, in the sunbeam: the album opens and gets its completed stamp.
   if (!level.sunbeam) throw new Error('the reef has no sunbeam');
   const surfaceEnding = new SurfaceEnding(level.sunbeam);
   // Inside another site's frame (itch.io), the browser may block storage: tell the grown-ups.
@@ -403,7 +400,7 @@ async function boot() {
   input.onKey = (code) => {
     if (code === 'KeyM') toggleMute();
     // B opens the album (A steers left).
-    if (code === 'KeyB' && mode === 'play' && !parent.open && !ending.open) album.toggle();
+    if (code === 'KeyB' && mode === 'play' && !parent.open) album.toggle();
     if (mode === 'title' && (code === 'Space' || code === 'Enter')) start('keyboard');
     if (DEBUG && code === 'KeyC') overlay.visible = !overlay.visible;
     if (DEBUG && code === 'KeyG') reach.visible = !reach.visible;
@@ -478,7 +475,7 @@ async function boot() {
       setTimeout(() => hud.stickerFly(stage.toScreen(new THREE.Vector3(at.x, at.y + 2, 0)), stampArt('giant-squid')), 2200);
     }
     // Find the way up while it rises (a calm moment), before the first ride.
-    setTimeout(getRide, 1500);
+    setTimeout(warmRide, 1500);
   }
 
   function joinFireflies(group: number) {
@@ -654,7 +651,11 @@ async function boot() {
       saver.request();
     }
     // Dash unlocks the first time the squid reaches Twilight, and stays.
-    if (!worldState.dashUnlocked && zoneHere === 'twilight' && worldState.unlockDash()) hud.showDash(true);
+    if (!worldState.dashUnlocked && zoneHere === 'twilight' && worldState.unlockDash()) {
+      hud.showDash(true);
+      // The next ride goes on to the reef: find that way while the dash button shows.
+      if (giant.state !== 'asleep') setTimeout(warmRide, 1500);
+    }
     // The giant squid: while it carries the squid, the squid just sits on its arm.
     const giantEvent = giant.update(dt, body.pos, steering);
     giantTarget.x = giant.pos.x;
@@ -677,11 +678,13 @@ async function boot() {
       shaftPush(body, level.shaft, dt, gate);
       surfacePush(body, surface, dt);
     }
-    // The top of the world: the ending.
+    // The top of the world: the album opens and the completed stamp thumps down. Afterwards the squid sinks back into the reef.
     if (!giant.riding && surfaceEnding.update(body.pos)) {
-      ending.show();
-      synth.flourish();
-      setTimeout(() => synth.chord(), 600);
+      worldState.complete();
+      body.vel.y = Math.min(body.vel.y, -TUNING.ending.sinkTo);
+      album.stampCompleted();
+      setTimeout(() => synth.stampThump(), 1150);
+      setTimeout(() => synth.chord(), 1500);
     }
     // Corals: swimming into one steps it to its next colour.
     for (const id of coralTouch.update(body.pos, TUNING.squid.radius)) touchCoral(id, true, true);

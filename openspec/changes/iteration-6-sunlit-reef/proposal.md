@@ -14,7 +14,7 @@ Depends on: `iteration-5-whale-fall` (archived).
 - Cuttlefish disguised as a coral that flickers the wrong colour; glowing reveals it, then a three-round colour-matching game that cannot be failed
 - Glow colours as the first cosmetic: each finished colour game unlocks the colour shown and paints the squid's glow; colours can be switched by visiting the cuttlefish again
 - Five starfish and one bubble-ring chain in the reef
-- A game ending in the sunbeam, one gap in the reef's surface: a win card in the centre with shooting stars and the starfish found, then play goes on (issue #2)
+- A game ending in the sunbeam, one gap in the reef's surface: the album opens and a completed stamp thumps onto its page, then play goes on (issue #2)
 
 ## Capabilities
 
@@ -39,5 +39,5 @@ Depends on: `iteration-5-whale-fall` (archived).
 - Uses `models/cuttlefish.glb` with colour shifting done in a shader, since the model's patches are fixed vertex colours
 - New `tools/make_corals.py` and coral `.glb` models (five types, two sizes each), recoloured in the game by the same hue shift
 - Squid materials gain a tint for the glow colour; a new `sunglasses.glb` attaches to the squid head
-- An ending overlay (shooting stars, starfish icons) in the HUD layer, no text
+- A completed stamp in the album (inline SVG), saved with the world state
 - Save format version 1 → 2 gains coral colours, unlocked colours and the selected colour (the cuttlefish uses the existing found-friends list)

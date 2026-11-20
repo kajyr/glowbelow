@@ -33,8 +33,8 @@
 ## 5. Ending (issue #2)
 
 - [x] 5.1 Add the ending trigger at the reef's surface with its re-arm distance; verify Vitest tests that it fires once per visit and not on a quick second bump
-- [x] 5.2 Build the win card overlay: shooting stars and one starfish strip per zone, pausing play, closed by tap, Space or Escape; verify on a phone and a tablet, with no text
-- [x] 5.3 Ease the squid back below the surface on close; verify nothing in the save changes
+- [x] 5.2 Open the album with a completed stamp that thumps onto the page and stays (saved); verify on a phone and a tablet
+- [x] 5.3 Let the squid sink back into the reef after the album closes; verify nothing found is lost
 
 ## 6. Verification
 

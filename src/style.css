@@ -780,109 +780,48 @@ button {
   opacity: 1;
 }
 
-/* --------------------------------------------------------------- ending */
-
-/* The top of the world: shooting stars over a dimmed screen, the starfish found on a card. */
-.ending {
+/*
+ * The completed stamp: red ink across the album page, at an angle, like a
+ * stamp in a passport. It thumps down when the journey ends (with a little
+ * shake of the book) and stays there.
+ */
+.album-done {
   position: absolute;
-  inset: 0;
-  display: none;
-  place-items: center;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 45%, rgba(255, 244, 214, 0.35), rgba(8, 20, 60, 0.75) 70%);
-  z-index: 4;
-}
-
-.ending.show {
-  display: grid;
-  animation: ending-in 0.6s ease-out;
-}
-
-@keyframes ending-in {
-  from { opacity: 0; }
-}
-
-.ending-sky {
-  position: absolute;
-  inset: 0;
+  left: 54%;
+  top: 8%;
+  width: clamp(130px, 40%, 280px);
+  margin-left: calc(clamp(130px, 40%, 280px) / -2);
+  aspect-ratio: 1;
+  color: rgba(214, 38, 52, 0.9);
+  transform: rotate(-14deg);
   pointer-events: none;
-}
-
-.shooting-star {
-  position: absolute;
-  left: -20%;
-  width: var(--len);
-  height: 4px;
-  border-radius: 2px;
-  background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff6c9 80%, #ffffff);
-  box-shadow: 0 0 10px #ffe89a;
-  transform: rotate(-18deg);
   opacity: 0;
-  animation: shoot 2.6s ease-in infinite;
+  filter: drop-shadow(0 0 1px rgba(255, 248, 236, 0.6));
 }
 
-.shooting-star::after {
-  content: '';
-  position: absolute;
-  right: -6px;
-  top: -6px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 14px 4px #ffe89a;
-}
-
-@keyframes shoot {
-  0% { opacity: 0; transform: translate(0, 0) rotate(-18deg); }
-  10% { opacity: 1; }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: translate(140vw, -45vw) rotate(-18deg); }
-}
-
-.ending-card {
-  --icon: clamp(22px, 6vh, 44px);
-  position: relative;
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  padding: 20px 26px 24px;
-  border-radius: 26px;
-  background: #fff8ec;
-  box-shadow: 0 0 0 6px #ffffff, 0 0 60px rgba(255, 232, 154, 0.8);
-  animation: card-pop 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) 0.2s both;
-}
-
-@keyframes card-pop {
-  from { transform: scale(0.3); opacity: 0; }
-}
-
-.ending-burst {
-  width: calc(var(--icon) * 2);
-  height: calc(var(--icon) * 2);
-  color: #f7a875;
-  filter: drop-shadow(0 0 12px rgba(255, 213, 143, 1));
-  animation: burst 2.4s ease-in-out infinite;
-}
-
-.ending-burst svg {
+.album-done svg {
   width: 100%;
   height: 100%;
 }
 
-@keyframes burst {
-  50% { transform: scale(1.15) rotate(12deg); }
+.album-done.show {
+  opacity: 1;
 }
 
-.ending-strips {
-  display: grid;
-  gap: 8px;
+.album-done.slam {
+  animation: stamp-slam 0.55s cubic-bezier(0.5, 0, 0.75, 0) 0.7s both;
 }
 
-.ending .star-icon.found {
-  animation: star-pop 0.5s cubic-bezier(0.3, 1.8, 0.5, 1) both;
+.album-book:has(.album-done.slam) {
+  animation: book-thump 0.35s ease-out 1.2s;
 }
 
-@keyframes star-pop {
-  from { transform: scale(0); }
+@keyframes stamp-slam {
+  0% { opacity: 0; transform: rotate(-24deg) scale(2.6); }
+  60% { opacity: 0.9; }
+  100% { opacity: 1; transform: rotate(-14deg) scale(1); }
+}
+
+@keyframes book-thump {
+  30% { transform: scale(0.985) translateY(3px); }
 }
