@@ -141,9 +141,9 @@ export class Album {
         <div class="album-grid"></div>
         <div class="album-bottom">
           <div class="album-stars"></div>
+          <div class="album-done">${doneStamp(t('completed'))}</div>
           <div class="album-colours"></div>
         </div>
-        <div class="album-done">${doneStamp(t('completed'))}</div>
       </div>`;
     this.grid = this.overlay.querySelector('.album-grid')!;
     this.stars = this.overlay.querySelector('.album-stars')!;
@@ -197,6 +197,7 @@ export class Album {
     this.done.classList.remove('show', 'slam');
     void this.done.offsetWidth;
     this.done.classList.add('slam');
+    this.overlay.classList.add('completed');
   }
 
   toggle(): void {
@@ -271,6 +272,8 @@ export class Album {
     }
     this.showColours();
     this.done.classList.toggle('show', this.world.completed);
+    // Completed, the starfish move to the right end of their strips: the stamp sits in the space on the left.
+    this.overlay.classList.toggle('completed', this.world.completed);
     this.done.classList.remove('slam');
     // Every stamp is in view now: nothing is unseen any more.
     for (const f of this.world.unviewed) this.world.view(f);

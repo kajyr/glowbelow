@@ -16,7 +16,7 @@ The top of the world is open: the **Sunlit reef**, a bright coral garden under t
 - **The end of the journey.** Somewhere on the reef, a sunbeam pours down through the surface. Swim up into it: the sticker album opens and a big red "completed" stamp thumps onto the page, like a real rubber stamp. It stays there. Close the album and play on.
 - **More to find:** five new starfish, a bubble-ring chain and the cuttlefish's album page with a fun fact.
 
-![The sticker album with the red completed stamp across the page](sunlit-reef-completed.jpg)
+![The sticker album with the red completed stamp beside the starfish](sunlit-reef-completed.jpg)
 
 ## For grown-ups
 
