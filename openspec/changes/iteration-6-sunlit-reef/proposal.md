@@ -29,8 +29,8 @@ Depends on: `iteration-5-whale-fall` (archived).
 - `twilight`: the top passage becomes one-way, down from the reef only (replaces "Top passage closed until the reef exists"; layout wording updated)
 - `giant-squid`: the ride ends in the reef, the only way in (modified "The way up")
 - `glow-pulse`: the pulse and glow tips use the chosen glow colour (new requirement)
-- `sticker-album`: a glow-colour row at the bottom of the one album page (delta spec still to write)
-- `save-progress`: the save also holds the coral colours, unlocked glow colours and the chosen one (delta spec still to write)
+- `sticker-album`: a glow-colour row at the bottom of the one album page
+- `save-progress`: the save also holds the coral colours, unlocked glow colours and the chosen one
 
 ## Impact
 
