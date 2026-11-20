@@ -5,14 +5,14 @@
 Writes models/giant-squid.glb and artwork/giant-squid-model-preview.svg.
 
 Built in profile: the body lies along X, the head and arms point right (+X),
-and the camera (-Y) sees its side. The game flips it when it swims left and
-scales it up to several times the vampire squid.
+and the camera (-Y) sees its side. The game turns it round when it swims left
+(so the far side shows) and scales it up to several times the vampire squid.
 
-Parts, for animation: `body` (body, head, fins and the far eye), `arms`
+Parts, for animation: `body` (body, head and fins), `arms`
 (the eight arms, pivoted at the head), `tentacle` (the lower long tentacle,
 the arm it offers for a ride, pivoted at the head), `tentacle-far` (the
-upper long tentacle) and `eye` (the near eye, pivoted at
-its base so the game can close it while asleep).
+upper long tentacle), `eye` and `eye-far` (the near and far eyes, each
+pivoted at its base so the game can close both while asleep).
 """
 
 import math
@@ -111,8 +111,7 @@ def build():
     # One huge eye on each side of the head.
     for side in (-1, 1):
         add_eye(model, (0.88, side * 0.57, 0.12), (0.0, float(side), 0.1), -1,
-                0.42, EYE, PUPIL, SHINE, pupil_size=0.58, part="eye" if side < 0 else "body")
-    model.pivots.pop("body", None)
+                0.42, EYE, PUPIL, SHINE, pupil_size=0.58, part="eye" if side < 0 else "eye-far")
 
     return model
 

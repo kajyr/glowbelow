@@ -140,6 +140,7 @@ export const TUNING = {
   giant: {
     /** The model is drawn at this scale: several times the squid. */
     scale: 1.5,
+    turnDepth: 3, // mid-turn it drifts this far back, so its tail stays behind the play plane
     riseTime: 3.5, // from asleep behind the skull to hovering above it
     stirTime: 1.6, // a small pulse makes it stir this long
     boardRadius: 1.5, // touching the arm's tip within this boards
