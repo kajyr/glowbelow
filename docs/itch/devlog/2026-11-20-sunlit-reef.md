@@ -7,7 +7,7 @@ The top of the world is open: the **Sunlit reef**, a bright coral garden under t
 ## What's new
 
 - **The Sunlit reef**, above Twilight. Turquoise water, sunlight dancing over the seabed, cheerful music and a shimmering surface. Like every zone, it's laid out differently in each new game.
-- **Only the giant squid goes up there.** Its arm now carries you all the way into the reef. Swimming up Twilight, the reef's light shines through the opening above, but the water gently turns you back. Leaving is easy: just swim down.
+- **Only the giant squid goes up there.** Swimming up Twilight, the reef's light shines through the opening above, but the water gently turns you back. Ride the giant squid's arm instead: if you haven't been to Twilight yet, it drops you off there first; after that, it carries you all the way into the reef. Leaving is easy: just swim down.
 - **Sunglasses.** A vampire squid lives in the dark, so in the bright reef it pops on a pair of chunky pink sunglasses.
 - **Corals that change colour.** Swim into a coral, or glow at it, and it turns the next colour with a soft chime.
 - **The cuttlefish**, the fifth friend. It hides as a coral that now and then flickers a colour that doesn't match. Glow at it to find it.
