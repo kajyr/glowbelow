@@ -21,11 +21,15 @@ After one complete load with a connection, every file the game needs (code, mode
 - **THEN** the title screen appears and the whole game is playable
 
 ### Requirement: Safe updates
-When a new version is published, the game SHALL download it in the background and use it on the next launch. An update SHALL never interrupt a session in progress or lose saved progress.
+When a new version is published, the game SHALL download it in the background and use it the next time the game is launched or goes off screen. An update SHALL never interrupt a session in progress or lose saved progress.
 
 #### Scenario: Update during play
 - **WHEN** a new version is published while the child is playing
 - **THEN** play continues unchanged, and the next launch uses the new version with progress intact
+
+#### Scenario: Home-screen app left in the background
+- **WHEN** a new version is published and the installed app is reopened from the background (never fully closed)
+- **THEN** the game checks for the new version on return, and switches to it the next time it goes off screen, with progress intact
 
 ### Requirement: Published over HTTPS
 The game SHALL be served from a static HTTPS address with no server-side code.
