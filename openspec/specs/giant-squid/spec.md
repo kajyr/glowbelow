@@ -28,11 +28,23 @@ The awake giant squid SHALL move slowly, keep its eye looking at the vampire squ
 - **THEN** the giant squid's eye follows it
 
 ### Requirement: The way up
-Touching the awake giant squid's offered arm SHALL let the squid ride it up to the top of the world and set it down there: the top of Twilight until the Sunlit reef exists, then the Sunlit reef. Steering away during the ride SHALL hop off. After setting the squid down, the giant squid SHALL sink back to its spot in Whale fall, and the squid swims back down by itself. Once the Sunlit reef exists, the ride SHALL be the only way into it; this is the one place where a friend gates progress.
+Touching the awake giant squid's offered arm SHALL let the squid ride it up and set it down at the first zone on the way up it has not reached yet: just inside the bottom of Twilight until the squid has reached Twilight once, then the Sunlit reef. Steering away during the ride SHALL hop off. After setting the squid down, the giant squid SHALL sink back to its spot in Whale fall, and the squid swims back down by itself. The ride SHALL be the only way into the Sunlit reef; this is the one place where a friend gates progress.
 
 #### Scenario: Express lift
 - **WHEN** the squid touches the offered arm
-- **THEN** the arm carries the squid up and sets it down at the top of the world
+- **THEN** the arm carries the squid up and sets it down at the first zone on the way up it has not reached yet
+
+#### Scenario: First stop is Twilight
+- **WHEN** the squid has never reached Twilight and touches the offered arm
+- **THEN** the arm sets it down just inside the bottom of Twilight, and Twilight counts as reached (dash unlocks)
+
+#### Scenario: Then the reef
+- **WHEN** the squid has reached Twilight before (this session or a saved game) and touches the offered arm
+- **THEN** the arm carries it past Twilight and sets it down in the Sunlit reef
+
+#### Scenario: Reef already visited
+- **WHEN** the squid has already been to the Sunlit reef and touches the offered arm
+- **THEN** the arm sets it down in the Sunlit reef again
 
 #### Scenario: Hopping off
 - **WHEN** the player steers away during the ride

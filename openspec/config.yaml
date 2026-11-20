@@ -11,13 +11,13 @@ schema: spec-driven
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - For a change that adds or changes something the player sees, list the dev blog post under Impact
+  tasks:
+    - Every feature change (anything the player sees or plays differently) ends with a tracked "Dev blog" task group
+    - The dev blog task writes `docs/itch/devlog/YYYY-MM-DD-<slug>.md` (title, short what's-new, a screenshot or two saved next to it, what's next), or adds a section to today's post if one already covers the same release
+    - Pure refactors, tooling, fixes with no visible change and docs-only changes skip the dev blog
 
 # Per-operation guidance (optional)
 # Add advisory guidance for how apply and archive work should be conducted.
