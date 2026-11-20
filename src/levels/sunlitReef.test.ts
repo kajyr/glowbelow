@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { generateValidReef, SUNLIT_REEF } from './sunlitReef';
+import { generateValidReef, SUNBEAM, SUNLIT_REEF } from './sunlitReef';
 
 describe('sunlit reef generation', () => {
   test('every one of 300 seeds gives a valid reef, most on the first try', () => {
@@ -49,5 +49,17 @@ describe('sunlit reef generation', () => {
     const { level } = generateValidReef(SUNLIT_REEF, 1).layout;
     expect((level.cameraBounds.maxX - level.cameraBounds.minX) / SUNLIT_REEF.screen.w).toBeCloseTo(4, 1);
     expect((level.cameraBounds.maxY - level.cameraBounds.minY) / SUNLIT_REEF.screen.h).toBeCloseTo(2, 1);
+  });
+
+  test('the sunbeam is at the surface, well away from the cuttlefish and the landing spot', () => {
+    for (let s = 0; s < 100; s++) {
+      const { level } = generateValidReef(SUNLIT_REEF, s * 131 + 5).layout;
+      const b = level.sunbeam!;
+      expect(b.y).toBe(SUNLIT_REEF.height);
+      expect(b.x).toBeGreaterThanOrEqual(6);
+      expect(b.x).toBeLessThanOrEqual(SUNLIT_REEF.width - 6);
+      expect(Math.abs(b.x - level.cuttlefish!.x)).toBeGreaterThanOrEqual(SUNBEAM.awayFromCuttlefish);
+      expect(Math.abs(b.x - level.landing!.x)).toBeGreaterThanOrEqual(SUNBEAM.awayFromLanding);
+    }
   });
 });

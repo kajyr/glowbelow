@@ -63,6 +63,8 @@ export interface Level {
   cuttlefish?: { x: number; y: number; piece: CoralPiece } | null;
   /** Where the giant squid's ride sets the squid down (Sunlit reef). */
   landing?: Vec2;
+  /** The gap in the surface where the journey ends: its middle, at the surface (Sunlit reef). */
+  sunbeam?: Vec2;
 }
 
 /** A coral in the garden, with the colour it starts in. */

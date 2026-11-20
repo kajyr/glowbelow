@@ -55,11 +55,13 @@
 - A touched coral is judged by its colour before the touch: a right coral flashes and keeps its colour; a wrong one steps to its next colour, so tapping it again always reaches the right one
 - The colour shown is always one on a coral near the cuttlefish, preferring colours not unlocked yet
 
-### The ending at the reef's surface
-- Reaching the surface soft wall triggers the ending, instead of only easing the squid back
+### The ending in the sunbeam
+- One sunbeam pours through a gap in the surface, placed by the generator well away from the cuttlefish and the landing spot; swimming up into it triggers the ending
+- The rest of the surface is only a soft wall: looking for the cuttlefish near the top never ends the game by accident (the first version used the whole surface and was too easy to bump into)
+- Drawn with normal blending (warm column, a glowing gap, rising sparkles): added light vanishes in the bright water
 - A centre overlay: shooting stars across the screen, then a row of starfish icons per zone (lit for found), the same strips as the album, so the count needs no reading
 - Pauses play like the album; tap, Space or Escape closes it, and the squid is eased back down into the reef
-- It can trigger again (the count may have grown), but only after the squid has swum well away from the surface, so bumping the surface does not repeat it
+- It can trigger again (the count may have grown), but only after the squid has swum well away from the sunbeam
 - Alternative: a one-time ending saved in the save (rejected: the child would miss it if a grown-up was watching the first time)
 
 ### Sunglasses as an attachable node

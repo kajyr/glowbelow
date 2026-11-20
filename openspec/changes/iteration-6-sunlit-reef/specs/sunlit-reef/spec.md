@@ -13,7 +13,7 @@ The Sunlit reef SHALL be about 4 screens wide and 2 screens tall, directly above
 
 #### Scenario: Surface
 - **WHEN** the squid swims up to the surface
-- **THEN** the ending plays (see "Ending at the surface"), then the squid is gently eased back down with no penalty
+- **THEN** it is gently eased back down with no penalty (inside the sunbeam, the ending plays first: see "Ending in the sunbeam")
 
 ### Requirement: Bright party mood
 The reef SHALL be the brightest zone, using the full pastel palette, with light patterns dancing on the seabed and a cheerful ambient layer.
@@ -43,17 +43,21 @@ The reef SHALL contain five starfish and one bubble-ring chain, behaving as defi
 - **WHEN** the album is opened
 - **THEN** it shows a Sunlit reef strip with five starfish icons
 
-### Requirement: Ending at the surface
-Reaching the reef's surface, the top of the world, SHALL play the ending: shooting stars cross the screen and a win card in the centre shows the starfish found, as one strip of starfish icons per zone, lit for found ones, like the album. It SHALL use no text, pause play like the album, and close on tap, Space or Escape, after which the squid is eased back down into the reef and play goes on. Nothing SHALL be reset or lost. It SHALL play again on a later visit to the surface, but not until the squid has swum well away from it.
+### Requirement: Ending in the sunbeam
+One sunbeam SHALL pour down through a gap in the reef's surface, the top of the world, well away from the cuttlefish's hiding place, shown by a warm column of light with sparkles rising up it. Swimming up into it SHALL play the ending: shooting stars cross the screen and a win card in the centre shows the starfish found, as one strip of starfish icons per zone, lit for found ones, like the album. It SHALL use no text, pause play like the album, and close on tap, Space or Escape, after which the squid is eased back down into the reef and play goes on. Nothing SHALL be reset or lost.
 
-#### Scenario: First time at the surface
-- **WHEN** the squid swims up to the reef's surface
+#### Scenario: Into the sunbeam
+- **WHEN** the squid swims up into the sunbeam
 - **THEN** shooting stars fly, the win card shows each zone's starfish, lit for found ones, and play pauses
+
+#### Scenario: Bumping the surface elsewhere
+- **WHEN** the squid swims up to the surface anywhere but the sunbeam
+- **THEN** it is only eased back down; the ending does not play
 
 #### Scenario: Closing the ending
 - **WHEN** the player taps the screen while the ending shows
 - **THEN** the card closes, the squid is back in the reef just below the surface, and everything found is kept
 
-#### Scenario: Bumping the surface again
-- **WHEN** the squid touches the surface again right after the ending closed
+#### Scenario: Swimming up again right away
+- **WHEN** the squid swims back up into the sunbeam right after the ending closed
 - **THEN** it is only eased back down; the ending plays again only after the squid has swum well away and come back

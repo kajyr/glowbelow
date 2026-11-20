@@ -168,8 +168,9 @@ export const TUNING = {
     cycleSpeed: 0.25, // colour cycling while it swims (hue turns per second)
   },
   ending: {
-    reach: 1.4, // the squid this close under the reef's surface reaches the top of the world
-    rearm: 7, // it plays again only after the squid has been this far below the surface
+    beamWidth: 3.2, // the sunbeam's gap in the surface: only swimming up into it plays the ending
+    reach: 1.4, // the squid this close under the surface, inside the gap, reaches the top of the world
+    rearm: 7, // it plays again only after the squid has been this far from the sunbeam's top
     closeAfter: 1.2, // seconds before a tap can close it (a held key or finger does not skip it)
     sinkTo: 3, // closing it eases the squid back down to this far under the surface
   },

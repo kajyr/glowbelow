@@ -14,7 +14,7 @@ Depends on: `iteration-5-whale-fall` (archived).
 - Cuttlefish disguised as a coral that flickers the wrong colour; glowing reveals it, then a three-round colour-matching game that cannot be failed
 - Glow colours as the first cosmetic: each finished colour game unlocks the colour shown and paints the squid's glow; colours can be switched by visiting the cuttlefish again
 - Five starfish and one bubble-ring chain in the reef
-- A game ending at the reef's surface: a win card in the centre with shooting stars and the starfish found, then play goes on (issue #2)
+- A game ending in the sunbeam, one gap in the reef's surface: a win card in the centre with shooting stars and the starfish found, then play goes on (issue #2)
 
 ## Capabilities
 

@@ -172,7 +172,7 @@ async function boot() {
   const coralTouch = new CoralTouch(coralSpots.map((c, i) => ({ id: coralIds[i], circles: placedCircles(c), first: c.colour, top: coralTop(c) })));
   const coralsView = new CoralsView(models, coralSpots, (i) => worldState.coralColour(coralIds[i], coralSpots[i].colour), lights);
   scene.add(coralsView.group);
-  const reefView = new ReefView(reefRect);
+  const reefView = new ReefView(reefRect, level.sunbeam!);
   scene.add(reefView.group);
   // Twilight's top passage lets the squid down from the reef, never up into it.
   const gate: Gate = { fromAbove: false };
@@ -303,7 +303,8 @@ async function boot() {
       if (!open) body.vel.y = Math.min(body.vel.y, -TUNING.ending.sinkTo);
     },
   });
-  const surfaceEnding = new SurfaceEnding(surface);
+  if (!level.sunbeam) throw new Error('the reef has no sunbeam');
+  const surfaceEnding = new SurfaceEnding(level.sunbeam);
   // Inside another site's frame (itch.io), the browser may block storage: tell the grown-ups.
   const framed = (() => {
     try {

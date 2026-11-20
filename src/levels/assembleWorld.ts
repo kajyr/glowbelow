@@ -170,6 +170,7 @@ export function generateWorld(seed: number): GameWorld {
     corals: r.corals,
     cuttlefish: r.cuttlefish,
     landing: r.landing,
+    sunbeam: r.sunbeam,
     blocks,
   };
   const shaftPass = map.passages[0].rect;

@@ -46,6 +46,9 @@ export const SUNLIT_REEF: ReefRecipe = {
   decorRocks: 10,
 };
 
+/** Where the sunbeam may be: this far from the cuttlefish's hiding place and the landing spot, along the reef. */
+export const SUNBEAM = { awayFromCuttlefish: 16, awayFromLanding: 6 };
+
 /** How deep the hole goes below the reef's seabed, in the reef's own coordinates (Twilight's passage, when assembled). */
 export const REEF_HOLE = 6;
 
@@ -94,6 +97,16 @@ export function generateReefLayout(recipe: ReefRecipe, seed: number, why: { step
   const cuttlefish = { x: q(mid + cfSide * rand(10, W / 2 - 8)), y: 0, piece: `coral-${pick(CORAL_SHAPES)}-1` as CoralPiece };
   // A gap in the garden wide enough to swim down into comfortably.
   keepOuts.push({ name: 'cuttlefish', rect: { minX: cuttlefish.x - 1.6, maxX: cuttlefish.x + 1.6, minY: 0, maxY: 3 } });
+
+  // ---- the sunbeam: the one gap in the surface where the journey ends, well
+  // away from the cuttlefish (looking for it, the squid will not stumble in)
+  // and from the landing spot. Its own random stream, so the garden is unchanged.
+  const beamRng = makeRng((seed ^ 0x5b0a3e71) >>> 0);
+  const spots: number[] = [];
+  for (let x = 6; x <= W - 6; x += 0.5) if (Math.abs(x - cuttlefish.x) >= SUNBEAM.awayFromCuttlefish && Math.abs(x - landing.x) >= SUNBEAM.awayFromLanding) spots.push(x);
+  const far = (x: number) => Math.abs(x - cuttlefish.x);
+  const beamX = spots.length > 0 ? spots[Math.floor(beamRng() * spots.length)] : [6, W - 6].reduce((a, b) => (far(a) > far(b) ? a : b));
+  const sunbeam: Vec2 = { x: q(beamX), y: H };
 
   // ---- the coral garden: along the seabed from wall to wall, either side of
   // the hole, packed edge to edge (corals are not solid: the squid brushes past)
@@ -180,6 +193,7 @@ export function generateReefLayout(recipe: ReefRecipe, seed: number, why: { step
     corals,
     cuttlefish,
     landing,
+    sunbeam,
   };
   return { seed, recipe, level, keepOuts };
 }
@@ -229,11 +243,13 @@ export function generateValidReef(recipe: ReefRecipe, seed: number, maxAttempts 
     const path = findPath(fields, lv.start, above);
     if (path && path.length > 1) lv.trails = [wave(fields, resample(simplify(fields, path), TRAIL_SPACING))];
     const hole = { x: recipe.width / 2, y: 1 };
+    // Down the sunbeam, so the way out stays clear.
+    const beam = [3, 7].map((d) => ({ x: lv.sunbeam!.x, y: recipe.height - d }));
     const chain = placeRingChain(fields, s, {
       count: 5,
       spacing: 3.2,
       angles: [0, Math.PI, 0.3, -0.3, Math.PI + 0.3, Math.PI - 0.3],
-      avoid: [lv.start, hole, above],
+      avoid: [lv.start, hole, above, ...beam],
       avoidRadius: 5,
       within: { minX: 6, maxX: recipe.width - 6, minY: 5, maxY: recipe.height - 4 },
     });

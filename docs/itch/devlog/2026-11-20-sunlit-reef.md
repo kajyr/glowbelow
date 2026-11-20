@@ -13,7 +13,7 @@ The top of the world is open: the **Sunlit reef**, a bright coral garden under t
 - **The cuttlefish**, the fifth friend. It hides as a coral that now and then flickers a colour that doesn't match. Glow at it to find it.
 - **The colour game.** Touch the cuttlefish and it glows a colour: find a coral of that colour. Three rounds, no wrong answers, no timer. If you pick another coral, the cuttlefish just wiggles, and that coral moves to its next colour.
 - **New glow colours.** Each finished game paints the squid's glow in the last colour: pink, amber, lavender, coral or sky blue. Switch back any time with the colour dots in the sticker album.
-- **The end of the journey.** Swim up to the reef's surface: shooting stars fly and a card shows every starfish you've found. Close it and play on.
+- **The end of the journey.** Somewhere on the reef, a sunbeam pours down through the surface. Swim up into it: shooting stars fly and a card shows every starfish you've found. Close it and play on.
 - **More to find:** five new starfish, a bubble-ring chain and the cuttlefish's album page with a fun fact.
 
 ![The ending: shooting stars, and a card with each zone's starfish](sunlit-reef-ending.jpg)

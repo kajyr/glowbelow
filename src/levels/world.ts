@@ -70,5 +70,6 @@ export function translateLevel(level: Level, d: Vec2): Level {
     corals: level.corals?.map((c) => ({ ...c, x: c.x + d.x, y: c.y + d.y })),
     cuttlefish: level.cuttlefish ? { ...level.cuttlefish, x: level.cuttlefish.x + d.x, y: level.cuttlefish.y + d.y } : level.cuttlefish,
     landing: level.landing ? move(level.landing, d) : level.landing,
+    sunbeam: level.sunbeam ? move(level.sunbeam, d) : level.sunbeam,
   };
 }
