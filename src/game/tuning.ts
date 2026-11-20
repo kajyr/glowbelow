@@ -167,4 +167,10 @@ export const TUNING = {
     wiggleTime: 0.6, // a wrong coral: a little wiggle
     cycleSpeed: 0.25, // colour cycling while it swims (hue turns per second)
   },
+  ending: {
+    reach: 1.4, // the squid this close under the reef's surface reaches the top of the world
+    rearm: 7, // it plays again only after the squid has been this far below the surface
+    closeAfter: 1.2, // seconds before a tap can close it (a held key or finger does not skip it)
+    sinkTo: 3, // closing it eases the squid back down to this far under the surface
+  },
 } as const;

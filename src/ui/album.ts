@@ -80,7 +80,7 @@ export function dotAfter(index: number, key: string, count: number = GLOW_COLOUR
 const FACT_SPEAKER = false;
 
 const CLOSE = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 14 L34 34 M34 14 L14 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg>`;
-const STAR_ICON = `<svg viewBox="-50 -50 100 100" aria-hidden="true"><path d="M0,-44 L12,-14 L42,-13 L18,6 L27,36 L0,19 L-27,36 L-18,6 L-42,-13 L-12,-14 Z" fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="-8" cy="-4" r="4" fill="#4a1b0c"/><circle cx="8" cy="-4" r="4" fill="#4a1b0c"/></svg>`;
+export const STAR_ICON = `<svg viewBox="-50 -50 100 100" aria-hidden="true"><path d="M0,-44 L12,-14 L42,-13 L18,6 L27,36 L0,19 L-27,36 L-18,6 L-42,-13 L-12,-14 Z" fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/><circle cx="-8" cy="-4" r="4" fill="#4a1b0c"/><circle cx="8" cy="-4" r="4" fill="#4a1b0c"/></svg>`;
 
 /**
  * The sticker album, on one page: a grid of stamps, one per planned friend

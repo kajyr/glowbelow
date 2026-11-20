@@ -29,7 +29,9 @@ import { WorldState, type CreatureName, type StampName } from './game/worldState
 import { browserStorage, clearSave, loadSave, Saver, saveUnavailableHere } from './game/save';
 import { loadVolumes, saveVolumes } from './game/settings';
 import { ParentCorner } from './ui/parentCorner';
-import { Album, stampArt } from './ui/album';
+import { Album, stampArt, type StarfishZone } from './ui/album';
+import { Ending } from './ui/ending';
+import { SurfaceEnding } from './game/ending';
 import { Input } from './input';
 import { generateWorld, ridePath } from './levels/assembleWorld';
 import { whaleFallSpots } from './levels/whaleFall';
@@ -249,7 +251,7 @@ async function boot() {
   // Play pauses while the album or the parent corner is open.
   let overlayOpen = false;
   const overlayChanged = () => {
-    overlayOpen = album.open || parent.open;
+    overlayOpen = album.open || parent.open || ending.open;
     if (!album.open) facts.stop();
     synth.setDucked(overlayOpen);
     input.reset();
@@ -278,6 +280,12 @@ async function boot() {
     'giant-squid': () => synth.giantSquid(),
     cuttlefish: () => synth.cuttlefish(),
   };
+  const starfishZones: StarfishZone[] = [
+    { zone: 'home', tint: '#0b2150', ids: starfish.idsIn('home') },
+    { zone: 'twilight', tint: '#3b3f8f', ids: starfish.idsIn('twilight') },
+    { zone: 'whale-fall', tint: '#1f4a73', ids: starfish.idsIn('whale-fall') },
+    { zone: 'sunlit-reef', tint: '#2f9cc4', ids: starfish.idsIn('sunlit-reef') },
+  ];
   const album = new Album(container, worldState, {
     onStampSound: (s) => stampSounds[s]?.(),
     // Silent while muted; closing the album stops it (see overlayChanged).
@@ -287,12 +295,15 @@ async function boot() {
     onChooseGlow: (c) => {
       if (worldState.chooseGlow(c)) wearGlow(c);
     },
-  }, [
-    { zone: 'home', tint: '#0b2150', ids: starfish.idsIn('home') },
-    { zone: 'twilight', tint: '#3b3f8f', ids: starfish.idsIn('twilight') },
-    { zone: 'whale-fall', tint: '#1f4a73', ids: starfish.idsIn('whale-fall') },
-    { zone: 'sunlit-reef', tint: '#2f9cc4', ids: starfish.idsIn('sunlit-reef') },
-  ]);
+  }, starfishZones);
+  // The ending at the reef's surface: shooting stars and every starfish found. Closing it eases the squid back down.
+  const ending = new Ending(container, worldState, starfishZones, {
+    onOpenChange: (open) => {
+      overlayChanged();
+      if (!open) body.vel.y = Math.min(body.vel.y, -TUNING.ending.sinkTo);
+    },
+  });
+  const surfaceEnding = new SurfaceEnding(surface);
   // Inside another site's frame (itch.io), the browser may block storage: tell the grown-ups.
   const framed = (() => {
     try {
@@ -391,7 +402,7 @@ async function boot() {
   input.onKey = (code) => {
     if (code === 'KeyM') toggleMute();
     // B opens the album (A steers left).
-    if (code === 'KeyB' && mode === 'play' && !parent.open) album.toggle();
+    if (code === 'KeyB' && mode === 'play' && !parent.open && !ending.open) album.toggle();
     if (mode === 'title' && (code === 'Space' || code === 'Enter')) start('keyboard');
     if (DEBUG && code === 'KeyC') overlay.visible = !overlay.visible;
     if (DEBUG && code === 'KeyG') reach.visible = !reach.visible;
@@ -664,6 +675,12 @@ async function boot() {
       contact = collide(body, TUNING.squid.radius, built.world, dt);
       shaftPush(body, level.shaft, dt, gate);
       surfacePush(body, surface, dt);
+    }
+    // The top of the world: the ending.
+    if (!giant.riding && surfaceEnding.update(body.pos)) {
+      ending.show();
+      synth.flourish();
+      setTimeout(() => synth.chord(), 600);
     }
     // Corals: swimming into one steps it to its next colour.
     for (const id of coralTouch.update(body.pos, TUNING.squid.radius)) touchCoral(id, true, true);

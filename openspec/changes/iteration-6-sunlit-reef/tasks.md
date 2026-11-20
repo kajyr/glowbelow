@@ -32,12 +32,12 @@
 
 ## 5. Ending (issue #2)
 
-- [ ] 5.1 Add the ending trigger at the reef's surface with its re-arm distance; verify Vitest tests that it fires once per visit and not on a quick second bump
-- [ ] 5.2 Build the win card overlay: shooting stars and one starfish strip per zone, pausing play, closed by tap, Space or Escape; verify on a phone and a tablet, with no text
-- [ ] 5.3 Ease the squid back below the surface on close; verify nothing in the save changes
+- [x] 5.1 Add the ending trigger at the reef's surface with its re-arm distance; verify Vitest tests that it fires once per visit and not on a quick second bump
+- [x] 5.2 Build the win card overlay: shooting stars and one starfish strip per zone, pausing play, closed by tap, Space or Escape; verify on a phone and a tablet, with no text
+- [x] 5.3 Ease the squid back below the surface on close; verify nothing in the save changes
 
 ## 6. Verification
 
 - [ ] 6.1 Play the full world on a tablet: home, Whale fall, Twilight, reef, all five friends, the ending; verify 60 fps and no stuck spots
-- [ ] 6.2 Run `npm test` and `npm run build`; verify both pass
+- [x] 6.2 Run `npm test` and `npm run build`; verify both pass
 - [ ] 6.3 Write the iteration's devlog post in `docs/itch/devlog/` with screenshots; verify it reads well for parents
