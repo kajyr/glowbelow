@@ -691,9 +691,6 @@ button {
   align-items: center;
 }
 
-.album.completed .starfish-row {
-  justify-content: flex-end;
-}
 
 .album-stars {
   flex: 1;
@@ -786,10 +783,10 @@ button {
 }
 
 /*
- * The completed stamp: red ink at an angle, like a real rubber stamp, on
- * the left of the starfish strips (their starfish move right to make room),
- * so it covers none of the creatures. It thumps down when the journey ends
- * (with a little shake of the book) and stays there.
+ * The completed stamp: red ink at an angle, like a real rubber stamp,
+ * stamped over the left of the starfish strips, so it covers none of the
+ * creatures. It thumps down when the journey ends (with a little shake of
+ * the book) and stays there.
  */
 .album-done {
   position: absolute;
@@ -797,6 +794,7 @@ button {
   top: -6%;
   height: 112%;
   aspect-ratio: 1;
+  z-index: 1;
   color: rgba(214, 38, 52, 0.9);
   transform: rotate(-14deg);
   pointer-events: none;

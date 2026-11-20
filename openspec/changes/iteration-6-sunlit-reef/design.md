@@ -60,7 +60,7 @@
 - The rest of the surface is only a soft wall: looking for the cuttlefish near the top never ends the game by accident (the first version used the whole surface and was too easy to bump into)
 - Drawn with normal blending (warm column, a glowing gap, rising sparkles): added light vanishes in the bright water
 - Completing opens the album, where a completed stamp thumps onto the page and stays (the first version had its own win card with shooting stars; the album is the game's one goal, so the end belongs there)
-- The stamp is an inline SVG: double ring, star, the word on an arc, roughened with an SVG noise filter for a rubber-stamp look; it sits on the left of the starfish strips (their starfish move right), covering no creature
+- The stamp is an inline SVG: double ring, star, the word on an arc, roughened with an SVG noise filter for a rubber-stamp look; it is stamped over the left of the starfish strips, covering no creature
 - Saved as `completed` in the world state; the sunbeam opens the album again only after the squid has swum well away
 
 ### Sunglasses as an attachable node

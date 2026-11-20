@@ -16,7 +16,7 @@ Beside the starfish strips, the album page SHALL show the glow-colour dots, in r
 - **THEN** the dot wiggles and nothing else changes
 
 ### Requirement: Completed stamp
-When the journey is completed (the sunbeam in the Sunlit reef, as defined in `sunlit-reef`), the album SHALL open and a completed stamp SHALL thump onto its page: red ink in a double ring, a star in the middle and the word round the top, at an angle, with rough edges and patchy ink like a real rubber stamp. It SHALL sit on the left of the starfish strips, whose starfish move to the right end to make room, so it covers no creature stamp. The stamp SHALL stay on the page every time the album is opened afterwards. The word is decoration: nothing needs reading.
+When the journey is completed (the sunbeam in the Sunlit reef, as defined in `sunlit-reef`), the album SHALL open and a completed stamp SHALL thump onto its page: red ink in a double ring, a star in the middle and the word round the top, at an angle, with rough edges and patchy ink like a real rubber stamp. It SHALL be stamped over the left of the starfish strips, on top of them, so it covers no creature stamp. The stamp SHALL stay on the page every time the album is opened afterwards. The word is decoration: nothing needs reading.
 
 #### Scenario: Completing the journey
 - **WHEN** the squid swims up into the sunbeam
