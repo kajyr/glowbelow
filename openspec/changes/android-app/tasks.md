@@ -15,7 +15,7 @@
 
 ## 3. Android behaviour
 
-- [ ] 3.1 Lock to `sensorLandscape` and hide system bars (transient by swipe) in the generated activity; verify on the tablet: no bars, turns between landscape sides, bars hide again after a swipe
+- [x] 3.1 Lock to `sensorLandscape` and hide system bars (transient by swipe) in the generated activity; verify on the tablet: no bars, turns between landscape sides, bars hide again after a swipe
 - [x] 3.2 Check safe areas on a phone with a camera cut-out; verify no HUD control is covered and hit areas stay ≥ 64 px
 - [x] 3.3 Add a pure "what does back close?" function in `src/game/` with tests (album open → close album; parent corner open → close it; otherwise → nothing)
 - [x] 3.4 Wire back in `MainActivity`: ask the page, else `moveTaskToBack(true)`; verify back closes the album, and back during play resumes in place with progress saved
@@ -36,7 +36,7 @@
 - [x] 5.3 Add Playwright and `tools/capture_store.mjs` (`npm run capture:store`): staged scenes from fixed seeds via `window.game`, at least four landscape screenshots per required device set; verify two runs give the same scenes and sizes pass Play's limits
 - [x] 5.4 Capture the 1024×500 feature graphic in the same script; verify size and that the title reads at phone size
 - [x] 5.5 Add the debug-only capture helper (canvas + game audio into one recording) with a scripted 20–30 s swim, and an `ffmpeg` step to a 1080p mp4; verify the video has sound, no HUD, and plays in QuickTime
-- [ ] 5.6 Upload the video unlisted to the user's YouTube channel through Claude in Chrome; verify the link plays logged out
+- [x] 5.6 Upload the video unlisted to the user's YouTube channel through Claude in Chrome; verify the link plays logged out
 - [ ] 5.7 User sets up the Play payments profile (bank, tax) and accepts any agreements; Claude then creates the app as paid and fills listing, media, Families, content rating, Data safety, ads, app access, pricing and countries from the checklist; verify the console's dashboard shows no missing setup items, and write any new answer back to `docs/play/listing.md`
 - [ ] 5.8 Claude uploads the first bundle to internal testing with release notes; the user installs it from Play on the tablet and plays from title to album; verify everything works offline
 - [ ] 5.9 If the account needs a closed test before production (12 testers, 14 days): the user gives tester emails, Claude sets up the track and asks before starting it; note the dates in `docs/play/listing.md`

@@ -45,7 +45,7 @@ One price, everything included: no ads, no in-app purchases, no accounts, no lin
 | 10" tablet screenshots | `docs/play/tablet10-*.png` | 2560×1600 |
 | Video | YouTube link (unlisted), see below | 1080p |
 
-- Video URL: _(filled after upload)_
+- Video URL: <https://youtu.be/K2SNdE0bjHU> (unlisted, "made for kids"; regenerate with `npm run capture:store -- --video`, replace the upload, update this link)
 
 ### Category and contact
 

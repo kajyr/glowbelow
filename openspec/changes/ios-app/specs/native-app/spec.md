@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Landscape full screen
-The app SHALL run only in landscape, turning with the device between the two landscape sides, and SHALL fill the whole screen with the system bars hidden during play. The game's own rotate-device icon SHALL never be needed in the app.
+The app SHALL ask for landscape only, turning with the device between the two landscape sides, and SHALL fill the whole screen with the system bars hidden during play. Where the system overrides that request (Android 16+ on large screens), a device held in portrait SHALL get the game's rotate-device icon with play paused, as on the web.
 
 #### Scenario: Android tablet
 - **WHEN** the app is opened on an Android tablet held in landscape
@@ -10,6 +10,10 @@ The app SHALL run only in landscape, turning with the device between the two lan
 #### Scenario: Turning the tablet over
 - **WHEN** the Android tablet is turned from one landscape side to the other
 - **THEN** the game turns with it and keeps playing
+
+#### Scenario: Large tablet held in portrait
+- **WHEN** a large Android tablet that ignores the landscape request is held in portrait
+- **THEN** the rotate-device icon is shown and play pauses until it is turned back
 
 #### Scenario: Bars swiped in
 - **WHEN** the child swipes from the screen edge and the system bars appear

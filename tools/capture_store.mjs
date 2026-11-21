@@ -191,7 +191,7 @@ async function video(browser) {
 
   // 1080p H.264 + AAC, at most 30 s, ready for YouTube (and App Store previews later).
   execSync(
-    `ffmpeg -y -loglevel error -i "${webm}" -t 30 -vf "scale=1920:1080:flags=lanczos,fps=30" -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -ar 48000 -movflags +faststart "${OUT}/promo.mp4"`,
+    `ffmpeg -y -loglevel error -i "${webm}" -t 30 -vf "scale=1920:1080:flags=lanczos,fps=30" -c:v libx264 -preset slow -crf 21 -pix_fmt yuv420p -c:a aac -b:a 192k -ar 48000 -movflags +faststart "${OUT}/promo.mp4"`,
   );
   rmSync(webm, { force: true });
   console.log('wrote docs/play/promo.mp4');
