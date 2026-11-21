@@ -16,7 +16,7 @@
 ## 3. Android behaviour
 
 - [ ] 3.1 Lock to `sensorLandscape` and hide system bars (transient by swipe) in the generated activity; verify on the tablet: no bars, turns between landscape sides, bars hide again after a swipe
-- [ ] 3.2 Check safe areas on a phone with a camera cut-out; verify no HUD control is covered and hit areas stay ≥ 64 px
+- [x] 3.2 Check safe areas on a phone with a camera cut-out; verify no HUD control is covered and hit areas stay ≥ 64 px
 - [x] 3.3 Add a pure "what does back close?" function in `src/game/` with tests (album open → close album; parent corner open → close it; otherwise → nothing)
 - [x] 3.4 Wire back in `MainActivity`: ask the page, else `moveTaskToBack(true)`; verify back closes the album, and back during play resumes in place with progress saved
 - [x] 3.5 Add the local keep-awake Tauri plugin (Android: `FLAG_KEEP_SCREEN_ON`) and call it on play, clearing it in the parent corner and on the title screen; verify the screen stays on past the timeout during play and dims on the title screen
@@ -26,8 +26,8 @@
 ## 4. Signing and release command
 
 - [ ] 4.1 Create the upload keystore outside the repo, back it up in the password manager, and wire the Gradle signing config to read it from `~/.config/glowbelow/` and environment variables
-- [ ] 4.2 Add `just release-android`: `npm test`, key check with a clear message, `tauri android build --aab`; verify a signed `.aab` is produced, and that without the key it stops before building
-- [ ] 4.3 Verify the version: after a test bump, the bundle's `versionName` matches `package.json` and `versionCode` is higher; revert the bump
+- [x] 4.2 Add `just release-android`: `npm test`, key check with a clear message, `tauri android build --aab`; verify a signed `.aab` is produced, and that without the key it stops before building
+- [x] 4.3 Verify the version: after a test bump, the bundle's `versionName` matches `package.json` and `versionCode` is higher; revert the bump
 
 ## 5. Store listing and paperwork
 
