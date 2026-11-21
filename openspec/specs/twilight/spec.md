@@ -7,7 +7,7 @@ Twilight is the dreamy open shaft above Midnight home, where light starts to arr
 ## Requirements
 
 ### Requirement: Twilight layout
-Twilight SHALL be a tall open zone about 3 screens wide and 10 screens tall, generated from the world's seed like Midnight home, with Midnight home below it and a one-way passage at the top joining the Sunlit reef. Rock ledges on the side walls SHALL break up the shaft without blocking it.
+Twilight SHALL be a tall open zone about 3 screens wide and 10 screens tall, generated from the world's seed like Midnight home, with Midnight home below it and an open passage at the top joining the Sunlit reef. Rock ledges on the side walls SHALL break up the shaft without blocking it.
 
 #### Scenario: Open shaft
 - **WHEN** the squid swims from the bottom to the top of Twilight
@@ -55,13 +55,21 @@ Friends that point toward the nearest unlit thing (dumbo, the firefly arrow) SHA
 - **WHEN** the squid hovers still in Twilight with dumbo following and unlit lanterns nearby
 - **THEN** dumbo points toward the nearest unlit lantern, not a plant back home
 
-### Requirement: Top passage is one-way
-The passage at the top of Twilight SHALL gently turn the squid back with a soft wall when it swims up, and SHALL let it through when it swims down from the Sunlit reef. The reef's light SHALL shimmer through the passage from below. The only way up into the reef SHALL be the giant squid's arm, as defined in `giant-squid`.
+### Requirement: Top passage is open both ways
+The passage at the top of Twilight SHALL let the squid swim up into the Sunlit reef and down out of it freely, like the passage between Midnight home and Twilight, with no soft wall in either direction. The reef's light SHALL shimmer down through the passage, so the way up can be spotted from Twilight.
 
 #### Scenario: Swimming up
-- **WHEN** the squid swims up into the top passage
-- **THEN** it is gently eased back down with no penalty, and the reef's light shimmers above
+- **WHEN** the squid swims up through the top passage of Twilight
+- **THEN** it continues into the Sunlit reef
+
+#### Scenario: Even dashing
+- **WHEN** the squid dashes up through the top passage
+- **THEN** it continues into the Sunlit reef, and nothing pushes it back
 
 #### Scenario: Swimming down
 - **WHEN** the squid swims down out of the Sunlit reef
 - **THEN** it continues into the top of Twilight
+
+#### Scenario: Seeing the way up
+- **WHEN** the squid is near the top of Twilight
+- **THEN** the reef's light shimmers down through the passage above it

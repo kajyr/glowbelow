@@ -28,7 +28,7 @@ The awake giant squid SHALL move slowly, keep its eye looking at the vampire squ
 - **THEN** the giant squid's eye follows it
 
 ### Requirement: The way up
-Touching the awake giant squid's offered arm SHALL let the squid ride it up and set it down at the first zone on the way up it has not reached yet: just inside the bottom of Twilight until the squid has reached Twilight once, then the Sunlit reef. Steering away during the ride SHALL hop off. After setting the squid down, the giant squid SHALL sink back to its spot in Whale fall, and the squid swims back down by itself. The ride SHALL be the only way into the Sunlit reef; this is the one place where a friend gates progress.
+Touching the awake giant squid's offered arm SHALL let the squid ride it up and set it down at the first zone on the way up it has not reached yet: just inside the bottom of Twilight until the squid has reached Twilight once, then the Sunlit reef. Steering away during the ride SHALL hop off. After setting the squid down, the giant squid SHALL sink back to its spot in Whale fall, and the squid swims back down by itself. The ride is an express lift: every zone it goes to can also be reached by swimming, so no friend gates progress.
 
 #### Scenario: Express lift
 - **WHEN** the squid touches the offered arm
@@ -45,6 +45,10 @@ Touching the awake giant squid's offered arm SHALL let the squid ride it up and 
 #### Scenario: Reef already visited
 - **WHEN** the squid has already been to the Sunlit reef and touches the offered arm
 - **THEN** the arm sets it down in the Sunlit reef again
+
+#### Scenario: Reef without the ride
+- **WHEN** the giant squid has never been woken
+- **THEN** the squid can still reach the Sunlit reef by swimming up Twilight
 
 #### Scenario: Hopping off
 - **WHEN** the player steers away during the ride
