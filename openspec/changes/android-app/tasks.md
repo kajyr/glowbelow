@@ -35,7 +35,7 @@
 - [ ] 5.2 Write `docs/play/listing.md`: title, short and full description, category, tags (in the plain voice of `docs/itch/description.md`), plus the form-answer checklist (Families ages 5–8, content rating, Data safety: nothing collected or shared, no ads, no login, paid, countries)
 - [x] 5.3 Add Playwright and `tools/capture_store.mjs` (`npm run capture:store`): staged scenes from fixed seeds via `window.game`, at least four landscape screenshots per required device set; verify two runs give the same scenes and sizes pass Play's limits
 - [x] 5.4 Capture the 1024×500 feature graphic in the same script; verify size and that the title reads at phone size
-- [ ] 5.5 Add the debug-only capture helper (canvas + game audio into one recording) with a scripted 20–30 s swim, and an `ffmpeg` step to a 1080p mp4; verify the video has sound, no HUD, and plays in QuickTime
+- [x] 5.5 Add the debug-only capture helper (canvas + game audio into one recording) with a scripted 20–30 s swim, and an `ffmpeg` step to a 1080p mp4; verify the video has sound, no HUD, and plays in QuickTime
 - [ ] 5.6 Upload the video unlisted to the user's YouTube channel through Claude in Chrome; verify the link plays logged out
 - [ ] 5.7 User sets up the Play payments profile (bank, tax) and accepts any agreements; Claude then creates the app as paid and fills listing, media, Families, content rating, Data safety, ads, app access, pricing and countries from the checklist; verify the console's dashboard shows no missing setup items, and write any new answer back to `docs/play/listing.md`
 - [ ] 5.8 Claude uploads the first bundle to internal testing with release notes; the user installs it from Play on the tablet and plays from title to album; verify everything works offline
@@ -43,9 +43,9 @@
 
 ## 6. Docs and release steps
 
-- [ ] 6.1 Update `AGENTS.md`: Android commands, `just release-android`, `npm run capture:store`, where keys live, and the "Play update after each iteration" step (Claude refreshes media, uploads, fills the release, asks before sending for review)
-- [ ] 6.2 Update `GAME_DESIGN.md` tech notes (targets and hosting) and `README.md` (how to build the Android app)
-- [ ] 6.3 Run `npm test`, `npm run build` and `npm run build:itch`; verify web and itch.io builds are unchanged (service worker present on web, absent on itch)
+- [x] 6.1 Update `AGENTS.md`: Android commands, `just release-android`, `npm run capture:store`, where keys live, and the "Play update after each iteration" step (Claude refreshes media, uploads, fills the release, asks before sending for review)
+- [x] 6.2 Update `GAME_DESIGN.md` tech notes (targets and hosting) and `README.md` (how to build the Android app)
+- [x] 6.3 Run `npm test`, `npm run build` and `npm run build:itch`; verify web and itch.io builds are unchanged (service worker present on web, absent on itch)
 
 ## Workflow follow-up
 

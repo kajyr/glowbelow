@@ -8,3 +8,7 @@ release/
 *.jks
 *.keystore
 keystore.properties
+
+# Store videos are regenerated with `npm run capture:store -- --video`
+docs/play/*.mp4
+docs/play/*.webm

@@ -419,9 +419,9 @@ World shape: Midnight home at the bottom, Whale fall beside it to the left, Twil
 | Physics | None; simple steering + sphere/capsule pushes |
 | Audio | Web Audio API (or Howler.js) |
 | Save | `localStorage` |
-| Targets | Tablet first (iPad Safari, Android Chrome), landscape; then desktop Chrome/Firefox/Safari; 60 fps on a mid tablet |
+| Targets | Tablet first (iPad Safari, Android Chrome), landscape; then desktop Chrome/Firefox/Safari; 60 fps on a mid tablet. Store apps: Android (Google Play), then iOS, through a Tauri 2 shell |
 | i18n | Plain JSON string files, English first, Italian second |
-| Hosting | Static site (GitHub Pages / Netlify) |
+| Hosting | Static site (GitHub Pages), itch.io, Google Play (paid, Families) |
 
 Performance budget (first guess):
 

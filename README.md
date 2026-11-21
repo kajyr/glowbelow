@@ -70,11 +70,14 @@ npm run dev      # http://localhost:5173
 | `npm run preview`    | Serve the production build                                      |
 | `npm run build:itch` | Build and zip for itch.io into `release/glowbelow-itch.zip`     |
 | `just release`       | Test, build and push to itch.io with `butler`; run after each archived iteration |
+| `npm run build:app`  | Build for the store apps (no service worker)                    |
+| `just release-android` | Test, then build the signed Android App Bundle for Google Play |
+| `npm run capture:store` | Store screenshots and feature graphic into `docs/play/` (`-- --video` for the promo video) |
 
 Useful URL parameters:
 
 - `?seed=123` — play a specific world
-- `?debug` — FPS and state overlay; keys `C` colliders, `G` reach, `O` overview, `L` light all plants
+- `?debug` — FPS and state overlay; keys `C` colliders, `G` reach, `O` overview, `L` light all plants; `window.game` for staging scenes
 - `?nobloom` — turn off bloom on slow devices
 
 ---

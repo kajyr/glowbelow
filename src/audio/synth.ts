@@ -17,6 +17,8 @@ const PENTA = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51, 
 export class Synth {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  /** The last node before the speakers (the compressor). */
+  private out: AudioNode | null = null;
   private padExtra: GainNode | null = null;
   private padTwilight: GainNode | null = null;
   private padWhale: GainNode | null = null;
@@ -61,6 +63,7 @@ export class Synth {
     comp.threshold.value = -18;
     comp.ratio.value = 4;
     comp.connect(ctx.destination);
+    this.out = comp;
     this.master = ctx.createGain();
     this.master.gain.value = this.muted ? 0 : 0.8;
     this.master.connect(comp);
@@ -79,6 +82,14 @@ export class Synth {
     void ctx.resume();
     this.startPad();
     if (!this.runs) void ctx.suspend();
+  }
+
+  /** Debug (the store video): the game's sound as a stream, still playing on the speakers too. */
+  captureStream(): MediaStream | null {
+    if (!this.ctx || !this.out) return null;
+    const dest = this.ctx.createMediaStreamDestination();
+    this.out.connect(dest);
+    return dest.stream;
   }
 
   /** Music (the pad) and effects volume, each 0 → 1. */
