@@ -38,6 +38,6 @@
 
 ## 6. Verification
 
-- [ ] 6.1 Play the full world on a tablet: home, Whale fall, Twilight, reef, all five friends, the ending; verify 60 fps and no stuck spots
+- [x] 6.1 Play the full world on a tablet: home, Whale fall, Twilight, reef, all five friends, the ending; verify 60 fps and no stuck spots
 - [x] 6.2 Run `npm test` and `npm run build`; verify both pass
 - [x] 6.3 Write the iteration's devlog post in `docs/itch/devlog/` with screenshots; verify it reads well for parents

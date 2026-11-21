@@ -66,3 +66,10 @@ The squid's glowing arm tips SHALL get brighter as the meter fills, so the meter
 #### Scenario: Full meter on the squid
 - **WHEN** the meter is full
 - **THEN** the squid's arm tips glow noticeably brighter than when the meter is empty
+
+### Requirement: Glow uses the chosen colour
+The pulse ring, the squid's glow tips and the glow button SHALL use the currently chosen glow colour.
+
+#### Scenario: Pink glow
+- **WHEN** the chosen glow colour is pink and the player glows
+- **THEN** the ring of light, the glow tips and the glow button are pink
