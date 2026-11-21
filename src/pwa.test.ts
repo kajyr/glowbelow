@@ -15,6 +15,11 @@ describe('offline install', () => {
     expect(offlineAllowed({ ...own, target: 'itch' })).toBe(false);
   });
 
+  test('never in the store apps', () => {
+    expect(offlineAllowed({ ...own, target: 'app' })).toBe(false);
+    expect(offlineAllowed({ ...own, hostname: 'tauri.localhost' , target: 'app' })).toBe(false);
+  });
+
   test('never inside a frame or on an itch host', () => {
     expect(offlineAllowed({ ...own, framed: true })).toBe(false);
     expect(offlineAllowed({ ...own, hostname: 'html-classic.itch.zone' })).toBe(false);

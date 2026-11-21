@@ -7,14 +7,19 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "build:itch": "VITE_TARGET=itch npm run build && rm -rf release && mkdir -p release && cd dist && zip -qrX ../release/glowbelow-itch.zip . -x '*.DS_Store'",
+    "build:app": "VITE_TARGET=app npm run build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "capture:store": "node tools/capture_store.mjs",
+    "test": "vitest run",
+    "tauri": "tauri"
   },
   "dependencies": {
     "three": "^0.160.0"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "2.12.4",
     "@types/three": "^0.160.0",
+    "playwright": "1.65.0",
     "typescript": "^5.9.3",
     "vite": "^5.4.21",
     "vite-plugin-pwa": "^0.21.2",

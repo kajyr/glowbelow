@@ -1,15 +1,15 @@
 ## 1. Tooling and shell
 
-- [ ] 1.1 Confirm the app identifier with the user (`com.kajyr.glowbelow` proposed; permanent once published) and note it in `design.md`
-- [ ] 1.2 Install Android Studio, SDK, NDK and Java 17; add the Rust Android targets; verify `npx tauri info` reports no missing Android tools
-- [ ] 1.3 Add `@tauri-apps/cli` as a dev dependency and run `tauri init` into `src-tauri/` (`frontendDist: ../dist`, `beforeBuildCommand: npm run build:app`, version from `../package.json`); verify `npm run build` still passes
-- [ ] 1.4 Run `tauri android init`, commit `src-tauri/gen/android`, extend `.gitignore` (build outputs, `*.jks`, `keystore.properties`); verify `git status` shows no build output
+- [x] 1.1 Confirm the app identifier with the user (`com.kajyr.glowbelow` proposed; permanent once published) and note it in `design.md`
+- [x] 1.2 Install Android Studio, SDK, NDK and Java 17; add the Rust Android targets; verify `npx tauri info` reports no missing Android tools
+- [x] 1.3 Add `@tauri-apps/cli` as a dev dependency and run `tauri init` into `src-tauri/` (`frontendDist: ../dist`, `beforeBuildCommand: npm run build:app`, version from `../package.json`); verify `npm run build` still passes
+- [x] 1.4 Run `tauri android init`, commit `src-tauri/gen/android`, extend `.gitignore` (build outputs, `*.jks`, `keystore.properties`); verify `git status` shows no build output
 
 ## 2. App build target
 
-- [ ] 2.1 Add `build:app` (`VITE_TARGET=app`), disable the PWA plugin for `app` in `vite.config.ts`, add `app` to `src/env.d.ts`; verify `dist/` has no `sw.js` or manifest after `npm run build:app`
-- [ ] 2.2 Make `offlineAllowed` return false for `app`, with a test in `src/pwa.test.ts`; verify `npm test` passes
-- [ ] 2.3 Add an `isApp()` helper and hide the parent corner's "open full page" in the app; add a test that the option never shows for `app`
+- [x] 2.1 Add `build:app` (`VITE_TARGET=app`), disable the PWA plugin for `app` in `vite.config.ts`, add `app` to `src/env.d.ts`; verify `dist/` has no `sw.js` or manifest after `npm run build:app`
+- [x] 2.2 Make `offlineAllowed` return false for `app`, with a test in `src/pwa.test.ts`; verify `npm test` passes
+- [x] 2.3 Add an `isApp()` helper and hide the parent corner's "open full page" in the app; add a test that the option never shows for `app`
 - [ ] 2.4 Run `tauri android dev` on an emulator and a real Android tablet; verify the game loads all models and sounds with networking off on the first launch
 - [ ] 2.5 Measure frame rate on a mid-range Android tablet during a big glow pulse with dumbo following; verify at or near 60 fps, or record what to tune
 
@@ -17,11 +17,11 @@
 
 - [ ] 3.1 Lock to `sensorLandscape` and hide system bars (transient by swipe) in the generated activity; verify on the tablet: no bars, turns between landscape sides, bars hide again after a swipe
 - [ ] 3.2 Check safe areas on a phone with a camera cut-out; verify no HUD control is covered and hit areas stay ≥ 64 px
-- [ ] 3.3 Add a pure "what does back close?" function in `src/game/` with tests (album open → close album; parent corner open → close it; otherwise → nothing)
-- [ ] 3.4 Wire back in `MainActivity`: ask the page, else `moveTaskToBack(true)`; verify back closes the album, and back during play resumes in place with progress saved
-- [ ] 3.5 Add the local keep-awake Tauri plugin (Android: `FLAG_KEEP_SCREEN_ON`) and call it on play, clearing it in the parent corner and on the title screen; verify the screen stays on past the timeout during play and dims on the title screen
-- [ ] 3.6 Check sound on background and screen lock; if `visibilitychange` does not fire, dispatch it from `onPause`/`onResume`; verify silence in the background and sound back on return, with mute respected
-- [ ] 3.7 Verify saves: progress survives closing the app, a device restart, and installing a newer build over the old one
+- [x] 3.3 Add a pure "what does back close?" function in `src/game/` with tests (album open → close album; parent corner open → close it; otherwise → nothing)
+- [x] 3.4 Wire back in `MainActivity`: ask the page, else `moveTaskToBack(true)`; verify back closes the album, and back during play resumes in place with progress saved
+- [x] 3.5 Add the local keep-awake Tauri plugin (Android: `FLAG_KEEP_SCREEN_ON`) and call it on play, clearing it in the parent corner and on the title screen; verify the screen stays on past the timeout during play and dims on the title screen
+- [x] 3.6 Check sound on background and screen lock; if `visibilitychange` does not fire, dispatch it from `onPause`/`onResume`; verify silence in the background and sound back on return, with mute respected
+- [x] 3.7 Verify saves: progress survives closing the app, a device restart, and installing a newer build over the old one
 
 ## 4. Signing and release command
 
@@ -33,8 +33,8 @@
 
 - [ ] 5.1 Write `public/privacy.html` (no data collected, nothing leaves the device, contact address chosen by the user); verify it is published on GitHub Pages and reachable from a phone
 - [ ] 5.2 Write `docs/play/listing.md`: title, short and full description, category, tags (in the plain voice of `docs/itch/description.md`), plus the form-answer checklist (Families ages 5–8, content rating, Data safety: nothing collected or shared, no ads, no login, paid, countries)
-- [ ] 5.3 Add Playwright and `tools/capture_store.mjs` (`npm run capture:store`): staged scenes from fixed seeds via `window.game`, at least four landscape screenshots per required device set; verify two runs give the same scenes and sizes pass Play's limits
-- [ ] 5.4 Add `tools/feature_graphic.html` and capture the 1024×500 feature graphic in the same script; verify size and that the title reads at phone size
+- [x] 5.3 Add Playwright and `tools/capture_store.mjs` (`npm run capture:store`): staged scenes from fixed seeds via `window.game`, at least four landscape screenshots per required device set; verify two runs give the same scenes and sizes pass Play's limits
+- [x] 5.4 Capture the 1024×500 feature graphic in the same script; verify size and that the title reads at phone size
 - [ ] 5.5 Add the debug-only capture helper (canvas + game audio into one recording) with a scripted 20–30 s swim, and an `ffmpeg` step to a 1080p mp4; verify the video has sound, no HUD, and plays in QuickTime
 - [ ] 5.6 Upload the video unlisted to the user's YouTube channel through Claude in Chrome; verify the link plays logged out
 - [ ] 5.7 User sets up the Play payments profile (bank, tax) and accepts any agreements; Claude then creates the app as paid and fills listing, media, Families, content rating, Data safety, ads, app access, pricing and countries from the checklist; verify the console's dashboard shows no missing setup items, and write any new answer back to `docs/play/listing.md`

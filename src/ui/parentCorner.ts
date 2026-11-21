@@ -1,5 +1,6 @@
 import { t } from '../i18n';
 import type { Volumes } from '../game/settings';
+import { isApp, offerFullPage } from '../target';
 
 /** How long the corner control (or the P key) must be held. */
 export const HOLD_TIME = 3;
@@ -76,7 +77,9 @@ export class ParentCorner {
     this.panel.querySelector('.cancel')!.addEventListener('click', () => this.confirm.classList.remove('show'));
     this.panel.querySelector('.erase')!.addEventListener('click', () => this.actions.onReset());
     this.panel.querySelector('.parent-close')!.addEventListener('click', () => this.setOpen(false));
-    this.panel.querySelector('.full-page')!.addEventListener('click', () => window.open(location.href, '_blank', 'noopener'));
+    // The store apps have no links out at all: the note and its button are not even there.
+    if (isApp()) this.note.remove();
+    else this.panel.querySelector('.full-page')!.addEventListener('click', () => window.open(location.href, '_blank', 'noopener'));
     // Clicks inside the panel never reach the game.
     this.panel.addEventListener('pointerdown', (e) => e.stopPropagation());
 
@@ -95,9 +98,9 @@ export class ParentCorner {
     window.addEventListener('keyup', (e) => e.code === 'KeyP' && this.holding === 'key' && this.stopHold());
   }
 
-  /** Shows the "can't save here" note (only when a frame blocks storage). */
+  /** Shows the "can't save here" note (only when a frame blocks storage; never in the app). */
   setSaveUnavailable(unavailable: boolean): void {
-    this.note.classList.toggle('show', unavailable);
+    this.note.classList.toggle('show', offerFullPage(unavailable));
   }
 
   /** Advances a hold; opens once it reaches HOLD_TIME. */

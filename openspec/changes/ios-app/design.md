@@ -1,6 +1,6 @@
 ## Context
 
-- After `android-app`: a Tauri 2 shell in `src-tauri/`, the `app` build target (no service worker, no links out), an `isApp()` helper, and a local keep-awake plugin with an Android side
+- After `android-app`: a Tauri 2 shell in `src-tauri/`, the `app` build target (no service worker, no links out), an `isApp()` helper, and `setKeepAwake` / `installBackHandler` in `src/ui/appBridge.ts` with an Android side in `MainActivity`; iOS needs a small local Tauri plugin (Swift) for its side, since Tauri only reaches native iOS code through plugins
 - This Mac has Xcode and Rust; no Apple Developer Program membership yet
 - The game already targets iPad Safari first: WebGL 2, Web Audio unlock on first tap, safe-area CSS for the home-screen PWA
 - WKWebView is the same engine as Safari, so rendering and performance should match the PWA
@@ -22,7 +22,7 @@
 
 ### iOS target in the same Tauri shell
 - `tauri ios init` adds `src-tauri/gen/apple` (Xcode project, committed like `gen/android`)
-- Same identifier as Android (`com.kajyr.glowbelow`, confirmed in `android-app`)
+- Same identifier as Android (`com.nightdrops.glowbelow`, confirmed in `android-app`)
 - Universal app (iPad + iPhone): the game already works on phones in landscape; iPad-only would give up iPhone families for no saving
 
 ### Orientation, status bar, home indicator

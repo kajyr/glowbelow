@@ -1,0 +1,17 @@
+[package]
+name = "glow-below"
+version = "0.0.0" # the app's version comes from package.json, through tauri.conf.json
+description = "Glow Below, a peaceful deep-sea game for young children"
+edition = "2024"
+rust-version = "1.90"
+publish = false
+
+[lib]
+name = "glow_below_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "2.12.5", features = [] }

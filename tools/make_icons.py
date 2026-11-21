@@ -3,7 +3,8 @@
     python3 tools/make_icons.py
 
 Reads artwork/squid-front.svg and writes public/icons/icon-192.png,
-icon-512.png and apple-touch-icon.png (180). The squid is shrunk into the
+icon-512.png and apple-touch-icon.png (180), plus src-tauri/app-icon.png
+(1024), the source `tauri icon` turns into the store app icons. The squid is shrunk into the
 middle 80% so the same picture works as a maskable icon (Android crops it
 to a circle or squircle; iOS rounds the corners itself).
 
@@ -22,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "artwork" / "squid-front.svg"
 OUT = ROOT / "public" / "icons"
 SIZES = {"icon-192.png": 192, "icon-512.png": 512, "apple-touch-icon.png": 180}
+APP_ICON = ROOT / "src-tauri" / "app-icon.png"
 
 BACKGROUND = "#042C53"
 SAFE = 0.8  # the squid fits the maskable safe circle
@@ -140,6 +142,8 @@ def main():
     for name, size in SIZES.items():
         (OUT / name).write_bytes(png(size, render(size, vb, shapes)))
         print(f"wrote public/icons/{name}")
+    APP_ICON.write_bytes(png(1024, render(1024, vb, shapes)))
+    print("wrote src-tauri/app-icon.png")
 
 
 if __name__ == "__main__":

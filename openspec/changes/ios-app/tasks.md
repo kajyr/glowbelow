@@ -7,7 +7,7 @@
 ## 2. iOS behaviour
 
 - [ ] 2.1 Set landscape-only, hidden status bar and full-screen-required in `Info.plist`; verify on iPad and iPhone: no status bar, turns between landscape sides, no split view
-- [ ] 2.2 Add the iOS side of the local plugin: home indicator auto-hide and deferred bottom-edge gesture; verify the indicator fades during play and one swipe up does not leave the app (or record the fallback)
+- [ ] 2.2 Add a small local Tauri plugin with an iOS (Swift) side: keep-awake behind `setKeepAwake` (see 2.3), home indicator auto-hide and deferred bottom-edge gesture; verify the indicator fades during play and one swipe up does not leave the app (or record the fallback)
 - [ ] 2.3 Add keep-awake on iOS (`isIdleTimerDisabled`) behind the existing JS hooks; verify the iPad stays on past auto-lock during play and locks normally on the title screen
 - [ ] 2.4 Set the audio session to ambient; verify the silent switch mutes the game, sound stops in the background and returns on resume with mute respected
 - [ ] 2.5 Check the HUD on an iPhone with a Dynamic Island in both landscape sides; verify no control is under the island or the home indicator and hit areas stay ≥ 64 px

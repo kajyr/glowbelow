@@ -2,8 +2,14 @@
  * All game sound, synthesised with Web Audio: no sound files. The context is
  * created on the first interaction (the title-screen tap), never before.
  * Everything goes through one master gain that the mute control sets to 0;
- * muting also suspends the context. A compressor keeps peaks soft.
+ * muting also suspends the context, and so does the game going off screen
+ * (an app in the background must be silent). A compressor keeps peaks soft.
  */
+
+/** The audio context runs only while sound is on and the game is on screen. */
+export function contextRuns(s: { muted: boolean; hidden: boolean }): boolean {
+  return !s.muted && !s.hidden;
+}
 
 // C major pentatonic over two octaves: any sequence sounds pleasant.
 const PENTA = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51, 1567.98, 1760.0];
@@ -23,9 +29,14 @@ export class Synth {
   private volume = { music: 1, effects: 1 };
   private noise: AudioBuffer | null = null;
   private muted = false;
+  private hidden = false;
   private noteIndex = 3;
   private noteDir = 1;
   private lastNote = 0;
+
+  private get runs(): boolean {
+    return contextRuns({ muted: this.muted, hidden: this.hidden });
+  }
 
   get started(): boolean {
     return this.ctx !== null;
@@ -67,7 +78,7 @@ export class Synth {
 
     void ctx.resume();
     this.startPad();
-    if (this.muted) void ctx.suspend();
+    if (!this.runs) void ctx.suspend();
   }
 
   /** Music (the pad) and effects volume, each 0 → 1. */
@@ -92,7 +103,15 @@ export class Synth {
     this.master.gain.cancelScheduledValues(now);
     this.master.gain.setTargetAtTime(muted ? 0 : 0.8, now, 0.03);
     if (muted) setTimeout(() => this.muted && this.ctx?.suspend(), 150);
-    else void this.ctx.resume();
+    else if (this.runs) void this.ctx.resume();
+  }
+
+  /** Off screen (another app, screen locked, tab hidden): silent until it comes back. */
+  setHidden(hidden: boolean): void {
+    this.hidden = hidden;
+    if (!this.ctx) return;
+    if (this.runs) void this.ctx.resume();
+    else void this.ctx.suspend();
   }
 
   private live(): AudioContext | null {

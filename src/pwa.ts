@@ -1,7 +1,7 @@
 import { registerSW } from 'virtual:pwa-register';
 
 export interface Where {
-  /** `VITE_TARGET` at build time: `itch` for the itch.io zip. */
+  /** `VITE_TARGET` at build time: `itch` for the itch.io zip, `app` for the store apps. */
   target: string | undefined;
   /** Running inside another page's frame. */
   framed: boolean;
@@ -14,10 +14,11 @@ const ITCH = /(^|\.)(itch\.io|itch\.zone|hwcdn\.net)$/;
 /**
  * Offline install belongs to the game's own address: never on the itch.io
  * build, inside a frame, or on an itch host (a safety net if the wrong build
- * is uploaded).
+ * is uploaded). Never in the store apps either: everything is already in the
+ * app, and new versions come from the store.
  */
 export function offlineAllowed(w: Where): boolean {
-  if (w.target === 'itch' || w.framed) return false;
+  if (w.target === 'itch' || w.target === 'app' || w.framed) return false;
   if (ITCH.test(w.hostname)) return false;
   try {
     return !ITCH.test(new URL(w.referrer).hostname);

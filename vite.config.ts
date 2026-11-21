@@ -8,8 +8,9 @@ export default defineConfig(({ mode }) => ({
   server: { host: true },
   plugins: [
     VitePWA({
-      // The itch.io zip registers no service worker (offline install stays on the game's own address).
-      disable: loadEnv(mode, '.', 'VITE_').VITE_TARGET === 'itch',
+      // The itch.io zip and the store apps register no service worker (offline install stays
+      // on the game's own address; the apps carry every file and update through the store).
+      disable: ['itch', 'app'].includes(loadEnv(mode, '.', 'VITE_').VITE_TARGET ?? ''),
       // A new version waits and takes over on the next launch; nothing ever prompts.
       registerType: 'prompt',
       injectRegister: false,

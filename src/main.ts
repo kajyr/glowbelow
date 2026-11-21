@@ -29,6 +29,8 @@ import { WorldState, type CreatureName, type StampName } from './game/worldState
 import { browserStorage, clearSave, loadSave, Saver, saveUnavailableHere } from './game/save';
 import { loadVolumes, saveVolumes } from './game/settings';
 import { ParentCorner } from './ui/parentCorner';
+import { installBackHandler, setKeepAwake } from './ui/appBridge';
+import { backAction, wantsAwake } from './game/appShell';
 import { Album, stampArt, type StarfishZone } from './ui/album';
 import { SurfaceEnding } from './game/ending';
 import { Input } from './input';
@@ -242,6 +244,12 @@ async function boot() {
   worldState.onChange = () => saver.request();
   const flushSave = () => saver.flush();
   document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flushSave());
+  // Off screen, all sound stops (in the store app the page keeps running in the background).
+  document.addEventListener('visibilitychange', () => {
+    const hidden = document.visibilityState === 'hidden';
+    synth.setHidden(hidden);
+    if (hidden) facts.stop();
+  });
   window.addEventListener('pagehide', flushSave);
 
   // The parent corner: volumes (settings, kept on start over), start over, and the frame note.
@@ -309,6 +317,13 @@ async function boot() {
     }
   })();
   parent.setSaveUnavailable(saveUnavailableHere(framed, storage));
+  // The store app's back button closes what is open; otherwise the app goes to the background.
+  installBackHandler(() => {
+    const action = backAction({ parentOpen: parent.open, albumOpen: album.open });
+    if (action === 'close-parent') parent.setOpen(false);
+    if (action === 'close-album') album.setOpen(false);
+    return action !== 'background';
+  });
   const meter = new GlowMeter();
   const pulses = new PulseSystem();
   const bump = new BumpState();
@@ -406,12 +421,14 @@ async function boot() {
       overview = !overview;
       scene.fog = overview ? null : fog;
     }
-    if (DEBUG && code === 'KeyL') {
-      plants.plants.forEach((p, i) => setTimeout(() => touchPlant(p.id), i * 60));
-      lanterns.lanterns.forEach((l, i) => setTimeout(() => touchLantern(l.id), i * 60));
-      ribIds.forEach((id, i) => setTimeout(() => touchRib(id), i * 120));
-    }
+    if (DEBUG && code === 'KeyL') lightAll();
   };
+  /** Debug: lights every plant, lantern and rib, one after another. */
+  function lightAll() {
+    plants.plants.forEach((p, i) => setTimeout(() => touchPlant(p.id), i * 60));
+    lanterns.lanterns.forEach((l, i) => setTimeout(() => touchLantern(l.id), i * 60));
+    ribIds.forEach((id, i) => setTimeout(() => touchRib(id), i * 120));
+  }
 
   // ------------------------------------------------------------ events
   function touchPlant(id: string) {
@@ -622,6 +639,7 @@ async function boot() {
   function logic(dt: number) {
     logicSteps++;
     saver.tick(dt);
+    setKeepAwake(wantsAwake({ mode, paused, overlayOpen }));
     if (mode !== 'play' || paused || overlayOpen) {
       input.consume();
       return;
@@ -922,7 +940,15 @@ async function boot() {
   requestAnimationFrame(frame);
 
   // Expose for manual testing in the console.
-  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish, giant, skeletonView, whaleSong, coralsView, cuttlefish, colourGame } });
+  // Staging helpers (store screenshots, `tools/capture_store.mjs`): start play, move the squid, light everything.
+  const teleport = (x: number, y: number) => {
+    body.pos.x = x;
+    body.pos.y = y;
+    body.vel.x = body.vel.y = 0;
+    rig.snap(body.pos);
+  };
+  const play = () => start('touch');
+  if (DEBUG) Object.assign(window, { game: { body, meter, plants, brain, field, stage, pulses, hints, synth, rig, zone, gameWorld, worldSeed, genMs, jelly, worldState, swarm, nautilus, dash, saver, parent, album, rings, starfish, giant, skeletonView, whaleSong, coralsView, cuttlefish, colourGame, play, teleport, lightAll } });
 }
 
 boot().catch((err) => {

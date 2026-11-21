@@ -30,12 +30,12 @@
   - Capacitor: same idea, larger plugin ecosystem, no Rust; the user chose Tauri
   - TWA / PWABuilder: needs the hosted site and a network on first run; breaks "offline from the first launch"
   - Hand-written Kotlin + Swift shells: no framework, but two codebases with no shared config
-- Rust stays minimal: the generated `lib.rs` plus the keep-awake plugin registration
+- Rust stays minimal: `lib.rs` only starts Tauri; the native bits are Kotlin in `MainActivity`
 
 ### Layout: `src-tauri/` at the repo root, generated projects committed
 - `src-tauri/tauri.conf.json`: `frontendDist: ../dist`, `beforeBuildCommand: npm run build:app`, identifier, version from `../package.json`
 - `src-tauri/gen/android/` committed, as Tauri recommends, so manifest and activity tweaks are reviewed in git
-- Identifier: `com.kajyr.glowbelow` (permanent once published; confirm in task 1.1)
+- Identifier: `com.nightdrops.glowbelow` (confirmed with the user; permanent once published)
 
 ### New build target `VITE_TARGET=app`
 - `build:app` script: `VITE_TARGET=app npm run build`
@@ -44,13 +44,14 @@
 - One helper, `isApp()`, for the few UI differences: hide "open full page"; back-button and keep-awake hooks
 - Alternative: detect Tauri at run time (`window.__TAURI__`): works, but a build flag keeps the web bundle free of app code paths
 
-### Keep-awake: a tiny local Tauri plugin
-- Android: `FLAG_KEEP_SCREEN_ON` on the activity window; iOS (later): `isIdleTimerDisabled`
-- The game calls it on play start / resume and clears it on the parent corner and the title screen
+### Keep-awake: a JavaScript bridge in the activity
+- Android: `MainActivity` adds a `GlowNative` JavaScript interface in Tauri's `onWebViewCreate` hook; `keepAwake(on)` sets or clears `FLAG_KEEP_SCREEN_ON`
+- The game (`src/ui/appBridge.ts`) turns it on while playing and off on the title, in the album, in the parent corner and in portrait (`wantsAwake` in `src/game/appShell.ts`, tested)
+- Changed from the first plan (a local Tauri plugin): Tauri exposes the WebView to the activity, so a plugin crate with Rust, Kotlin and permissions was not needed for Android. `ios-app` adds its iOS side (`isIdleTimerDisabled`) behind the same `setKeepAwake` call
 - Alternatives: the Screen Wake Lock API (not reliable in Android WebView); always-on in the activity (drains battery if left on the title)
 
 ### Back button: handled in the activity
-- `MainActivity` (Kotlin, in `gen/android`) intercepts back, asks the page via a small JS hook whether it closed something (album / parent corner)
+- `MainActivity` (Kotlin, in `gen/android`) intercepts back (its callback is added after Tauri's, so it runs first), asks the page through `window.__glowBack()` whether it closed something (album / parent corner)
 - If nothing was closed: `moveTaskToBack(true)`, never `finish()`, so the app stays where it was
 - The JS hook lives in `src/ui/` behind `isApp()`, with a unit-testable "what does back close?" function in `src/game/`
 
@@ -60,8 +61,8 @@
 - Safe areas: the HUD already sits in from the edges; check camera cut-outs on a phone
 
 ### Sound and lifecycle
-- The game already stops sound on `visibilitychange`; Android WebView fires it on background in recent versions
-- If it does not on a test device: the activity's `onPause`/`onResume` dispatch the same event to the page
+- The game did not stop sound when hidden (browsers throttle hidden tabs, so it never mattered); in the app the page keeps running in the background
+- The synth now suspends its audio context while the page is hidden (`setHidden`), and fun facts stop; Android WebView fires `visibilitychange` on background and resume (checked on the emulator), so no native hook is needed
 
 ### Version and build number
 - `version` in `tauri.conf.json` points at `package.json`; Tauri derives `versionCode` from it (major·1,000,000 + minor·1,000 + patch), so every minor bump increases it
@@ -78,9 +79,9 @@
 - Privacy policy: `public/privacy.html`, published by the existing GitHub Pages workflow; plain words, no data collected
 
 ### Store media: `npm run capture:store`
-- Playwright script (`tools/capture_store.mjs`) opens the built game (`npm run preview`) with `?seed=N&debug` in headed Chromium, so the GPU renders WebGL
-- Scenes staged through `window.game` (zone, lit plants, friends following, squid position), then screenshots at Play's sizes (landscape 16:9, e.g. 1920×1080; phone and 10" tablet sets)
-- Feature graphic: `tools/feature_graphic.html` (a staged render plus the title) captured at 1024×500
+- Playwright script (`tools/capture_store.mjs`) builds the app target, serves it with `vite preview` and opens it with `?seed=7&debug` in headed Chromium, so the GPU renders WebGL
+- Scenes staged through the debug handle `window.game` (new helpers `play`, `teleport`, `lightAll`), then screenshots for Play's three sets: phone 1920×1080, 7" tablet 1920×1200, 10" tablet 2560×1600
+- Feature graphic: the game's own title screen (squid, title, sparkles) captured at 1024×500 with the HUD hidden; simpler than a separate `feature_graphic.html` page
 - Promo video: a debug-only capture helper records the canvas (`captureStream`) and the game's audio output (a `MediaStreamDestination` on the master gain) into one webm via `MediaRecorder`, while the script plays a scripted swim
   - `ffmpeg` trims and converts it to a 1080p mp4 in `docs/play/` (git-ignored if large; regenerated on demand)
   - Alternatives: `adb screenrecord` on the emulator (real app, but no internal audio); screen recording of the browser window (needs an audio loopback driver)

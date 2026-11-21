@@ -4,3 +4,7 @@ node_modules/
 dist/
 release/
 .vite
+# Store app signing keys never go in git (they live in ~/.config/glowbelow/)
+*.jks
+*.keystore
+keystore.properties
