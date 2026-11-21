@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The giant squid is the enormous, gentle friend asleep in Whale fall: woken by a big glow, it carries the squid on its arm up to the top of the world, and it is the only way into the Sunlit reef.
+The giant squid is the enormous, gentle friend asleep in Whale fall: woken by a big glow, it carries the squid on its arm up to the next zone it hasn't reached, an express lift to the top of the world.
 
 ## Requirements
 
