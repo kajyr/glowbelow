@@ -32,7 +32,7 @@
 ## 5. Store listing and paperwork
 
 - [ ] 5.1 Write `public/privacy.html` (no data collected, nothing leaves the device, contact address chosen by the user); verify it is published on GitHub Pages and reachable from a phone
-- [ ] 5.2 Write `docs/play/listing.md`: title, short and full description, category, tags (in the plain voice of `docs/itch/description.md`), plus the form-answer checklist (Families ages 5–8, content rating, Data safety: nothing collected or shared, no ads, no login, paid, countries)
+- [x] 5.2 Write `docs/play/listing.md`: title, short and full description, category, tags (in the plain voice of `docs/itch/description.md`), plus the form-answer checklist (Families ages 5–8, content rating, Data safety: nothing collected or shared, no ads, no login, paid, countries)
 - [x] 5.3 Add Playwright and `tools/capture_store.mjs` (`npm run capture:store`): staged scenes from fixed seeds via `window.game`, at least four landscape screenshots per required device set; verify two runs give the same scenes and sizes pass Play's limits
 - [x] 5.4 Capture the 1024×500 feature graphic in the same script; verify size and that the title reads at phone size
 - [x] 5.5 Add the debug-only capture helper (canvas + game audio into one recording) with a scripted 20–30 s swim, and an `ffmpeg` step to a 1080p mp4; verify the video has sound, no HUD, and plays in QuickTime

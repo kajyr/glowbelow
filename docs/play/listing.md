@@ -52,7 +52,7 @@ One price, everything included: no ads, no in-app purchases, no accounts, no lin
 - App or game: Game
 - Category: Casual
 - Tags: Kids, Relaxing, Cute, Exploration (pick from Play's list)
-- Contact email: _(the user chooses)_
+- Contact email: software@nightdrops.com
 - Website: <https://kajyr.github.io/glowbelow/>
 
 ## App content (Policy → App content)
