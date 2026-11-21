@@ -52,7 +52,7 @@ export function translateLevel(level: Level, d: Vec2): Level {
     bounds: moveRect(level.bounds, d),
     cameraBounds: moveRect(level.cameraBounds, d),
     ceilings: level.ceilings.map((c) => ({ x0: c.x0 + d.x, x1: c.x1 + d.x, y: c.y + d.y })),
-    shaft: { x0: level.shaft.x0 + d.x, x1: level.shaft.x1 + d.x, softFrom: level.shaft.softFrom + d.y, lid: level.shaft.lid === undefined ? undefined : level.shaft.lid + d.y },
+    shaft: { x0: level.shaft.x0 + d.x, x1: level.shaft.x1 + d.x, softFrom: level.shaft.softFrom + d.y },
     start: move(level.start, d),
     pieces: level.pieces.map((p): Placement => ({ ...p, x: p.x + d.x, y: p.y + d.y })),
     plants: level.plants.map((p) => ({ ...p, x: p.x + d.x, y: p.y === undefined ? undefined : p.y + d.y })),

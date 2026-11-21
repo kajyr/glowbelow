@@ -195,46 +195,43 @@ describe('the assembled world', () => {
     }
   });
 
-  test('swimming up Twilight\'s top passage, even dashing, the squid is held below the reef', () => {
+  test('the squid swims up Twilight\'s top passage into the reef, and back down', () => {
     for (const s of [27, 28, 29]) {
       const w = generateWorld(s);
       const world = buildLevel(w.level).world;
-      const shaft = w.level.shaft;
-      const body: Body = { pos: { x: (shaft.x0 + shaft.x1) / 2, y: shaft.softFrom - 6 }, vel: { x: 0, y: 0 } };
-      const gate = { fromAbove: false };
-      const dash = new Dash();
-      for (let t = 0; t < 8; t += DT) {
-        dash.update(DT);
-        dash.trigger(body, { x: 0, y: 1 });
-        steer(body, { kind: 'direction', x: 0, y: 1 }, DT, dash.params());
+      const pass = w.reefPassage;
+      const body: Body = { pos: { x: (pass.x0 + pass.x1) / 2, y: pass.y - 8 }, vel: { x: 0, y: 0 } };
+      for (let t = 0; t < 4; t += DT) {
+        steer(body, { kind: 'direction', x: 0, y: 1 }, DT);
         collide(body, R, world, DT);
-        shaftPush(body, shaft, DT, gate);
-        expect(body.pos.y + R).toBeLessThanOrEqual(shaft.lid! + 1e-6);
+        shaftPush(body, w.level.shaft, DT);
+      }
+      expect(zoneAt(w.map, body.pos)).toBe('sunlit-reef');
+      expect(body.pos.y).toBeGreaterThan(pass.y + 3);
+      for (let t = 0; t < 4; t += DT) {
+        steer(body, { kind: 'direction', x: 0, y: -1 }, DT);
+        collide(body, R, world, DT);
+        shaftPush(body, w.level.shaft, DT);
       }
       expect(zoneAt(w.map, body.pos)).toBe('twilight');
     }
   });
 
-  test('from the reef, the squid swims down through the hole into Twilight, and the lid holds it there', () => {
+  test('dashing up Twilight\'s top passage, nothing pushes the squid back', () => {
     for (const s of [30, 31, 32]) {
       const w = generateWorld(s);
       const world = buildLevel(w.level).world;
-      const shaft = w.level.shaft;
-      const body: Body = { pos: { x: (shaft.x0 + shaft.x1) / 2, y: shaft.lid! + 4 }, vel: { x: 0, y: 0 } };
-      const gate = { fromAbove: false };
-      for (let t = 0; t < 4; t += DT) {
-        steer(body, { kind: 'direction', x: 0, y: -1 }, DT);
+      const pass = w.reefPassage;
+      const body: Body = { pos: { x: (pass.x0 + pass.x1) / 2, y: pass.y - 8 }, vel: { x: 0, y: 0 } };
+      const dash = new Dash();
+      for (let t = 0; t < 1.5; t += DT) {
+        dash.update(DT);
+        dash.trigger(body, { x: 0, y: 1 });
+        steer(body, { kind: 'direction', x: 0, y: 1 }, DT, dash.params());
         collide(body, R, world, DT);
-        shaftPush(body, shaft, DT, gate);
+        shaftPush(body, w.level.shaft, DT);
       }
-      expect(zoneAt(w.map, body.pos)).toBe('twilight');
-      // Turning back up, it is held below the lid again.
-      for (let t = 0; t < 4; t += DT) {
-        steer(body, { kind: 'direction', x: 0, y: 1 }, DT);
-        collide(body, R, world, DT);
-        shaftPush(body, shaft, DT, gate);
-      }
-      expect(body.pos.y + R).toBeLessThanOrEqual(shaft.lid! + 1e-6);
+      expect(zoneAt(w.map, body.pos)).toBe('sunlit-reef');
     }
   });
 

@@ -11,7 +11,7 @@ import { LIGHTABLE, type GlowTarget } from './game/glowTargets';
 import { Jelly } from './game/jelly';
 import { Hints, type InputKind } from './game/hints';
 import { PulseSystem } from './game/pulse';
-import { shaftPush, surfacePush, type Gate } from './game/shaft';
+import { shaftPush, surfacePush } from './game/shaft';
 import { CoralTouch, coralId } from './game/corals';
 import { CORAL_COLOURS, COLOUR_HEX, GLOW_BRIGHT, type CoralColour, type GlowColour } from './game/colours';
 import { ColourGame, Cuttlefish, pickColour } from './game/cuttlefish';
@@ -177,8 +177,6 @@ async function boot() {
   scene.add(coralsView.group);
   const reefView = new ReefView(reefRect, level.sunbeam!);
   scene.add(reefView.group);
-  // Twilight's top passage lets the squid down from the reef, never up into it.
-  const gate: Gate = { fromAbove: false };
   const surface = { x0: reefRect.minX, x1: reefRect.maxX, y: reefRect.maxY };
   // The cuttlefish, disguised as a coral in the garden. It shows colours of the corals near it.
   const hide = level.cuttlefish;
@@ -208,7 +206,7 @@ async function boot() {
   const jellyView = jelly ? new JellyView(models, lights) : null;
   if (jellyView) scene.add(jellyView.root);
   scene.add(sparkles.mesh);
-  const effects = new Effects(level.bounds, level.bubbleVents, level.shaft);
+  const effects = new Effects(level.bounds, level.bubbleVents, gameWorld.reefPassage);
   scene.add(effects.group);
   const overlay = colliderOverlay(built);
   const reach = reachOverlay(zone.fields, zone.paths, jellyArea?.cells ?? null);
@@ -675,7 +673,7 @@ async function boot() {
       if (ev.dash && worldState.dashUnlocked && !bump.locked && dash.trigger(body, dashDirection(body, steerIn, squidView.facing))) hud.dashFlash();
       steer(body, steerIn, dt, dash.params());
       contact = collide(body, TUNING.squid.radius, built.world, dt);
-      shaftPush(body, level.shaft, dt, gate);
+      shaftPush(body, level.shaft, dt);
       surfacePush(body, surface, dt);
     }
     // The top of the world: the album opens and the completed stamp thumps down. Afterwards the squid sinks back into the reef.

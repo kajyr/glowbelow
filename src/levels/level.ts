@@ -25,12 +25,8 @@ export interface Level {
   cameraBounds: Rect;
   /** Lower ceilings than bounds.maxY, except where the way up is. */
   ceilings: Ceiling[];
-  /**
-   * The way up: a gentle push down starts at `softFrom`. With `lid`, the way
-   * is one-way: below the lid's height the squid is eased back down and
-   * cannot pass it going up, but comes down through it freely.
-   */
-  shaft: { x0: number; x1: number; softFrom: number; lid?: number };
+  /** A closed way up: a gentle push down starts at `softFrom` (Infinity: none). */
+  shaft: { x0: number; x1: number; softFrom: number };
   start: Vec2;
   pieces: Placement[];
   plants: PlantSpot[];

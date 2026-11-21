@@ -29,6 +29,8 @@ export interface GameWorld {
   entries: Record<string, Vec2>;
   /** The Sunlit reef's landing spot, at the top of the world: where the giant squid's arm sets the squid down. */
   landing: Vec2;
+  /** The top of Twilight's passage up into the reef (its width, at the reef's seabed): where the reef's light comes down. */
+  reefPassage: { x0: number; x1: number; y: number };
   map: WorldMap;
   /** Everything in world coordinates, as one level for the game's systems. */
   level: Level;
@@ -76,7 +78,7 @@ export function endWall(seed: number, x: number, bottom: number, top: number): P
  * between them, Whale fall to the left of home at its seabed level, behind a
  * rock wall with a wide passage at the bottom, and the Sunlit reef on top of
  * Twilight, centred on Twilight's top passage: the hole in the reef's
- * seabed. That passage is one-way (open going down, a lid going up). The
+ * seabed, open both ways like home's shaft into Twilight. The
  * rock around narrow Twilight, between home's ceiling and Twilight's floor,
  * above Whale fall, beside and under the reef is solid blocks, so the squid
  * never sees empty water.
@@ -152,8 +154,8 @@ export function generateWorld(seed: number): GameWorld {
     cameraBounds: { ...map.bounds, minX: map.bounds.minX - WALL_VIEW, maxX: map.bounds.maxX + WALL_VIEW, minY: h.cameraBounds.minY },
     // Ceilings are replaced by the blocks above.
     ceilings: [],
-    // Twilight's top passage into the reef: one-way, with the lid at the reef's seabed.
-    shaft: { ...t.shaft, lid: top },
+    // Every way up is open now: Twilight's top passage into the reef too.
+    shaft: { x0: t.shaft.x0, x1: t.shaft.x1, softFrom: Infinity },
     start: h.start,
     pieces: [...h.pieces, ...t.pieces, ...wf.pieces, ...r.pieces, ...endWall(seed, h.bounds.maxX, h.bounds.minY, ceilY)],
     plants: h.plants,
@@ -182,7 +184,8 @@ export function generateWorld(seed: number): GameWorld {
     'whale-fall': wf.start,
     'sunlit-reef': landing,
   };
-  return { seed, home, twilight, twilightOffset: offset, whaleFall, whaleFallOffset: wfOffset, reef, reefOffset, entries, landing, map, level };
+  const reefPassage = { x0: t.shaft.x0, x1: t.shaft.x1, y: top };
+  return { seed, home, twilight, twilightOffset: offset, whaleFall, whaleFallOffset: wfOffset, reef, reefOffset, entries, landing, reefPassage, map, level };
 }
 
 /**

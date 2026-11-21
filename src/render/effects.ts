@@ -53,17 +53,18 @@ export class Effects {
   private readonly rays: THREE.Mesh;
   /** Bubbles from the seabed vents rise to here (the way up, not into the reef). */
   private readonly bubbleTop: number;
-  /** Where the reef's sun comes in at the top of the way up (a warm pool of light), if it does. */
-  private readonly sunIn: { x: number; y: number } | null;
+  /** Where the reef's sun comes in at the top of the way up (a warm pool of light). */
+  private readonly sunIn: { x: number; y: number };
   private time = 0;
 
   constructor(
     bounds: Rect,
     private readonly vents: number[],
-    shaft: { x0: number; x1: number; lid?: number },
+    /** Where the reef's light comes down: the top of Twilight's passage up into it. */
+    sunIn: { x0: number; x1: number; y: number },
   ) {
-    this.bubbleTop = (shaft.lid ?? bounds.maxY) - 3;
-    this.sunIn = shaft.lid === undefined ? null : { x: (shaft.x0 + shaft.x1) / 2, y: shaft.lid - 1.5 };
+    this.bubbleTop = Math.min(bounds.maxY, sunIn.y) - 3;
+    this.sunIn = { x: (sunIn.x0 + sunIn.x1) / 2, y: sunIn.y - 1.5 };
     // Drifting particles: a box of dust that wraps around the camera.
     const DUST = 260;
     this.dustPos = new Float32Array(DUST * 3);
@@ -102,7 +103,7 @@ export class Effects {
 
     // Light falling down the shaft from the bright reef above: the way up is
     // visible (and shimmers) even though only the giant squid's arm goes there.
-    const w = shaft.x1 - shaft.x0;
+    const w = sunIn.x1 - sunIn.x0;
     const rayMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
@@ -122,7 +123,7 @@ export class Effects {
         }`,
     });
     this.rays = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.6, 22), rayMat);
-    this.rays.position.set((shaft.x0 + shaft.x1) / 2, (shaft.lid ?? bounds.maxY) - 9, -1.5);
+    this.rays.position.set((sunIn.x0 + sunIn.x1) / 2, sunIn.y - 9, -1.5);
     this.group.add(this.rays);
   }
 
@@ -193,7 +194,7 @@ export class Effects {
     this.bubbles.geometry.attributes.position.needsUpdate = true;
 
     (this.rays.material as THREE.ShaderMaterial).uniforms.uTime.value = this.time;
-    if (this.sunIn) lights.add(this.sunIn.x, this.sunIn.y, 1, 6, SUN_IN, 0.7 + 0.15 * Math.sin(this.time * 1.6));
+    lights.add(this.sunIn.x, this.sunIn.y, 1, 6, SUN_IN, 0.7 + 0.15 * Math.sin(this.time * 1.6));
   }
 
   /** Whether the camera is in bright water (the reef), where rings are drawn as solid colour. */

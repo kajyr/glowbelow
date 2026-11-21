@@ -19,23 +19,14 @@ test('swimming up the shaft eases the squid back down', () => {
   expect(b.pos.y).toBeLessThan(10.2);
 });
 
-test('a lid holds the squid from below, but lets it through from above', () => {
-  const shaft = { x0: 0, x1: 6, softFrom: 10, lid: 12 };
-  const gate = { fromAbove: false };
-  const b: Body = { pos: { x: 3, y: 8 }, vel: { x: 0, y: 20 } };
-  for (let t = 0; t < 2; t += 1 / 60) {
-    b.pos.y += b.vel.y / 60;
-    shaftPush(b, shaft, 1 / 60, gate, 0.55);
-    expect(b.pos.y).toBeLessThanOrEqual(12 - 0.55 + 1e-9);
+test('an open way up (no soft wall) lets the squid straight through', () => {
+  const open = { x0: 0, x1: 6, softFrom: Infinity };
+  const b: Body = { pos: { x: 3, y: 0 }, vel: { x: 0, y: 0 } };
+  for (let t = 0; t < 4; t += 1 / 60) {
+    steer(b, { kind: 'direction', x: 0, y: 1 }, 1 / 60);
+    shaftPush(b, open, 1 / 60);
   }
-  // From above: straight through, down past the lid.
-  const down: Body = { pos: { x: 3, y: 15 }, vel: { x: 0, y: -4 } };
-  const g2 = { fromAbove: false };
-  for (let t = 0; t < 2; t += 1 / 60) {
-    down.pos.y += down.vel.y / 60;
-    shaftPush(down, shaft, 1 / 60, g2, 0.55);
-  }
-  expect(down.pos.y).toBeLessThan(12 - 0.55);
+  expect(b.pos.y).toBeGreaterThan(15);
 });
 
 test('the surface eases the squid back down', () => {
